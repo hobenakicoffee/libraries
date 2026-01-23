@@ -1,14 +1,36 @@
 # @hobenakicoffee/libraries
 
-Necessary public libraries for "হবে নাকি Coffee?" projects. Framework-agnostic and reusable.
+Framework-agnostic shared libraries for “হবে নাকি Coffee?” projects.
 
-## Installation
+## Quick start
+
+Install the package from npm:
+
+```bash
+npm install @hobenakicoffee/libraries
+# or
+pnpm add @hobenakicoffee/libraries
+# or
+yarn add @hobenakicoffee/libraries
+# or
+bun add @hobenakicoffee/libraries
+```
+
+Use it in your app:
+
+```ts
+import { SOME_CONSTANT } from "@hobenakicoffee/libraries";
+```
+
+## Local development
+
+Install dependencies:
 
 ```bash
 bun install
 ```
 
-## Development
+Common tasks:
 
 ```bash
 # Run in watch mode during development
@@ -24,7 +46,7 @@ bun run test
 bun run test:watch
 ```
 
-## Building
+Build artifacts:
 
 ```bash
 # Build the library
@@ -34,15 +56,7 @@ bun run build
 bun run clean
 ```
 
-## Publishing
-
-The library will automatically build before publishing:
-
-```bash
-npm publish
-```
-
-## Project Structure
+## Project structure
 
 ```
 src/
@@ -51,8 +65,20 @@ src/
     index.ts
 ```
 
-This project was created using `bun init` in bun v1.2.15. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+## Release & publish
 
-## Resources
+Publishing is automated on push to the `main` branch via GitHub Actions. Ensure:
 
-To generate supabase types, [follow this documentation](https://supabase.com/docs/guides/api/rest/generating-types)
+- `package.json` version is updated.
+- `NPM_TOKEN` secret is set in the repo with publish permissions.
+
+For local publish (if needed):
+
+```bash
+npm publish --access public
+```
+
+## Notes
+
+- This project uses Bun for development and builds.
+- To generate supabase types, follow https://supabase.com/docs/guides/api/rest/generating-types
