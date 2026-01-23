@@ -1,8 +1,6 @@
 # @hobenakicoffee/libraries
 
-Necessary public libraries for "হবে নাকি Coffee?" projects.
-
-A framework-agnostic Bun library providing shared utilities and constants.
+Necessary public libraries for "হবে নাকি Coffee?" projects. Framework-agnostic and reusable.
 
 ## Installation
 

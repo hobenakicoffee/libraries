@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "bun run typecheck",
     "clean": "rm -rf dist",
-    "prepublishOnly": "bun run clean && bun run build"
+    "prepublishOnly": "bun run test && bun run clean && bun run build"
   },
   "devDependencies": {
     "@types/bun": "latest"
