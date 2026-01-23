@@ -1,8 +1,12 @@
 {
   "name": "@hobenakicoffee/libraries",
   "version": "0.0.3",
-  "module": "src/index.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target node",
     "dev": "bun --watch src/index.ts",
@@ -18,5 +22,8 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
