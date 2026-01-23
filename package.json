@@ -1,11 +1,16 @@
 {
   "name": "@hobenakicoffee/libraries",
   "version": "0.0.4",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
   "type": "module",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./constants": "./src/constants/index.ts"
+  },
   "files": [
-    "dist"
+    "src",
+    "README.md",
+    "package.json"
   ],
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target node",
@@ -15,7 +20,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "bun run typecheck",
     "clean": "rm -rf dist",
-    "prepublishOnly": "bun run test && bun run clean && bun run build"
+    "prepublishOnly": "bun run test"
   },
   "devDependencies": {
     "@types/bun": "latest"
