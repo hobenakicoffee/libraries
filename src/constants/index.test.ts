@@ -1,6 +1,16 @@
 import { describe, expect, test } from "bun:test";
-import { SupporterPlatforms, PaymentStatuses, ServiceTypes } from "./index";
-import type { SupporterPlatform, PaymentStatus, ServiceType } from "./index";
+import {
+  SupporterPlatforms,
+  PaymentStatuses,
+  ServiceTypes,
+  PaymentTypes,
+} from "./index";
+import type {
+  SupporterPlatform,
+  PaymentStatus,
+  ServiceType,
+  PaymentType,
+} from "./index";
 
 describe("SupporterPlatforms", () => {
   test("should contain all expected platform keys", () => {
@@ -146,6 +156,43 @@ describe("ServiceTypes", () => {
       expect(typeof type).toBe("string");
       // Check that it only contains lowercase letters and underscores
       expect(type).toMatch(/^[a-z_]+$/);
+    });
+  });
+});
+
+describe("PaymentTypes", () => {
+  test("should contain all expected keys", () => {
+    const expectedKeys = ["SUBSCRIPTION", "ONE_TIME"];
+
+    expect(Object.keys(PaymentTypes)).toEqual(expectedKeys);
+  });
+
+  test("should have correct values for each type", () => {
+    expect(PaymentTypes.SUBSCRIPTION).toBe("subscription");
+    expect(PaymentTypes.ONE_TIME).toBe("one-time");
+  });
+
+  test("should be read-only at compile time", () => {
+    // TypeScript prevents modification at compile time with 'as const'
+    // This test verifies the structure is correct
+    expect(Object.isFrozen(PaymentTypes)).toBe(false);
+    expect(typeof PaymentTypes).toBe("object");
+  });
+
+  test("PaymentType type should accept valid type values", () => {
+    const validType: PaymentType = "subscription";
+    expect(validType).toBe("subscription");
+  });
+
+  test("should have 2 payment types", () => {
+    expect(Object.keys(PaymentTypes).length).toBe(2);
+  });
+
+  test("all values should be lowercase or kebab-case strings", () => {
+    Object.values(PaymentTypes).forEach((type) => {
+      expect(typeof type).toBe("string");
+      // Check that it contains lowercase letters, hyphens, or underscores
+      expect(type).toMatch(/^[a-z_-]+$/);
     });
   });
 });

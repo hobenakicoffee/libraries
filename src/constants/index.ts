@@ -29,6 +29,13 @@ export const companyInfo = {
   },
 };
 
+export const PaymentTypes = {
+  SUBSCRIPTION: "subscription",
+  ONE_TIME: "one-time",
+} as const;
+
+export type PaymentType = (typeof PaymentTypes)[keyof typeof PaymentTypes];
+
 export const SupporterPlatforms = {
   FACEBOOK: "facebook",
   X: "x",
