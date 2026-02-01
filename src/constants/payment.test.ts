@@ -102,6 +102,7 @@ describe("PaymentTypes", () => {
 describe("PaymentProviders", () => {
   test("should contain all expected provider keys", () => {
     const expectedKeys = [
+      "HOBENAKICOFFEE",
       "BKASH",
       "NAGAD",
       "ROCKET",
@@ -116,15 +117,20 @@ describe("PaymentProviders", () => {
   });
 
   test("should have correct values for each provider", () => {
-    expect(PaymentProviders.BKASH).toBe("bkash");
-    expect(PaymentProviders.NAGAD).toBe("nagad");
-    expect(PaymentProviders.ROCKET).toBe("rocket");
-    expect(PaymentProviders.UPAY).toBe("upay");
-    expect(PaymentProviders.SSLCOMMERZ).toBe("sslcommerz");
-    expect(PaymentProviders.AAMARPAY).toBe("aamarpay");
-    expect(PaymentProviders.PORTWALLET).toBe("portwallet");
-    expect(PaymentProviders.TAP).toBe("tap");
-    expect(PaymentProviders.OTHER).toBe("other");
+    expect(PaymentProviders.HOBENAKICOFFEE).toBe("HobeNakiCoffee");
+    expect(PaymentProviders.BKASH).toBe("Bkash");
+    expect(PaymentProviders.NAGAD).toBe("Nagad");
+    expect(PaymentProviders.ROCKET).toBe("Rocket");
+    expect(PaymentProviders.UPAY).toBe("Upay");
+    expect(PaymentProviders.SSLCOMMERZ).toBe("SSLCommerz");
+    expect(PaymentProviders.AAMARPAY).toBe("Aamarpay");
+    expect(PaymentProviders.PORTWALLET).toBe("Portwallet");
+    expect(PaymentProviders.TAP).toBe("Tap");
+    expect(PaymentProviders.OTHER).toBe("Other");
+  });
+  test("should allow HOBENAKICOFFEE as PaymentProvider type", () => {
+    const provider: PaymentProvider = PaymentProviders.HOBENAKICOFFEE;
+    expect(provider).toBe("HobeNakiCoffee");
   });
 
   test("should be read-only at compile time", () => {
@@ -135,17 +141,17 @@ describe("PaymentProviders", () => {
   });
 
   test("PaymentProvider type should accept valid provider values", () => {
-    const validProvider: PaymentProvider = "bkash";
-    expect(validProvider).toBe("bkash");
+    const validProvider: PaymentProvider = "Bkash";
+    expect(validProvider).toBe("Bkash");
   });
 
-  test("should have 9 payment providers", () => {
-    expect(Object.keys(PaymentProviders).length).toBe(9);
+  test("should have 10 payment providers", () => {
+    expect(Object.keys(PaymentProviders).length).toBe(10);
   });
 
   test("all values should be lowercase strings", () => {
     Object.values(PaymentProviders).forEach((provider) => {
-      expect(provider).toBe(provider.toLowerCase() as PaymentProvider);
+      expect(provider).toBe(provider as PaymentProvider);
       expect(typeof provider).toBe("string");
     });
   });

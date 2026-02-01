@@ -21,15 +21,16 @@ export type PaymentStatus =
   (typeof PaymentStatuses)[keyof typeof PaymentStatuses];
 
 export const PaymentProviders = {
-  BKASH: "bkash",
-  NAGAD: "nagad",
-  ROCKET: "rocket",
-  UPAY: "upay",
-  SSLCOMMERZ: "sslcommerz",
-  AAMARPAY: "aamarpay",
-  PORTWALLET: "portwallet",
-  TAP: "tap",
-  OTHER: "other",
+  HOBENAKICOFFEE: "HobeNakiCoffee",
+  BKASH: "Bkash",
+  NAGAD: "Nagad",
+  ROCKET: "Rocket",
+  UPAY: "Upay",
+  SSLCOMMERZ: "SSLCommerz",
+  AAMARPAY: "Aamarpay",
+  PORTWALLET: "Portwallet",
+  TAP: "Tap",
+  OTHER: "Other",
 } as const;
 
 export type PaymentProvider =
