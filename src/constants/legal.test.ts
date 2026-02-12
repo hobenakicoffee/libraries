@@ -19,6 +19,24 @@ describe("productInfo", () => {
     expect(typeof productInfo.description).toBe("string");
     expect(typeof productInfo.keywords).toBe("string");
   });
+
+  test("socials should have all required fields", () => {
+    const socials = productInfo.socials;
+    expect(socials).toHaveProperty("facebook");
+    expect(socials).toHaveProperty("youtube");
+    expect(socials).toHaveProperty("x");
+    expect(socials).toHaveProperty("instagram");
+    expect(socials).toHaveProperty("tiktok");
+  });
+
+  test("socials should have correct types for fields", () => {
+    const socials = productInfo.socials;
+    expect(typeof socials.facebook).toBe("string");
+    expect(typeof socials.youtube).toBe("string");
+    expect(typeof socials.x).toBe("string");
+    expect(typeof socials.instagram).toBe("string");
+    expect(typeof socials.tiktok).toBe("string");
+  });
 });
 
 describe("companyInfo", () => {
