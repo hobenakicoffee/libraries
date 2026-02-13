@@ -1,10 +1,8 @@
 # @hobenakicoffee/libraries
 
-Framework-agnostic shared libraries for “হবে নাকি Coffee?” projects.
+Framework-agnostic shared constants and utilities for “হবে নাকি Coffee?” projects.
 
-## Quick start
-
-Install the package from npm:
+## Installation
 
 ```bash
 npm install @hobenakicoffee/libraries
@@ -16,11 +14,42 @@ yarn add @hobenakicoffee/libraries
 bun add @hobenakicoffee/libraries
 ```
 
-Use it in your app:
+## Usage
+
+This package exposes three entry points:
+
+- `@hobenakicoffee/libraries` (re-exports constants)
+- `@hobenakicoffee/libraries/constants`
+- `@hobenakicoffee/libraries/utils`
+
+Examples:
 
 ```ts
-import { SOME_CONSTANT } from "@hobenakicoffee/libraries";
+import { PaymentStatuses, ServiceTypes } from "@hobenakicoffee/libraries";
+
+import { SupporterPlatforms } from "@hobenakicoffee/libraries/constants";
+
+import {
+  formatAmount,
+  formatDate,
+  getUserPageLink,
+} from "@hobenakicoffee/libraries/utils";
 ```
+
+## API at a glance
+
+### Constants and types
+
+| Entrypoint                            | Runtime exports                                                                                                                                              | Type exports                                                                                                            |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `@hobenakicoffee/libraries`           | Re-exports all constants from `@hobenakicoffee/libraries/constants`                                                                                          | Re-exports all types from `@hobenakicoffee/libraries/constants`                                                         |
+| `@hobenakicoffee/libraries/constants` | `Visibility`, `productInfo`, `companyInfo`, `PaymentTypes`, `PaymentStatuses`, `PaymentProviders`, `PaymentDirections`, `SupporterPlatforms`, `ServiceTypes` | `Visibility`, `PaymentType`, `PaymentStatus`, `PaymentProvider`, `PaymentDirection`, `SupporterPlatform`, `ServiceType` |
+
+### Utilities
+
+| Entrypoint                        | Function exports                                                                                                                                                                                                                       |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@hobenakicoffee/libraries/utils` | `formatAmount`, `formatSignedAmount`, `formatDate`, `formatToPlainText`, `formatMetadataKey`, `getSocialUrl`, `getUserPageLink`, `openInNewWindow`, `shareToFacebook`, `shareToInstagram`, `shareToLinkedIn`, `shareToX`, `printQrSvg` |
 
 ## Local development
 
@@ -30,27 +59,26 @@ Install dependencies:
 bun install
 ```
 
-Common tasks:
+Available scripts:
 
 ```bash
+# Build the library
+bun run build
+
 # Run in watch mode during development
 bun run dev
-
-# Run type checking
-bun run typecheck
 
 # Run tests
 bun run test
 
 # Run tests in watch mode
 bun run test:watch
-```
 
-Build artifacts:
+# Run type checking
+bun run typecheck
 
-```bash
-# Build the library
-bun run build
+# Alias for typecheck
+bun run lint
 
 # Clean build artifacts
 bun run clean
@@ -58,10 +86,28 @@ bun run clean
 
 ## Project structure
 
-```
+```text
 src/
-  index.ts          # Main entry point
-  constants/        # Shared constants
+  index.ts
+  constants/
+    common.ts
+    legal.ts
+    payment.ts
+    platforms.ts
+    services.ts
+    index.ts
+  utils/
+    format-amount.ts
+    format-date.ts
+    format-plain-text.ts
+    get-social-handle.ts
+    get-user-page-link.ts
+    open-to-new-window.ts
+    post-to-facebook.ts
+    post-to-instagram.ts
+    post-to-linkedin.ts
+    post-to-x.ts
+    qr-svg-utils.ts
     index.ts
 ```
 
@@ -70,15 +116,10 @@ src/
 Publishing is automated on push to the `main` branch via GitHub Actions. Ensure:
 
 - `package.json` version is updated.
-- `NPM_TOKEN` secret is set in the repo with publish permissions.
+- `NPM_TOKEN` secret is configured with publish permissions.
 
 For local publish (if needed):
 
 ```bash
 npm publish --access public
 ```
-
-## Notes
-
-- This project uses Bun for development and builds.
-- To generate supabase types, follow https://supabase.com/docs/guides/api/rest/generating-types
