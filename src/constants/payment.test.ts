@@ -4,12 +4,16 @@ import {
   PaymentStatuses,
   PaymentTypes,
   PaymentDirections,
+  PayoutProviders,
+  WithdrawalStatuses,
 } from "./payment";
 import type {
   PaymentProvider,
   PaymentStatus,
   PaymentType,
   PaymentDirection,
+  PayoutProvider,
+  WithdrawalStatus,
 } from "./payment";
 
 describe("PaymentStatuses", () => {
@@ -64,7 +68,15 @@ describe("PaymentStatuses", () => {
 
 describe("PaymentTypes", () => {
   test("should contain all expected keys", () => {
-    const expectedKeys = ["SUBSCRIPTION", "ONE_TIME", "PAYOUT"];
+    const expectedKeys = [
+      "SUBSCRIPTION",
+      "ONE_TIME",
+      "PAYOUT",
+      "WITHDRAW_LOCK",
+      "WITHDRAW_RELEASE",
+      "WITHDRAW_COMPLETE",
+      "MANUAL_ADJUSTMENT",
+    ];
     expect(Object.keys(PaymentTypes)).toEqual(expectedKeys);
   });
 
@@ -72,6 +84,10 @@ describe("PaymentTypes", () => {
     expect(PaymentTypes.SUBSCRIPTION).toBe("subscription");
     expect(PaymentTypes.ONE_TIME).toBe("one-time");
     expect(PaymentTypes.PAYOUT).toBe("payout");
+    expect(PaymentTypes.WITHDRAW_LOCK).toBe("withdraw_lock");
+    expect(PaymentTypes.WITHDRAW_RELEASE).toBe("withdraw_release");
+    expect(PaymentTypes.WITHDRAW_COMPLETE).toBe("withdraw_complete");
+    expect(PaymentTypes.MANUAL_ADJUSTMENT).toBe("manual_adjustment");
   });
 
   test("should be read-only at compile time", () => {
@@ -86,8 +102,8 @@ describe("PaymentTypes", () => {
     expect(validType).toBe("subscription");
   });
 
-  test("should have 3 payment types", () => {
-    expect(Object.keys(PaymentTypes).length).toBe(3);
+  test("should have 7 payment types", () => {
+    expect(Object.keys(PaymentTypes).length).toBe(7);
   });
 
   test("all values should be lowercase or kebab-case strings", () => {
@@ -96,6 +112,61 @@ describe("PaymentTypes", () => {
       // Check that it contains lowercase letters, hyphens, or underscores
       expect(type).toMatch(/^[a-z_-]+$/);
     });
+  });
+});
+
+describe("PayoutProviders", () => {
+  test("should contain all expected provider keys", () => {
+    const expectedKeys = ["BKASH", "NAGAD", "ROCKET", "BANK"];
+    expect(Object.keys(PayoutProviders)).toEqual(expectedKeys);
+  });
+
+  test("should have correct values for each provider", () => {
+    expect(PayoutProviders.BKASH).toBe("bkash");
+    expect(PayoutProviders.NAGAD).toBe("nagad");
+    expect(PayoutProviders.ROCKET).toBe("rocket");
+    expect(PayoutProviders.BANK).toBe("bank");
+  });
+
+  test("PayoutProvider type should accept valid provider values", () => {
+    const validProvider: PayoutProvider = "bkash";
+    expect(validProvider).toBe("bkash");
+  });
+
+  test("should have 4 payout providers", () => {
+    expect(Object.keys(PayoutProviders).length).toBe(4);
+  });
+});
+
+describe("WithdrawalStatuses", () => {
+  test("should contain all expected status keys", () => {
+    const expectedKeys = [
+      "REQUESTED",
+      "APPROVED",
+      "PROCESSING",
+      "PAID",
+      "REJECTED",
+      "FAILED",
+    ];
+    expect(Object.keys(WithdrawalStatuses)).toEqual(expectedKeys);
+  });
+
+  test("should have correct values for each status", () => {
+    expect(WithdrawalStatuses.REQUESTED).toBe("requested");
+    expect(WithdrawalStatuses.APPROVED).toBe("approved");
+    expect(WithdrawalStatuses.PROCESSING).toBe("processing");
+    expect(WithdrawalStatuses.PAID).toBe("paid");
+    expect(WithdrawalStatuses.REJECTED).toBe("rejected");
+    expect(WithdrawalStatuses.FAILED).toBe("failed");
+  });
+
+  test("WithdrawalStatus type should accept valid status values", () => {
+    const validStatus: WithdrawalStatus = "processing";
+    expect(validStatus).toBe("processing");
+  });
+
+  test("should have 6 withdrawal statuses", () => {
+    expect(Object.keys(WithdrawalStatuses).length).toBe(6);
   });
 });
 
