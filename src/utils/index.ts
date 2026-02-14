@@ -9,3 +9,4 @@ export * from "./post-to-instagram";
 export * from "./post-to-linkedin";
 export * from "./post-to-x";
 export * from "./qr-svg-utils";
+export * from "./validate-phone-number";
