@@ -11,3 +11,6 @@ export * from "./post-to-x";
 export * from "./qr-svg-utils";
 export * from "./validate-phone-number";
 export * from "./to-human-readable";
+export * from "./get-social-link";
+export * from "./format-number";
+export * from "./get-user-name-initials";
