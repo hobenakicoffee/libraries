@@ -4,13 +4,14 @@ import type { ServiceType } from "./services";
 
 describe("ServiceTypes", () => {
   test("should contain all expected service type keys", () => {
-    const expectedKeys = ["GIFT", "EXCLUSIVE_CONTENT"];
+    const expectedKeys = ["GIFT", "EXCLUSIVE_CONTENT", "WITHDRAWAL"];
     expect(Object.keys(ServiceTypes)).toEqual(expectedKeys);
   });
 
   test("should have correct values for each service type", () => {
     expect(ServiceTypes.GIFT).toBe("gift");
     expect(ServiceTypes.EXCLUSIVE_CONTENT).toBe("exclusive_content");
+    expect(ServiceTypes.WITHDRAWAL).toBe("withdrawal");
   });
 
   test("should be read-only at compile time", () => {
@@ -26,7 +27,7 @@ describe("ServiceTypes", () => {
   });
 
   test("should have 2 service types", () => {
-    expect(Object.keys(ServiceTypes).length).toBe(2);
+    expect(Object.keys(ServiceTypes).length).toBe(3);
   });
 
   test("all values should be lowercase or snake_case strings", () => {
