@@ -284,9 +284,11 @@ export type Database = {
           display_name: string | null
           full_name: string | null
           id: string
+          is_page_active: boolean | null
           layout: Json | null
           page_slug: string
           role: Database["public"]["Enums"]["user_role"]
+          social_links: Json | null
           theme: Json | null
           updated_at: string | null
           username: string
@@ -301,9 +303,11 @@ export type Database = {
           display_name?: string | null
           full_name?: string | null
           id: string
+          is_page_active?: boolean | null
           layout?: Json | null
           page_slug: string
           role?: Database["public"]["Enums"]["user_role"]
+          social_links?: Json | null
           theme?: Json | null
           updated_at?: string | null
           username: string
@@ -318,9 +322,11 @@ export type Database = {
           display_name?: string | null
           full_name?: string | null
           id?: string
+          is_page_active?: boolean | null
           layout?: Json | null
           page_slug?: string
           role?: Database["public"]["Enums"]["user_role"]
+          social_links?: Json | null
           theme?: Json | null
           updated_at?: string | null
           username?: string
