@@ -289,6 +289,7 @@ export type Database = {
           page_slug: string
           role: Database["public"]["Enums"]["user_role"]
           social_links: Json | null
+          thank_you_items: Json | null
           theme: Json | null
           updated_at: string | null
           username: string
@@ -308,6 +309,7 @@ export type Database = {
           page_slug: string
           role?: Database["public"]["Enums"]["user_role"]
           social_links?: Json | null
+          thank_you_items?: Json | null
           theme?: Json | null
           updated_at?: string | null
           username: string
@@ -327,6 +329,7 @@ export type Database = {
           page_slug?: string
           role?: Database["public"]["Enums"]["user_role"]
           social_links?: Json | null
+          thank_you_items?: Json | null
           theme?: Json | null
           updated_at?: string | null
           username?: string
