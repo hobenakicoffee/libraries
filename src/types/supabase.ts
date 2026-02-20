@@ -283,6 +283,7 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           full_name: string | null
+          has_wallet_balance: boolean | null
           id: string
           is_page_active: boolean | null
           layout: Json | null
@@ -303,6 +304,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           full_name?: string | null
+          has_wallet_balance?: boolean | null
           id: string
           is_page_active?: boolean | null
           layout?: Json | null
@@ -323,6 +325,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           full_name?: string | null
+          has_wallet_balance?: boolean | null
           id?: string
           is_page_active?: boolean | null
           layout?: Json | null
