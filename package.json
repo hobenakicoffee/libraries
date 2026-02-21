@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./constants": "./src/constants/index.ts",
+    "./moderation": "./src/moderation/index.ts",
     "./utils": "./src/utils/index.ts",
     "./types": "./src/types/index.ts"
   },
@@ -34,6 +35,8 @@
     "access": "public"
   },
   "dependencies": {
+    "glin-profanity": "^3.3.0",
+    "openai": "^6.22.0",
     "sonner": "^2.0.7"
   }
 }

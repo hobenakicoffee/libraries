@@ -1,7 +1,6 @@
 import { SupporterPlatforms, type SupporterPlatform } from "../constants";
 
 export function getSocialLink(username?: string, platform?: SupporterPlatform) {
-  console.log("getSocialLink called with:", { username, platform });
   if (!username || !platform) return null;
 
   const sanitizedUsername = encodeURIComponent(
