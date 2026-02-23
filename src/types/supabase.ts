@@ -18,7 +18,7 @@ export type Database = {
           reference_id: string
           role: string
           service_type: string
-          transaction_id: string
+          transaction_id: string | null
           updated_at: string
           user_profile_id: string
           visibility: Database["public"]["Enums"]["visibility_enum"]
@@ -31,7 +31,7 @@ export type Database = {
           reference_id: string
           role: string
           service_type?: string
-          transaction_id: string
+          transaction_id?: string | null
           updated_at?: string
           user_profile_id: string
           visibility?: Database["public"]["Enums"]["visibility_enum"]
@@ -44,7 +44,7 @@ export type Database = {
           reference_id?: string
           role?: string
           service_type?: string
-          transaction_id?: string
+          transaction_id?: string | null
           updated_at?: string
           user_profile_id?: string
           visibility?: Database["public"]["Enums"]["visibility_enum"]
