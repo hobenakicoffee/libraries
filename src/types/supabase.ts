@@ -137,6 +137,42 @@ export type Database = {
           },
         ]
       }
+      follows: {
+        Row: {
+          created_at: string | null
+          follower_id: string
+          following_id: string
+          id: number
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id: string
+          following_id: string
+          id?: never
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string
+          following_id?: string
+          id?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manager_role_permissions: {
         Row: {
           id: number
@@ -282,6 +318,8 @@ export type Database = {
           bio: string | null
           created_at: string | null
           display_name: string | null
+          follower_count: number | null
+          following_count: number | null
           full_name: string | null
           has_wallet_balance: boolean | null
           id: string
@@ -303,6 +341,8 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          follower_count?: number | null
+          following_count?: number | null
           full_name?: string | null
           has_wallet_balance?: boolean | null
           id: string
@@ -324,6 +364,8 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          follower_count?: number | null
+          following_count?: number | null
           full_name?: string | null
           has_wallet_balance?: boolean | null
           id?: string
@@ -645,6 +687,9 @@ export type Database = {
         Returns: string
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      follow_user: { Args: { target_user_id: string }; Returns: undefined }
+      get_followers: { Args: { target_user_id: string }; Returns: string[] }
+      get_following: { Args: { target_user_id: string }; Returns: string[] }
       handle_successful_payment: {
         Args: {
           p_amount: number
@@ -661,6 +706,7 @@ export type Database = {
         Returns: Json
       }
       is_admin: { Args: never; Returns: boolean }
+      is_following: { Args: { target_user_id: string }; Returns: boolean }
       is_manager: { Args: { user_email: string }; Returns: boolean }
       request_withdrawal: {
         Args: { p_amount: number; p_payout_method_id: string }
@@ -668,6 +714,8 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      toggle_follow: { Args: { target_user_id: string }; Returns: boolean }
+      unfollow_user: { Args: { target_user_id: string }; Returns: undefined }
       upsert_supporter: {
         Args: {
           p_amount?: number
