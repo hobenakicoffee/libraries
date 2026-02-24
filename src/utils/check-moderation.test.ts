@@ -1,6 +1,6 @@
-import { describe, expect, test, mock, beforeEach } from "bun:test";
-import { checkModeration } from "./check-moderation";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
 import type OpenAI from "openai";
+import { checkModeration } from "./check-moderation";
 
 describe("checkModeration", () => {
   let mockOpenAiClient: OpenAI;
@@ -8,7 +8,7 @@ describe("checkModeration", () => {
 
   beforeEach(() => {
     mockModerations = {
-      create: mock(async (params: any) => ({
+      create: mock(async () => ({
         results: [
           {
             flagged: false,
@@ -63,7 +63,7 @@ describe("checkModeration", () => {
   });
 
   test("calls OpenAI moderations API with correct model", async () => {
-    mockModerations.create = mock(async (params: any) => ({
+    mockModerations.create = mock(async () => ({
       results: [
         {
           flagged: false,
@@ -83,7 +83,7 @@ describe("checkModeration", () => {
 
   test("returns error object when OpenAI API throws", async () => {
     const testError = new Error("API Error");
-    mockModerations.create = mock(async () => {
+    mockModerations.create = mock(() => {
       throw testError;
     });
 
@@ -97,7 +97,7 @@ describe("checkModeration", () => {
 
   test("returns error with stack trace when API fails", async () => {
     const testError = new Error("Network error");
-    mockModerations.create = mock(async () => {
+    mockModerations.create = mock(() => {
       throw testError;
     });
 
@@ -126,7 +126,7 @@ describe("checkModeration", () => {
   });
 
   test("returns proper result structure for error case", async () => {
-    mockModerations.create = mock(async () => {
+    mockModerations.create = mock(() => {
       throw new Error("Test error");
     });
 
@@ -208,7 +208,7 @@ describe("checkModeration", () => {
       ],
     }));
 
-    const longText = "test ".repeat(10000);
+    const longText = "test ".repeat(10_000);
     const result = await checkModeration(mockOpenAiClient, longText);
 
     expect(result.source).toBe("openai");
@@ -216,7 +216,7 @@ describe("checkModeration", () => {
   });
 
   test("returns source as null on error", async () => {
-    mockModerations.create = mock(async () => {
+    mockModerations.create = mock(() => {
       throw new Error("API Error");
     });
 
@@ -226,7 +226,7 @@ describe("checkModeration", () => {
   });
 
   test("returns flagged as false when error occurs", async () => {
-    mockModerations.create = mock(async () => {
+    mockModerations.create = mock(() => {
       throw new Error("API Error");
     });
 
@@ -259,7 +259,7 @@ describe("checkModeration", () => {
   });
 
   test("passes input to OpenAI exactly as provided", async () => {
-    mockModerations.create = mock(async (params: any) => ({
+    mockModerations.create = mock(async () => ({
       results: [
         {
           flagged: false,
@@ -277,7 +277,7 @@ describe("checkModeration", () => {
 
   test("preserves error details in result", async () => {
     const errorMessage = "Specific API Error";
-    mockModerations.create = mock(async () => {
+    mockModerations.create = mock(() => {
       throw new Error(errorMessage);
     });
 

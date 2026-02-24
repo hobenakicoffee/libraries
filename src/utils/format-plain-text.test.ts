@@ -23,7 +23,7 @@ describe("formatToPlainText", () => {
   test("stringifies objects and arrays", () => {
     expect(formatToPlainText({ a: 1 })).toBe(JSON.stringify({ a: 1 }, null, 2));
     expect(formatToPlainText(["x", "y"])).toBe(
-      JSON.stringify(["x", "y"], null, 2),
+      JSON.stringify(["x", "y"], null, 2)
     );
   });
 });

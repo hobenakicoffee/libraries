@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { SupporterPlatforms } from "./platforms";
 import type { SupporterPlatform } from "./platforms";
+import { SupporterPlatforms } from "./platforms";
 
 describe("SupporterPlatforms", () => {
   test("should contain all expected platform keys", () => {

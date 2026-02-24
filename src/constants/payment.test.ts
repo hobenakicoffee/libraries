@@ -1,19 +1,19 @@
 import { describe, expect, test } from "bun:test";
-import {
-  PaymentProviders,
-  PaymentStatuses,
-  PaymentTypes,
-  PaymentDirections,
-  PayoutProviders,
-  WithdrawalStatuses,
-} from "./payment";
 import type {
+  PaymentDirection,
   PaymentProvider,
   PaymentStatus,
   PaymentType,
-  PaymentDirection,
   PayoutProvider,
   WithdrawalStatus,
+} from "./payment";
+import {
+  PaymentDirections,
+  PaymentProviders,
+  PaymentStatuses,
+  PaymentTypes,
+  PayoutProviders,
+  WithdrawalStatuses,
 } from "./payment";
 
 describe("PaymentStatuses", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { ServiceTypes } from "./services";
 import type { ServiceType } from "./services";
+import { ServiceTypes } from "./services";
 
 describe("ServiceTypes", () => {
   test("should contain all expected service type keys", () => {

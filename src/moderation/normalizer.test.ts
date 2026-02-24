@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { normalizeLeetspeak, normalizeUnicode, compact } from "./normalizer";
+import { compact, normalizeLeetspeak, normalizeUnicode } from "./normalizer";
 
 describe("normalizeLeetspeak", () => {
   test("converts number 0 to letter o", () => {

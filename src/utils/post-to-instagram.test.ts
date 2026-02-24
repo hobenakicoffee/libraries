@@ -26,7 +26,7 @@ describe("shareToInstagram", () => {
     const { shareToInstagram } = await import("./post-to-instagram");
 
     expect(() => shareToInstagram({ url: "" })).toThrow(
-      "Instagram share requires a URL",
+      "Instagram share requires a URL"
     );
   });
 

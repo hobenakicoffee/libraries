@@ -1,10 +1,12 @@
-import { SupporterPlatforms, type SupporterPlatform } from "../constants";
+import { type SupporterPlatform, SupporterPlatforms } from "../constants";
 
 export function getSocialLink(username?: string, platform?: SupporterPlatform) {
-  if (!username || !platform) return null;
+  if (!(username && platform)) {
+    return null;
+  }
 
   const sanitizedUsername = encodeURIComponent(
-    username.trim().replace(/\s+/g, ""),
+    username.trim().replace(/\s+/g, "")
   );
 
   switch (platform) {

@@ -10,7 +10,7 @@ describe("shareToLinkedIn", () => {
 
   test("throws when url is missing", () => {
     expect(() => shareToLinkedIn({ url: "" })).toThrow(
-      "LinkedIn share requires a URL",
+      "LinkedIn share requires a URL"
     );
   });
 

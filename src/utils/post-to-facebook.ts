@@ -19,9 +19,15 @@ export function shareToFacebook({
     u: url,
   });
 
-  if (quote) params.append("quote", quote);
-  if (hashtag) params.append("hashtag", hashtag);
-  if (ref) params.append("ref", ref);
+  if (quote) {
+    params.append("quote", quote);
+  }
+  if (hashtag) {
+    params.append("hashtag", hashtag);
+  }
+  if (ref) {
+    params.append("ref", ref);
+  }
 
   const shareUrl = `https://www.facebook.com/sharer/sharer.php?${params.toString()}`;
 
