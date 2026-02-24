@@ -1,6 +1,6 @@
 # @hobenakicoffee/libraries
 
-Framework-agnostic shared constants and utilities for “হবে নাকি Coffee?” projects.
+Framework-agnostic shared constants and utilities for "হবে নাকি Coffee?" projects.
 
 ## Installation
 
@@ -47,9 +47,9 @@ import {
 
 ### Utilities
 
-| Entrypoint                        | Function exports                                                                                                                                                                                                                       |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@hobenakicoffee/libraries/utils` | `formatAmount`, `formatSignedAmount`, `formatDate`, `formatToPlainText`, `formatMetadataKey`, `getSocialUrl`, `getUserPageLink`, `openInNewWindow`, `shareToFacebook`, `shareToInstagram`, `shareToLinkedIn`, `shareToX`, `printQrSvg` |
+| Entrypoint                        | Function exports                                                                                                                                                                                                                                    |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@hobenakicoffee/libraries/utils` | `checkModeration`, `formatAmount`, `formatSignedAmount`, `formatDate`, `formatNumber`, `formatToPlainText`, `getSocialHandle`, `getSocialUrl`, `getUserNameInitials`, `getUserPageLink`, `openInNewWindow`, `shareToFacebook`, `shareToInstagram`, `shareToLinkedIn`, `shareToX`, `printQrSvg`, `toHumanReadable`, `validatePhoneNumber` |
 
 ## Local development
 
@@ -97,10 +97,14 @@ src/
     services.ts
     index.ts
   utils/
+    check-moderation.ts
     format-amount.ts
     format-date.ts
+    format-number.ts
     format-plain-text.ts
     get-social-handle.ts
+    get-social-link.ts
+    get-user-name-initials.ts
     get-user-page-link.ts
     open-to-new-window.ts
     post-to-facebook.ts
@@ -108,7 +112,24 @@ src/
     post-to-linkedin.ts
     post-to-x.ts
     qr-svg-utils.ts
+    to-human-readable.ts
+    validate-phone-number.ts
     index.ts
+  moderation/
+    normalizer.ts
+    profanity-service.ts
+    index.ts
+  types/
+    supabase.ts
+    index.ts
+  lib/
+    utils.ts
+  providers/
+    theme-provider.tsx
+  components/
+    ui/
+      ... (Radix UI based components)
+    turnstile-captcha.tsx
 ```
 
 ## Release & publish
