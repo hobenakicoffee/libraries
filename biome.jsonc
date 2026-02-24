@@ -9,7 +9,8 @@
         "useFilenamingConvention": "off",
         "useConsistentMemberAccessibility": "off",
         "useConsistentTypeDefinitions": "off",
-        "noNestedTernary": "off"
+        "noNestedTernary": "off",
+        "useBlockStatements": "off"
       },
       "complexity": {
         "noForEach": "off"
