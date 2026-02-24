@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { productInfo, companyInfo } from "./legal";
+import { companyInfo, productInfo } from "./legal";
 
 describe("productInfo", () => {
   test("should have all required fields", () => {

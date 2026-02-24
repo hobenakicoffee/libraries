@@ -5,7 +5,7 @@ import { getUserPageLink } from "./get-user-page-link";
 describe("getSocialUrl", () => {
   test("returns our platform URL when username is provided", () => {
     expect(getSocialUrl("alice", "x", "ignored")).toBe(
-      getUserPageLink("alice"),
+      getUserPageLink("alice")
     );
   });
 
@@ -16,13 +16,13 @@ describe("getSocialUrl", () => {
 
   test("builds social URL with sanitized handle", () => {
     expect(getSocialUrl(undefined, "instagram", " @john doe ")).toBe(
-      "https://instagram.com/johndoe",
+      "https://instagram.com/johndoe"
     );
   });
 
   test("uses platform-specific format for youtube", () => {
     expect(getSocialUrl(undefined, "youtube", "Jane")).toBe(
-      "https://youtube.com/@Jane",
+      "https://youtube.com/@Jane"
     );
   });
 

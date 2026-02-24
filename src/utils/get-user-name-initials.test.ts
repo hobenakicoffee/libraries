@@ -1,5 +1,5 @@
-import { getInitials } from "./get-user-name-initials";
 import { describe, expect, test } from "bun:test";
+import { getInitials } from "./get-user-name-initials";
 
 describe("getInitials", () => {
   test("returns initials for a full name", () => {

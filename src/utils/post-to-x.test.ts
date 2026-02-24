@@ -10,7 +10,7 @@ describe("shareToX", () => {
 
   test("throws when text is missing", () => {
     expect(() => shareToX({ text: "" })).toThrow(
-      "X share requires text content",
+      "X share requires text content"
     );
   });
 

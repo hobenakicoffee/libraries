@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { Visibility } from "./common";
 import type { Visibility as VisibilityType } from "./common";
+import { Visibility } from "./common";
 
 describe("Visibility", () => {
   test("should contain all expected keys", () => {

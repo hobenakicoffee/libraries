@@ -9,12 +9,16 @@ export function toHumanReadable(input: string): string {
     .replace(/\s+/g, " ")
     .trim();
 
-  if (!normalized) return "";
+  if (!normalized) {
+    return "";
+  }
 
   return normalized
     .split(" ")
     .map((word) => {
-      if (UPPERCASE_OR_NUMBER.test(word)) return word;
+      if (UPPERCASE_OR_NUMBER.test(word)) {
+        return word;
+      }
 
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })

@@ -24,6 +24,6 @@ describe("formatNumber", () => {
   });
 
   test("formats large numbers", () => {
-    expect(digitsFromFormatted(formatNumber(1000000))).toBe(1000000);
+    expect(digitsFromFormatted(formatNumber(1_000_000))).toBe(1_000_000);
   });
 });

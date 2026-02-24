@@ -1,9 +1,9 @@
-import { describe, expect, test, mock } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { checkBanglaWords, moderateText } from "./profanity-service";
 
 // Mock the glin-profanity module
 mock.module("glin-profanity", () => ({
-  checkProfanity: (text: string, options: any) => {
+  checkProfanity: (text: string) => {
     // Simple mock that detects common profane words
     const profaneWords = ["badword", "profanity", "curse"];
     const foundWords = profaneWords.filter((word) => text.includes(word));
@@ -142,7 +142,7 @@ describe("moderateText", () => {
   });
 
   test("handles very long text", () => {
-    const longText = "clean text " + "word ".repeat(1000);
+    const longText = `clean text ${"word ".repeat(1000)}`;
     const result = moderateText(longText);
     expect(result).toHaveProperty("isAllowed");
     expect(result).toHaveProperty("matched");

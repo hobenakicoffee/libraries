@@ -19,9 +19,15 @@ export function shareToLinkedIn({
     url,
   });
 
-  if (title) params.append("title", title);
-  if (summary) params.append("summary", summary);
-  if (source) params.append("source", source);
+  if (title) {
+    params.append("title", title);
+  }
+  if (summary) {
+    params.append("summary", summary);
+  }
+  if (source) {
+    params.append("source", source);
+  }
 
   const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?${params.toString()}`;
 

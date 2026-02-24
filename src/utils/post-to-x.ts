@@ -15,10 +15,18 @@ export function shareToX({ text, url, hashtags, via, related }: XShareOptions) {
     text,
   });
 
-  if (url) params.append("url", url);
-  if (hashtags) params.append("hashtags", hashtags);
-  if (via) params.append("via", via);
-  if (related) params.append("related", related);
+  if (url) {
+    params.append("url", url);
+  }
+  if (hashtags) {
+    params.append("hashtags", hashtags);
+  }
+  if (via) {
+    params.append("via", via);
+  }
+  if (related) {
+    params.append("related", related);
+  }
 
   const shareUrl = `https://twitter.com/intent/tweet?${params.toString()}`;
 

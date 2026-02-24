@@ -10,7 +10,7 @@ describe("shareToFacebook", () => {
 
   test("throws when url is missing", () => {
     expect(() => shareToFacebook({ url: "" })).toThrow(
-      "Facebook share requires a URL",
+      "Facebook share requires a URL"
     );
   });
 
