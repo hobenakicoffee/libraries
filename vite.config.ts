@@ -2,6 +2,7 @@ import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import viteTsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig(() => {
   return {
@@ -9,7 +10,13 @@ export default defineConfig(() => {
       port: 3000,
       host: "0.0.0.0",
     },
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      viteTsConfigPaths({
+        projects: ["./tsconfig.json"],
+      }),
+      react(),
+      tailwindcss(),
+    ],
     build: {
       rollupOptions: {
         input: {
@@ -19,7 +26,7 @@ export default defineConfig(() => {
     },
     resolve: {
       alias: {
-        "@": path.resolve(import.meta.dirname, "."),
+        "@": path.resolve(import.meta.dirname, "./src"),
       },
     },
   };
