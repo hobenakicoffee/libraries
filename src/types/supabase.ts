@@ -137,6 +137,69 @@ export type Database = {
           },
         ];
       };
+      conversation_participants: {
+        Row: {
+          conversation_id: string;
+          joined_at: string;
+          last_read_at: string | null;
+          profile_id: string;
+        };
+        Insert: {
+          conversation_id: string;
+          joined_at?: string;
+          last_read_at?: string | null;
+          profile_id: string;
+        };
+        Update: {
+          conversation_id?: string;
+          joined_at?: string;
+          last_read_at?: string | null;
+          profile_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversation_participants_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      conversations: {
+        Row: {
+          created_at: string;
+          id: string;
+          last_message_at: string | null;
+          last_message_preview: string | null;
+          name: string | null;
+          type: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          last_message_at?: string | null;
+          last_message_preview?: string | null;
+          name?: string | null;
+          type?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          last_message_at?: string | null;
+          last_message_preview?: string | null;
+          name?: string | null;
+          type?: string;
+        };
+        Relationships: [];
+      };
       follows: {
         Row: {
           created_at: string | null;
@@ -267,6 +330,45 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      messages: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey";
+            columns: ["sender_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       payout_methods: {
         Row: {
