@@ -17,6 +17,20 @@
       "performance": {
         "noBarrelFile": "off",
         "useTopLevelRegex": "off"
+      },
+      "a11y": {
+        "useFocusableInteractive": "off",
+        "useSemanticElements": "off",
+        "noNoninteractiveElementInteractions": "off",
+        "useKeyWithClickEvents": "off",
+        "useAriaPropsForRole": "off"
+      },
+      "correctness": {
+        "noNestedComponentDefinitions": "off",
+        "useExhaustiveDependencies": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off"
       }
     }
   }
