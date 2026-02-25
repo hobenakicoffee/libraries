@@ -490,8 +490,10 @@ export type Database = {
           first_supported_at: string | null;
           id: string;
           identity_hash: string;
+          is_monthly: boolean;
           last_supported_at: string | null;
           last_supported_service: string | null;
+          metadata: Json;
           name: string;
           social_platform:
             | Database["public"]["Enums"]["supporter_platform_enum"]
@@ -507,8 +509,10 @@ export type Database = {
           first_supported_at?: string | null;
           id?: string;
           identity_hash: string;
+          is_monthly?: boolean;
           last_supported_at?: string | null;
           last_supported_service?: string | null;
+          metadata?: Json;
           name: string;
           social_platform?:
             | Database["public"]["Enums"]["supporter_platform_enum"]
@@ -524,8 +528,10 @@ export type Database = {
           first_supported_at?: string | null;
           id?: string;
           identity_hash?: string;
+          is_monthly?: boolean;
           last_supported_at?: string | null;
           last_supported_service?: string | null;
+          metadata?: Json;
           name?: string;
           social_platform?:
             | Database["public"]["Enums"]["supporter_platform_enum"]
@@ -792,6 +798,18 @@ export type Database = {
       follow_user: { Args: { target_user_id: string }; Returns: undefined };
       get_followers: { Args: { target_user_id: string }; Returns: string[] };
       get_following: { Args: { target_user_id: string }; Returns: string[] };
+      get_popular_content: {
+        Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
+        Returns: {
+          service: string;
+          support_count: number;
+          total_amount: number;
+        }[];
+      };
+      get_total_supports_count: {
+        Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
+        Returns: number;
+      };
       handle_successful_payment: {
         Args: {
           p_amount: number;
@@ -823,6 +841,7 @@ export type Database = {
           p_amount?: number;
           p_creator_id: string;
           p_identity_hash: string;
+          p_metadata?: Json;
           p_name: string;
           p_service_type?: string;
           p_social_platform?: Database["public"]["Enums"]["supporter_platform_enum"];
