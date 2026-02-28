@@ -370,6 +370,102 @@ export type Database = {
           },
         ];
       };
+      messages_2026_02: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
+      messages_2026_03: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
+      messages_2026_04: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
+      messages_default: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
       payout_methods: {
         Row: {
           created_at: string;
@@ -794,10 +890,42 @@ export type Database = {
         };
         Returns: string;
       };
+      create_next_month_partition: { Args: never; Returns: undefined };
       custom_access_token_hook: { Args: { event: Json }; Returns: Json };
+      drop_old_partitions: { Args: never; Returns: undefined };
       follow_user: { Args: { target_user_id: string }; Returns: undefined };
+      get_conversations: {
+        Args: { p_limit?: number; p_offset?: number };
+        Returns: {
+          id: string;
+          last_message_at: string;
+          last_message_preview: string;
+          name: string;
+          participants: Json;
+          type: string;
+          unread_count: number;
+        }[];
+      };
       get_followers: { Args: { target_user_id: string }; Returns: string[] };
       get_following: { Args: { target_user_id: string }; Returns: string[] };
+      get_messages: {
+        Args: {
+          p_conversation_id: string;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          is_mine: boolean;
+          sender_avatar_url: string;
+          sender_display_name: string;
+          sender_id: string;
+          sender_username: string;
+        }[];
+      };
       get_popular_content: {
         Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
         Returns: {
@@ -828,9 +956,23 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean };
       is_following: { Args: { target_user_id: string }; Returns: boolean };
       is_manager: { Args: { user_email: string }; Returns: boolean };
+      mark_conversation_as_read: {
+        Args: { p_conversation_id: string };
+        Returns: undefined;
+      };
       request_withdrawal: {
         Args: { p_amount: number; p_payout_method_id: string };
         Returns: string;
+      };
+      send_message: {
+        Args: { p_content: string; p_conversation_id: string };
+        Returns: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        }[];
       };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { "": string }; Returns: string[] };
