@@ -14,6 +14,7 @@ export type Database = {
           counterparty_profile_id: string | null;
           created_at: string;
           id: string;
+          is_dismissed: boolean;
           metadata: Json;
           reference_id: string;
           role: string;
@@ -27,6 +28,7 @@ export type Database = {
           counterparty_profile_id?: string | null;
           created_at?: string;
           id?: string;
+          is_dismissed?: boolean;
           metadata?: Json;
           reference_id: string;
           role: string;
@@ -40,6 +42,7 @@ export type Database = {
           counterparty_profile_id?: string | null;
           created_at?: string;
           id?: string;
+          is_dismissed?: boolean;
           metadata?: Json;
           reference_id?: string;
           role?: string;
@@ -581,6 +584,7 @@ export type Database = {
       };
       supporters: {
         Row: {
+          conversation_id: string | null;
           created_at: string;
           creator_id: string;
           first_supported_at: string | null;
@@ -600,6 +604,7 @@ export type Database = {
           user_profile_id: string | null;
         };
         Insert: {
+          conversation_id?: string | null;
           created_at?: string;
           creator_id: string;
           first_supported_at?: string | null;
@@ -619,6 +624,7 @@ export type Database = {
           user_profile_id?: string | null;
         };
         Update: {
+          conversation_id?: string | null;
           created_at?: string;
           creator_id?: string;
           first_supported_at?: string | null;
@@ -638,6 +644,13 @@ export type Database = {
           user_profile_id?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "supporters_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "supporters_creator_id_fkey";
             columns: ["creator_id"];
@@ -925,6 +938,10 @@ export type Database = {
           sender_id: string;
           sender_username: string;
         }[];
+      };
+      get_or_create_direct_conversation: {
+        Args: { p_recipient_id: string };
+        Returns: string;
       };
       get_popular_content: {
         Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
