@@ -1,6 +1,9 @@
-export function getUserPageLink(username: string) {
+export function getUserPageLink(
+  username: string,
+  baseUrl = "https://hobenakicoffee.com"
+) {
   const sanitizedUsername = encodeURIComponent(
     username.trim().replace(/\s+/g, "")
   );
-  return `https://hobenakicoffee.com/@${sanitizedUsername}`;
+  return `${baseUrl}/@${sanitizedUsername}`;
 }
