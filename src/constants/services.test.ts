@@ -4,13 +4,30 @@ import { ServiceTypes } from "./services";
 
 describe("ServiceTypes", () => {
   test("should contain all expected service type keys", () => {
-    const expectedKeys = ["GIFT", "EXCLUSIVE_CONTENT", "WITHDRAWAL", "FOLLOW"];
+    const expectedKeys = [
+      "GIFT",
+      "DIGITAL_CONTENT",
+      "MY_SHOP",
+      "CONSULTANCY_1ON1",
+      "HIRE_ME",
+      "COURSES",
+      "LIVE_STREAMS",
+      "NEWSLETTER",
+      "WITHDRAWAL",
+      "FOLLOW",
+    ];
     expect(Object.keys(ServiceTypes)).toEqual(expectedKeys);
   });
 
   test("should have correct values for each service type", () => {
     expect(ServiceTypes.GIFT).toBe("gift");
-    expect(ServiceTypes.EXCLUSIVE_CONTENT).toBe("exclusive_content");
+    expect(ServiceTypes.DIGITAL_CONTENT).toBe("digital_content");
+    expect(ServiceTypes.MY_SHOP).toBe("my_shop");
+    expect(ServiceTypes.CONSULTANCY_1ON1).toBe("consultancy_1on1");
+    expect(ServiceTypes.HIRE_ME).toBe("hire_me");
+    expect(ServiceTypes.COURSES).toBe("courses");
+    expect(ServiceTypes.LIVE_STREAMS).toBe("live_streams");
+    expect(ServiceTypes.NEWSLETTER).toBe("newsletter");
     expect(ServiceTypes.WITHDRAWAL).toBe("withdrawal");
     expect(ServiceTypes.FOLLOW).toBe("follow");
   });
@@ -27,15 +44,15 @@ describe("ServiceTypes", () => {
     expect(validType).toBe("gift");
   });
 
-  test("should have 4 service types", () => {
-    expect(Object.keys(ServiceTypes).length).toBe(4);
+  test("should have 10 service types", () => {
+    expect(Object.keys(ServiceTypes).length).toBe(10);
   });
 
   test("all values should be lowercase or snake_case strings", () => {
-    Object.values(ServiceTypes).forEach((type) => {
+    for (const type of Object.values(ServiceTypes)) {
       expect(typeof type).toBe("string");
-      // Check that it only contains lowercase letters and underscores
-      expect(type).toMatch(/^[a-z_]+$/);
-    });
+      // Check that it only contains lowercase letters, numbers, and underscores
+      expect(type).toMatch(/^[a-z0-9_]+$/);
+    }
   });
 });
