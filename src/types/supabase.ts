@@ -784,6 +784,44 @@ export type Database = {
           },
         ];
       };
+      user_services: {
+        Row: {
+          config: Json | null;
+          created_at: string | null;
+          id: string;
+          is_enabled: boolean | null;
+          profile_id: string;
+          service: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          config?: Json | null;
+          created_at?: string | null;
+          id?: string;
+          is_enabled?: boolean | null;
+          profile_id: string;
+          service: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          config?: Json | null;
+          created_at?: string | null;
+          id?: string;
+          is_enabled?: boolean | null;
+          profile_id?: string;
+          service?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_services_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       wallets: {
         Row: {
           balance: number;
