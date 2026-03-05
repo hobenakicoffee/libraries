@@ -594,6 +594,53 @@ export type Database = {
         };
         Relationships: [];
       };
+      service_requests: {
+        Row: {
+          admin_note: string | null;
+          category: string;
+          created_at: string | null;
+          description: string;
+          id: string;
+          is_custom: boolean | null;
+          profile_id: string;
+          service_name: string;
+          status: Database["public"]["Enums"]["service_request_status"] | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          admin_note?: string | null;
+          category: string;
+          created_at?: string | null;
+          description: string;
+          id?: string;
+          is_custom?: boolean | null;
+          profile_id: string;
+          service_name: string;
+          status?: Database["public"]["Enums"]["service_request_status"] | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          admin_note?: string | null;
+          category?: string;
+          created_at?: string | null;
+          description?: string;
+          id?: string;
+          is_custom?: boolean | null;
+          profile_id?: string;
+          service_name?: string;
+          status?: Database["public"]["Enums"]["service_request_status"] | null;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       supporters: {
         Row: {
           conversation_id: string | null;
@@ -1084,7 +1131,11 @@ export type Database = {
         | "developers.create"
         | "developers.view"
         | "developers.update"
-        | "developers.delete";
+        | "developers.delete"
+        | "service_requests.view"
+        | "service_requests.approve"
+        | "service_requests.reject"
+        | "service_requests.mark_implemented";
       manager_role:
         | "super_admin"
         | "content_manager"
@@ -1121,6 +1172,14 @@ export type Database = {
         | "withdraw_release"
         | "withdraw_complete"
         | "manual_adjustment";
+      service_request_status:
+        | "pending"
+        | "reviewing"
+        | "approved"
+        | "implementing"
+        | "implemented"
+        | "rejected"
+        | "duplicate";
       supporter_platform_enum:
         | "facebook"
         | "x"
@@ -1305,6 +1364,10 @@ export const Constants = {
         "developers.view",
         "developers.update",
         "developers.delete",
+        "service_requests.view",
+        "service_requests.approve",
+        "service_requests.reject",
+        "service_requests.mark_implemented",
       ],
       manager_role: [
         "super_admin",
@@ -1345,6 +1408,15 @@ export const Constants = {
         "withdraw_release",
         "withdraw_complete",
         "manual_adjustment",
+      ],
+      service_request_status: [
+        "pending",
+        "reviewing",
+        "approved",
+        "implementing",
+        "implemented",
+        "rejected",
+        "duplicate",
       ],
       supporter_platform_enum: [
         "facebook",
