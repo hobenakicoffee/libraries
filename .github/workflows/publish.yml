@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
@@ -36,5 +36,31 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org/
 
+      - name: Get package version
+        id: pkg
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Publish
         run: npm publish
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "📦 *@hobenakicoffee/libraries* v${{ steps.pkg.outputs.version }} published to npm successfully!\nBy: ${{ github.actor }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ *@hobenakicoffee/libraries* v${{ steps.pkg.outputs.version }} publish failed!\nBy: ${{ github.actor }}\nCheck the run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
