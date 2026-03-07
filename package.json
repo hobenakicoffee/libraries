@@ -48,7 +48,8 @@
     "./moderation": "./src/moderation/index.ts",
     "./providers/theme-provider": "./src/providers/theme-provider.tsx",
     "./types": "./src/types/index.ts",
-    "./utils": "./src/utils/index.ts"
+    "./utils": "./src/utils/index.ts",
+    "./scripts": "./src/scripts/index.ts"
   },
   "files": [
     "src",
@@ -70,6 +71,7 @@
     "prepublishOnly": "bun run test",
     "check": "ultracite check",
     "fix": "ultracite fix",
+    "check:env": "bun run src/scripts/check-env-encryption.ts",
     "prepare": "lefthook install"
   },
   "devDependencies": {
