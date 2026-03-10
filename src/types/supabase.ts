@@ -84,6 +84,7 @@ export type Database = {
           id: string;
           is_monthly: boolean;
           message: string | null;
+          supporter_identity_hash: string | null;
           supporter_name: string | null;
           supporter_platform: string | null;
           supporter_profile_id: string | null;
@@ -97,6 +98,7 @@ export type Database = {
           id?: string;
           is_monthly?: boolean;
           message?: string | null;
+          supporter_identity_hash?: string | null;
           supporter_name?: string | null;
           supporter_platform?: string | null;
           supporter_profile_id?: string | null;
@@ -110,6 +112,7 @@ export type Database = {
           id?: string;
           is_monthly?: boolean;
           message?: string | null;
+          supporter_identity_hash?: string | null;
           supporter_name?: string | null;
           supporter_platform?: string | null;
           supporter_profile_id?: string | null;
@@ -1016,6 +1019,21 @@ export type Database = {
           unread_count: number;
         }[];
       };
+      get_creator_coffee_gifts_stats: {
+        Args: {
+          p_creator_profile_id: string;
+          p_from_date?: string;
+          p_to_date?: string;
+        };
+        Returns: {
+          total_coffees: number;
+          total_coffees_change: number;
+          total_earnings: number;
+          total_earnings_change: number;
+          unique_supporters: number;
+          unique_supporters_change: number;
+        }[];
+      };
       get_followers: { Args: { target_user_id: string }; Returns: string[] };
       get_following: { Args: { target_user_id: string }; Returns: string[] };
       get_messages: {
@@ -1046,6 +1064,18 @@ export type Database = {
           service: string;
           support_count: number;
           total_amount: number;
+        }[];
+      };
+      get_supporter_coffee_gifts_stats: {
+        Args: {
+          p_from_date: string;
+          p_supporter_profile_id: string;
+          p_to_date: string;
+        };
+        Returns: {
+          coffees_gifted: number;
+          creators_supported: number;
+          total_spent: number;
         }[];
       };
       get_total_supports_count: {
