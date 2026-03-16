@@ -337,6 +337,62 @@ export type Database = {
         };
         Relationships: [];
       };
+      membership_plans: {
+        Row: {
+          access_config: Json;
+          billing_cycle: Database["public"]["Enums"]["membership_billing_cycle_enum"];
+          created_at: string;
+          description: string | null;
+          id: string;
+          is_active: boolean;
+          is_featured: boolean;
+          name: string;
+          owner_profile_id: string;
+          price: number;
+          service_type: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          access_config?: Json;
+          billing_cycle: Database["public"]["Enums"]["membership_billing_cycle_enum"];
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          is_featured?: boolean;
+          name: string;
+          owner_profile_id: string;
+          price: number;
+          service_type: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          access_config?: Json;
+          billing_cycle?: Database["public"]["Enums"]["membership_billing_cycle_enum"];
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean;
+          is_featured?: boolean;
+          name?: string;
+          owner_profile_id?: string;
+          price?: number;
+          service_type?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "membership_plans_owner_profile_id_fkey";
+            columns: ["owner_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       messages: {
         Row: {
           content: string;
@@ -472,6 +528,289 @@ export type Database = {
         };
         Relationships: [];
       };
+      newsletter_post_analytics_daily: {
+        Row: {
+          clicks: number;
+          created_at: string;
+          date: string;
+          id: string;
+          post_id: string;
+          purchases: number;
+          revenue: number;
+          updated_at: string;
+          views: number;
+        };
+        Insert: {
+          clicks?: number;
+          created_at?: string;
+          date: string;
+          id?: string;
+          post_id: string;
+          purchases?: number;
+          revenue?: number;
+          updated_at?: string;
+          views?: number;
+        };
+        Update: {
+          clicks?: number;
+          created_at?: string;
+          date?: string;
+          id?: string;
+          post_id?: string;
+          purchases?: number;
+          revenue?: number;
+          updated_at?: string;
+          views?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_post_analytics_daily_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "newsletter_posts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      newsletter_post_likes: {
+        Row: {
+          created_at: string;
+          id: string;
+          post_id: string;
+          profile_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          post_id: string;
+          profile_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          post_id?: string;
+          profile_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_post_likes_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "newsletter_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "newsletter_post_likes_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      newsletter_post_versions: {
+        Row: {
+          ai_summary: string | null;
+          content: string | null;
+          created_at: string;
+          id: string;
+          post_id: string;
+          source: Database["public"]["Enums"]["post_version_source_enum"];
+          title: string | null;
+          version_number: number;
+        };
+        Insert: {
+          ai_summary?: string | null;
+          content?: string | null;
+          created_at?: string;
+          id?: string;
+          post_id: string;
+          source: Database["public"]["Enums"]["post_version_source_enum"];
+          title?: string | null;
+          version_number: number;
+        };
+        Update: {
+          ai_summary?: string | null;
+          content?: string | null;
+          created_at?: string;
+          id?: string;
+          post_id?: string;
+          source?: Database["public"]["Enums"]["post_version_source_enum"];
+          title?: string | null;
+          version_number?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_post_versions_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "newsletter_posts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      newsletter_posts: {
+        Row: {
+          click_count: number;
+          content: string | null;
+          cover_image_url: string | null;
+          created_at: string;
+          excerpt: string | null;
+          id: string;
+          is_members_only: boolean;
+          is_pay_per_post: boolean;
+          like_count: number;
+          price: number | null;
+          profile_id: string;
+          published_at: string | null;
+          purchase_count: number;
+          reading_time_minutes: number | null;
+          revenue_total: number;
+          slug: string | null;
+          status: Database["public"]["Enums"]["post_status_enum"];
+          subtitle: string | null;
+          tags: string[];
+          title: string;
+          updated_at: string;
+          view_count: number;
+          visibility: Database["public"]["Enums"]["visibility_enum"];
+        };
+        Insert: {
+          click_count?: number;
+          content?: string | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          excerpt?: string | null;
+          id?: string;
+          is_members_only?: boolean;
+          is_pay_per_post?: boolean;
+          like_count?: number;
+          price?: number | null;
+          profile_id: string;
+          published_at?: string | null;
+          purchase_count?: number;
+          reading_time_minutes?: number | null;
+          revenue_total?: number;
+          slug?: string | null;
+          status?: Database["public"]["Enums"]["post_status_enum"];
+          subtitle?: string | null;
+          tags?: string[];
+          title: string;
+          updated_at?: string;
+          view_count?: number;
+          visibility?: Database["public"]["Enums"]["visibility_enum"];
+        };
+        Update: {
+          click_count?: number;
+          content?: string | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          excerpt?: string | null;
+          id?: string;
+          is_members_only?: boolean;
+          is_pay_per_post?: boolean;
+          like_count?: number;
+          price?: number | null;
+          profile_id?: string;
+          published_at?: string | null;
+          purchase_count?: number;
+          reading_time_minutes?: number | null;
+          revenue_total?: number;
+          slug?: string | null;
+          status?: Database["public"]["Enums"]["post_status_enum"];
+          subtitle?: string | null;
+          tags?: string[];
+          title?: string;
+          updated_at?: string;
+          view_count?: number;
+          visibility?: Database["public"]["Enums"]["visibility_enum"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_posts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      newsletter_settings: {
+        Row: {
+          annual_plan_id: string | null;
+          annual_price: number | null;
+          created_at: string;
+          free_tier_label: string;
+          gifting_enabled: boolean;
+          id: string;
+          member_label: string;
+          memberships_enabled: boolean;
+          monthly_plan_id: string | null;
+          monthly_price: number | null;
+          newsletter_description: string | null;
+          newsletter_title: string | null;
+          profile_id: string;
+          updated_at: string;
+          welcome_message: string | null;
+        };
+        Insert: {
+          annual_plan_id?: string | null;
+          annual_price?: number | null;
+          created_at?: string;
+          free_tier_label?: string;
+          gifting_enabled?: boolean;
+          id?: string;
+          member_label?: string;
+          memberships_enabled?: boolean;
+          monthly_plan_id?: string | null;
+          monthly_price?: number | null;
+          newsletter_description?: string | null;
+          newsletter_title?: string | null;
+          profile_id: string;
+          updated_at?: string;
+          welcome_message?: string | null;
+        };
+        Update: {
+          annual_plan_id?: string | null;
+          annual_price?: number | null;
+          created_at?: string;
+          free_tier_label?: string;
+          gifting_enabled?: boolean;
+          id?: string;
+          member_label?: string;
+          memberships_enabled?: boolean;
+          monthly_plan_id?: string | null;
+          monthly_price?: number | null;
+          newsletter_description?: string | null;
+          newsletter_title?: string | null;
+          profile_id?: string;
+          updated_at?: string;
+          welcome_message?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_settings_annual_plan_id_fkey";
+            columns: ["annual_plan_id"];
+            isOneToOne: false;
+            referencedRelation: "membership_plans";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "newsletter_settings_monthly_plan_id_fkey";
+            columns: ["monthly_plan_id"];
+            isOneToOne: false;
+            referencedRelation: "membership_plans";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "newsletter_settings_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       payout_methods: {
         Row: {
           created_at: string;
@@ -509,6 +848,163 @@ export type Database = {
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      post_access_grants: {
+        Row: {
+          created_at: string;
+          expires_at: string | null;
+          gift_message: string | null;
+          grant_type: Database["public"]["Enums"]["access_grant_type_enum"];
+          granted_by_profile_id: string | null;
+          grantee_profile_id: string;
+          id: string;
+          is_redeemed: boolean;
+          post_id: string;
+          redeemed_at: string | null;
+          transaction_reference_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at?: string | null;
+          gift_message?: string | null;
+          grant_type: Database["public"]["Enums"]["access_grant_type_enum"];
+          granted_by_profile_id?: string | null;
+          grantee_profile_id: string;
+          id?: string;
+          is_redeemed?: boolean;
+          post_id: string;
+          redeemed_at?: string | null;
+          transaction_reference_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string | null;
+          gift_message?: string | null;
+          grant_type?: Database["public"]["Enums"]["access_grant_type_enum"];
+          granted_by_profile_id?: string | null;
+          grantee_profile_id?: string;
+          id?: string;
+          is_redeemed?: boolean;
+          post_id?: string;
+          redeemed_at?: string | null;
+          transaction_reference_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_access_grants_granted_by_profile_id_fkey";
+            columns: ["granted_by_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_access_grants_grantee_profile_id_fkey";
+            columns: ["grantee_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_access_grants_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "newsletter_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_access_grants_transaction_reference_id_fkey";
+            columns: ["transaction_reference_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["reference_id"];
+          },
+        ];
+      };
+      profile_memberships: {
+        Row: {
+          auto_renew: boolean;
+          cancelled_at: string | null;
+          created_at: string;
+          id: string;
+          member_profile_id: string;
+          owner_profile_id: string;
+          period_end: string | null;
+          period_start: string;
+          plan_id: string;
+          price_at_purchase: number;
+          renewed_at: string | null;
+          service_type: string;
+          status: Database["public"]["Enums"]["membership_status_enum"];
+          transaction_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          auto_renew?: boolean;
+          cancelled_at?: string | null;
+          created_at?: string;
+          id?: string;
+          member_profile_id: string;
+          owner_profile_id: string;
+          period_end?: string | null;
+          period_start?: string;
+          plan_id: string;
+          price_at_purchase: number;
+          renewed_at?: string | null;
+          service_type: string;
+          status?: Database["public"]["Enums"]["membership_status_enum"];
+          transaction_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          auto_renew?: boolean;
+          cancelled_at?: string | null;
+          created_at?: string;
+          id?: string;
+          member_profile_id?: string;
+          owner_profile_id?: string;
+          period_end?: string | null;
+          period_start?: string;
+          plan_id?: string;
+          price_at_purchase?: number;
+          renewed_at?: string | null;
+          service_type?: string;
+          status?: Database["public"]["Enums"]["membership_status_enum"];
+          transaction_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profile_memberships_member_profile_id_fkey";
+            columns: ["member_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_memberships_owner_profile_id_fkey";
+            columns: ["owner_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_memberships_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "membership_plans";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "profile_memberships_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
             referencedColumns: ["id"];
           },
         ];
@@ -994,6 +1490,13 @@ export type Database = {
         };
         Returns: boolean;
       };
+      check_newsletter_post_access: {
+        Args: { p_post_id: string };
+        Returns: {
+          access_reason: string;
+          has_access: boolean;
+        }[];
+      };
       create_manager: {
         Args: {
           manager_department?: string;
@@ -1054,6 +1557,14 @@ export type Database = {
           sender_username: string;
         }[];
       };
+      get_newsletter_stats: {
+        Args: { p_from?: string; p_profile_id: string; p_to?: string };
+        Returns: {
+          newsletter_subs: number;
+          post_sales_revenue: number;
+          total_post_views: number;
+        }[];
+      };
       get_or_create_direct_conversation: {
         Args: { p_recipient_id: string };
         Returns: string;
@@ -1064,6 +1575,83 @@ export type Database = {
           service: string;
           support_count: number;
           total_amount: number;
+        }[];
+      };
+      get_post_analytics: {
+        Args: { p_from?: string; p_post_id: string; p_to?: string };
+        Returns: {
+          chart_date: string;
+          conv_rate: number;
+          day_clicks: number;
+          day_purchases: number;
+          day_revenue: number;
+          day_views: number;
+          total_clicks: number;
+          total_sales: number;
+          total_views: number;
+        }[];
+      };
+      get_posts_page: {
+        Args: {
+          p_cursor?: string;
+          p_from?: string;
+          p_limit?: number;
+          p_profile_id: string;
+          p_status: Database["public"]["Enums"]["post_status_enum"];
+          p_to?: string;
+        };
+        Returns: {
+          click_count: number;
+          cover_image_url: string;
+          created_at: string;
+          draft_count: number;
+          excerpt: string;
+          id: string;
+          is_members_only: boolean;
+          is_pay_per_post: boolean;
+          like_count: number;
+          price: number;
+          published_at: string;
+          purchase_count: number;
+          revenue_total: number;
+          slug: string;
+          tags: string[];
+          title: string;
+          updated_at: string;
+          view_count: number;
+        }[];
+      };
+      get_reader_feed: {
+        Args: {
+          p_cursor?: string;
+          p_filter?: string;
+          p_from?: string;
+          p_limit?: number;
+          p_search?: string;
+          p_to?: string;
+        };
+        Returns: {
+          access_badge: string;
+          author_avatar_url: string;
+          author_display_name: string;
+          author_username: string;
+          cover_image_url: string;
+          excerpt: string;
+          has_access: boolean;
+          is_liked: boolean;
+          is_members_only: boolean;
+          is_pay_per_post: boolean;
+          like_count: number;
+          post_id: string;
+          price: number;
+          profile_id: string;
+          published_at: string;
+          reading_time_minutes: number;
+          slug: string;
+          subtitle: string;
+          tags: string[];
+          title: string;
+          view_count: number;
         }[];
       };
       get_supporter_coffee_gifts_stats: {
@@ -1082,6 +1670,16 @@ export type Database = {
         Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
         Returns: number;
       };
+      gift_newsletter_post: {
+        Args: {
+          p_expires_at?: string;
+          p_gift_message?: string;
+          p_grantee_profile_id: string;
+          p_post_id: string;
+          p_transaction_reference_id?: string;
+        };
+        Returns: string;
+      };
       handle_successful_payment: {
         Args: {
           p_amount: number;
@@ -1097,11 +1695,23 @@ export type Database = {
         };
         Returns: Json;
       };
+      has_active_membership: {
+        Args: {
+          p_member_profile_id: string;
+          p_owner_profile_id: string;
+          p_service_type: string;
+        };
+        Returns: boolean;
+      };
       is_admin: { Args: never; Returns: boolean };
       is_following: { Args: { target_user_id: string }; Returns: boolean };
       is_manager: { Args: { user_email: string }; Returns: boolean };
       mark_conversation_as_read: {
         Args: { p_conversation_id: string };
+        Returns: undefined;
+      };
+      record_newsletter_post_click: {
+        Args: { p_post_id: string };
         Returns: undefined;
       };
       request_withdrawal: {
@@ -1118,10 +1728,13 @@ export type Database = {
           sender_id: string;
         }[];
       };
-      show_limit: { Args: never; Returns: number };
-      show_trgm: { Args: { "": string }; Returns: string[] };
       toggle_follow: { Args: { target_user_id: string }; Returns: boolean };
+      toggle_newsletter_post_like: {
+        Args: { p_post_id: string };
+        Returns: Json;
+      };
       unfollow_user: { Args: { target_user_id: string }; Returns: undefined };
+      unpublish_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
       upsert_supporter: {
         Args: {
           p_amount?: number;
@@ -1137,6 +1750,7 @@ export type Database = {
       };
     };
     Enums: {
+      access_grant_type_enum: "purchase" | "gift";
       manager_permission:
         | "managers.create"
         | "managers.view"
@@ -1173,6 +1787,13 @@ export type Database = {
         | "finance_manager"
         | "developer_manager";
       manager_status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
+      membership_billing_cycle_enum: "monthly" | "annual" | "lifetime";
+      membership_status_enum:
+        | "active"
+        | "cancelled"
+        | "expired"
+        | "paused"
+        | "past_due";
       payment_status_enum:
         | "pending"
         | "processing"
@@ -1183,6 +1804,12 @@ export type Database = {
         | "refunded"
         | "reviewing";
       payout_provider: "bkash" | "nagad" | "rocket" | "bank";
+      post_status_enum: "draft" | "published" | "archived";
+      post_version_source_enum:
+        | "autosave"
+        | "ai_polish"
+        | "manual_save"
+        | "pre_publish";
       provider_enum:
         | "HobeNakiCoffee"
         | "Bkash"
@@ -1369,6 +1996,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_grant_type_enum: ["purchase", "gift"],
       manager_permission: [
         "managers.create",
         "managers.view",
@@ -1407,6 +2035,14 @@ export const Constants = {
         "developer_manager",
       ],
       manager_status: ["ACTIVE", "INACTIVE", "SUSPENDED"],
+      membership_billing_cycle_enum: ["monthly", "annual", "lifetime"],
+      membership_status_enum: [
+        "active",
+        "cancelled",
+        "expired",
+        "paused",
+        "past_due",
+      ],
       payment_status_enum: [
         "pending",
         "processing",
@@ -1418,6 +2054,13 @@ export const Constants = {
         "reviewing",
       ],
       payout_provider: ["bkash", "nagad", "rocket", "bank"],
+      post_status_enum: ["draft", "published", "archived"],
+      post_version_source_enum: [
+        "autosave",
+        "ai_polish",
+        "manual_save",
+        "pre_publish",
+      ],
       provider_enum: [
         "HobeNakiCoffee",
         "Bkash",
