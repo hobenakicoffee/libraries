@@ -1,5 +1,6 @@
 export * from "./check-moderation";
 export * from "./format-amount";
+export * from "./format-count";
 export * from "./format-date";
 export * from "./format-number";
 export * from "./format-plain-text";
