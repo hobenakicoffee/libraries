@@ -1597,6 +1597,7 @@ export type Database = {
           p_from?: string;
           p_limit?: number;
           p_profile_id: string;
+          p_search?: string;
           p_status: Database["public"]["Enums"]["post_status_enum"];
           p_to?: string;
         };
@@ -1615,6 +1616,7 @@ export type Database = {
           purchase_count: number;
           revenue_total: number;
           slug: string;
+          subtitle: string;
           tags: string[];
           title: string;
           updated_at: string;
