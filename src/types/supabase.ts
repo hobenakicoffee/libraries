@@ -610,7 +610,6 @@ export type Database = {
       };
       newsletter_post_versions: {
         Row: {
-          ai_summary: string | null;
           content: string | null;
           created_at: string;
           id: string;
@@ -620,7 +619,6 @@ export type Database = {
           version_number: number;
         };
         Insert: {
-          ai_summary?: string | null;
           content?: string | null;
           created_at?: string;
           id?: string;
@@ -630,7 +628,6 @@ export type Database = {
           version_number: number;
         };
         Update: {
-          ai_summary?: string | null;
           content?: string | null;
           created_at?: string;
           id?: string;
@@ -1497,6 +1494,7 @@ export type Database = {
           has_access: boolean;
         }[];
       };
+      cleanup_orphaned_post_images: { Args: never; Returns: undefined };
       create_manager: {
         Args: {
           manager_department?: string;
@@ -1505,6 +1503,14 @@ export type Database = {
           manager_role: Database["public"]["Enums"]["manager_role"];
         };
         Returns: string;
+      };
+      create_newsletter_draft: {
+        Args: { p_profile_id: string };
+        Returns: {
+          id: string;
+          slug: string;
+          title: string;
+        }[];
       };
       create_next_month_partition: { Args: never; Returns: undefined };
       custom_access_token_hook: { Args: { event: Json }; Returns: Json };
@@ -1806,7 +1812,7 @@ export type Database = {
         | "refunded"
         | "reviewing";
       payout_provider: "bkash" | "nagad" | "rocket" | "bank";
-      post_status_enum: "draft" | "published" | "archived";
+      post_status_enum: "draft" | "published" | "archived" | "review";
       post_version_source_enum:
         | "autosave"
         | "ai_polish"
@@ -2056,7 +2062,7 @@ export const Constants = {
         "reviewing",
       ],
       payout_provider: ["bkash", "nagad", "rocket", "bank"],
-      post_status_enum: ["draft", "published", "archived"],
+      post_status_enum: ["draft", "published", "archived", "review"],
       post_version_source_enum: [
         "autosave",
         "ai_polish",
