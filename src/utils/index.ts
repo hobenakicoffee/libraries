@@ -4,6 +4,7 @@ export * from "./format-count";
 export * from "./format-date";
 export * from "./format-number";
 export * from "./format-plain-text";
+export * from "./get-newsletter-post-link";
 export * from "./get-social-handle";
 export * from "./get-social-link";
 export * from "./get-user-name-initials";
