@@ -1722,6 +1722,10 @@ export type Database = {
         Args: { p_post_id: string };
         Returns: undefined;
       };
+      record_newsletter_post_view: {
+        Args: { p_post_id: string };
+        Returns: undefined;
+      };
       request_withdrawal: {
         Args: { p_amount: number; p_payout_method_id: string };
         Returns: string;
