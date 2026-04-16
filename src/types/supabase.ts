@@ -1678,6 +1678,36 @@ export type Database = {
         Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
         Returns: number;
       };
+      get_transaction_service_breakdown: {
+        Args: {
+          p_direction?: Database["public"]["Enums"]["transaction_direction_enum"];
+          p_from?: string;
+          p_to?: string;
+        };
+        Returns: {
+          percentage: number;
+          service_type: string;
+          total_amount: number;
+          transaction_count: number;
+        }[];
+      };
+      get_transaction_stats: {
+        Args: { p_from?: string; p_to?: string };
+        Returns: {
+          earned_change: number;
+          earned_one_time: number;
+          earned_subscription: number;
+          earned_total: number;
+          pending_in: number;
+          pending_in_change: number;
+          pending_out: number;
+          pending_out_change: number;
+          spent_change: number;
+          spent_one_time: number;
+          spent_subscription: number;
+          spent_total: number;
+        }[];
+      };
       gift_newsletter_post: {
         Args: {
           p_expires_at?: string;
