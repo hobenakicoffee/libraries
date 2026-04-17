@@ -1,6 +1,6 @@
 {
   "name": "@hobenakicoffee/libraries",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "type": "module",
   "types": "src/index.ts",
   "exports": {
