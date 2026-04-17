@@ -8,7 +8,7 @@ import {
   PaymentStatuses,
   PaymentTypes,
   ServiceTypes,
-} from "@/constants";
+} from "../constants";
 import { parseAsDateRange, parseAsSortOrder } from "./common";
 
 export const transactionsFilterParsers = {
