@@ -1,17 +1,16 @@
 import type OpenAI from "openai";
-import { moderateText } from "../moderation";
+import { containsProfanity } from "../moderation";
 
 export async function checkModeration(openaiClient: OpenAI, text: string) {
   try {
-    const profanityResult = moderateText(text);
+    const hasProfanity = containsProfanity(text);
 
-    if (!profanityResult.isAllowed) {
+    if (hasProfanity) {
       return {
         flagged: true,
         categories: null,
         error: null,
         source: "profanity" as const,
-        profaneWords: profanityResult.matched,
       };
     }
 
