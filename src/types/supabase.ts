@@ -1748,6 +1748,39 @@ export type Database = {
         Args: { p_conversation_id: string };
         Returns: undefined;
       };
+      process_service_payment: {
+        Args: {
+          p_amount: number;
+          p_creator_profile_id: string;
+          p_identity_hash: string;
+          p_metadata?: Json;
+          p_platform_fee: number;
+          p_provider: Database["public"]["Enums"]["provider_enum"];
+          p_provider_transaction_id: string;
+          p_reference_type: Database["public"]["Enums"]["reference_type_enum"];
+          p_service_type: string;
+          p_supporter_name: string;
+          p_supporter_platform?: Database["public"]["Enums"]["supporter_platform_enum"];
+          p_supporter_profile_id: string;
+        };
+        Returns: Json;
+      };
+      purchase_newsletter_post: {
+        Args: {
+          p_amount: number;
+          p_buyer_name: string;
+          p_buyer_platform?: Database["public"]["Enums"]["supporter_platform_enum"];
+          p_buyer_profile_id: string;
+          p_identity_hash: string;
+          p_message?: string;
+          p_platform_fee: number;
+          p_post_id: string;
+          p_provider: Database["public"]["Enums"]["provider_enum"];
+          p_provider_transaction_id: string;
+          p_source?: string;
+        };
+        Returns: Json;
+      };
       record_newsletter_post_click: {
         Args: { p_post_id: string };
         Returns: undefined;
