@@ -337,6 +337,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      membership_notifications: {
+        Row: {
+          created_at: string;
+          id: string;
+          notification_type: Database["public"]["Enums"]["membership_notification_type_enum"];
+          profile_membership_id: string;
+          sent_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          notification_type: Database["public"]["Enums"]["membership_notification_type_enum"];
+          profile_membership_id: string;
+          sent_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          notification_type?: Database["public"]["Enums"]["membership_notification_type_enum"];
+          profile_membership_id?: string;
+          sent_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "membership_notifications_profile_membership_id_fkey";
+            columns: ["profile_membership_id"];
+            isOneToOne: false;
+            referencedRelation: "profile_memberships";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       membership_plans: {
         Row: {
           access_config: Json;
@@ -1748,6 +1780,10 @@ export type Database = {
         Args: { p_conversation_id: string };
         Returns: undefined;
       };
+      process_membership_expiry_notifications: {
+        Args: never;
+        Returns: undefined;
+      };
       process_service_payment: {
         Args: {
           p_amount: number;
@@ -1762,6 +1798,21 @@ export type Database = {
           p_supporter_name: string;
           p_supporter_platform?: Database["public"]["Enums"]["supporter_platform_enum"];
           p_supporter_profile_id: string;
+        };
+        Returns: Json;
+      };
+      purchase_newsletter_membership: {
+        Args: {
+          p_buyer_name: string;
+          p_buyer_platform?: Database["public"]["Enums"]["supporter_platform_enum"];
+          p_buyer_profile_id: string;
+          p_identity_hash: string;
+          p_message?: string;
+          p_plan_id: string;
+          p_platform_fee: number;
+          p_provider: Database["public"]["Enums"]["provider_enum"];
+          p_provider_transaction_id: string;
+          p_source?: string;
         };
         Returns: Json;
       };
@@ -1863,6 +1914,13 @@ export type Database = {
         | "developer_manager";
       manager_status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
       membership_billing_cycle_enum: "monthly" | "annual" | "lifetime";
+      membership_notification_type_enum:
+        | "5_days"
+        | "3_days"
+        | "1_day"
+        | "expired"
+        | "3_days_post"
+        | "7_days_post";
       membership_status_enum:
         | "active"
         | "cancelled"
@@ -2111,6 +2169,14 @@ export const Constants = {
       ],
       manager_status: ["ACTIVE", "INACTIVE", "SUSPENDED"],
       membership_billing_cycle_enum: ["monthly", "annual", "lifetime"],
+      membership_notification_type_enum: [
+        "5_days",
+        "3_days",
+        "1_day",
+        "expired",
+        "3_days_post",
+        "7_days_post",
+      ],
       membership_status_enum: [
         "active",
         "cancelled",

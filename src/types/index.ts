@@ -15,7 +15,6 @@ export type ActivityMetadata = {
   platform_fee?: number;
   price_at_purchase?: number;
   message?: string;
-  tier_name?: string;
   item_name?: string;
   buyer_name?: string;
   buyer_platform?: string;
@@ -30,11 +29,16 @@ export type ActivityMetadata = {
   identity_hash?: string;
   follower_name?: string;
   follower_username?: string;
-  action?: "follow" | "unfollow";
   source?: string;
   post_id?: string;
   post_slug?: string;
   post_title?: string;
+  plan_id?: string;
+  plan_name?: string;
+  service_type?: string;
+  billing_cycle?: string;
+  period_end?: string;
+  action?: "follow" | "unfollow";
 };
 
 export type SupportersMetadata = {
