@@ -1780,6 +1780,24 @@ export type Database = {
         Args: { p_conversation_id: string };
         Returns: undefined;
       };
+      perform_coffee_gift: {
+        Args: {
+          p_amount: number;
+          p_coffee_count?: number;
+          p_creator_profile_id: string;
+          p_identity_hash: string;
+          p_is_monthly?: boolean;
+          p_message?: string;
+          p_platform_fee: number;
+          p_provider: Database["public"]["Enums"]["provider_enum"];
+          p_provider_transaction_id: string;
+          p_reference_type: Database["public"]["Enums"]["reference_type_enum"];
+          p_supporter_name: string;
+          p_supporter_platform?: Database["public"]["Enums"]["supporter_platform_enum"];
+          p_supporter_profile_id: string;
+        };
+        Returns: Json;
+      };
       process_membership_expiry_notifications: {
         Args: never;
         Returns: undefined;
