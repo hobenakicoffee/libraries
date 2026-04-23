@@ -1740,6 +1740,34 @@ export type Database = {
           spent_total: number;
         }[];
       };
+      get_transactions_page: {
+        Args: {
+          p_amount_sort?: string;
+          p_cursor_amount?: number;
+          p_cursor_ts?: string;
+          p_date_from?: string;
+          p_date_to?: string;
+          p_limit?: number;
+          p_providers?: string[];
+          p_reference_types?: string[];
+          p_service_types?: string[];
+          p_statuses?: string[];
+        };
+        Returns: {
+          created_at: string;
+          direction: Database["public"]["Enums"]["transaction_direction_enum"];
+          id: string;
+          metadata: Json;
+          net_amount: number;
+          platform_fee: number;
+          provider: Database["public"]["Enums"]["provider_enum"];
+          provider_transaction_id: string;
+          reference_type: Database["public"]["Enums"]["reference_type_enum"];
+          service_type: string;
+          status: Database["public"]["Enums"]["payment_status_enum"];
+          supporter_id: string;
+        }[];
+      };
       gift_newsletter_post: {
         Args: {
           p_expires_at?: string;
