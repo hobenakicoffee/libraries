@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "./components/ui/button";
 import { Calendar } from "./components/ui/calendar";
+import { getProductLink } from "./utils/get-product-link";
 
 const App = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -20,6 +21,7 @@ const App = () => {
           onSelect={setDate}
           selected={date}
         />
+        {getProductLink("leo", "example-product-slug")}
       </div>
     </div>
   );
