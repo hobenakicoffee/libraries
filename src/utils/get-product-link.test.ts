@@ -5,7 +5,7 @@ describe("getProductLink", () => {
   test("builds product link with default baseUrl", () => {
     const result = getProductLink("johndoe", "my-product");
     expect(result).toBe(
-      "https://hobenakicoffee.com/@johndoe/shops/products/my-product"
+      "https://hobenakicoffee.com/@johndoe/shop/products/my-product"
     );
   });
 
@@ -15,22 +15,20 @@ describe("getProductLink", () => {
       "my-product",
       "https://custom.com"
     );
-    expect(result).toBe(
-      "https://custom.com/@johndoe/shops/products/my-product"
-    );
+    expect(result).toBe("https://custom.com/@johndoe/shop/products/my-product");
   });
 
   test("sanitizes username with whitespace", () => {
     const result = getProductLink(" john doe ", "my-product");
     expect(result).toBe(
-      "https://hobenakicoffee.com/@johndoe/shops/products/my-product"
+      "https://hobenakicoffee.com/@johndoe/shop/products/my-product"
     );
   });
 
   test("does not encode slug - passes through as-is", () => {
     const result = getProductLink("johndoe", "my product 123");
     expect(result).toBe(
-      "https://hobenakicoffee.com/@johndoe/shops/products/my-product-123"
+      "https://hobenakicoffee.com/@johndoe/shop/products/my-product-123"
     );
   });
 });
