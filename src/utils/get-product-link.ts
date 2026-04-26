@@ -6,5 +6,5 @@ export function getProductLink(
   baseUrl = "https://hobenakicoffee.com"
 ) {
   const sanitizedSlug = slug.trim().replace(/\s+/g, "-");
-  return `${getUserPageLink(username, baseUrl)}/shops/products/${sanitizedSlug}`;
+  return `${getUserPageLink(username, baseUrl)}/shop/products/${sanitizedSlug}`;
 }
