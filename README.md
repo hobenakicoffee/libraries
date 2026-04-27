@@ -1,6 +1,6 @@
 # @hobenakicoffee/libraries
 
-Framework-agnostic shared constants, utilities, types, UI components, and moderation tools for "হবে নাকি Coffee?" projects.
+Framework-agnostic shared constants, utilities, types, and moderation tools for "হবে নাকি Coffee?" projects.
 
 ## Installation
 
@@ -19,7 +19,7 @@ bun add @hobenakicoffee/libraries
 This package exposes multiple entry points:
 
 ```ts
-// Main entry - constants and types
+// Main entry - constants
 import { PaymentStatuses, ServiceTypes, Visibility } from "@hobenakicoffee/libraries";
 
 // Constants only
@@ -29,31 +29,29 @@ import { SupporterPlatforms } from "@hobenakicoffee/libraries/constants";
 import { formatAmount, formatDate, getUserPageLink } from "@hobenakicoffee/libraries/utils";
 
 // Types only
-import type { Database, Tables } from "@hobenakicoffee/libraries/types";
+import { Database, Tables } from "@hobenakicoffee/libraries/types";
 
 // Moderation tools
 import { moderateText } from "@hobenakicoffee/libraries/moderation";
 
-// UI components
-import { Button, Card, Dialog } from "@hobenakicoffee/libraries/components/ui/button";
-import { ThemeProvider, useTheme } from "@hobenakicoffee/libraries/providers/theme-provider";
+// URL state management
+import { parseAsSortOrder } from "@hobenakicoffee/libraries/nuqs";
 
-// Class merging utility
-import { cn } from "@hobenakicoffee/libraries/lib/utils";
+// Scripts
+import { checkEnvEncryption } from "@hobenakicoffee/libraries/scripts";
 ```
 
 ## Entry Points Overview
 
 | Entrypoint | Description |
 | ---------- | ----------- |
-| `@hobenakicoffee/libraries` | Main entry - re-exports constants and types |
-| `@hobenakicoffee/libraries/constants` | Constants and types |
+| `@hobenakicoffee/libraries` | Main entry - re-exports constants |
+| `@hobenakicoffee/libraries/constants` | All constants |
 | `@hobenakicoffee/libraries/utils` | Utility functions |
-| `@hobenakicoffee/libraries/types` | TypeScript types (Supabase) |
+| `@hobenakicoffee/libraries/types` | TypeScript types (custom + Supabase) |
 | `@hobenakicoffee/libraries/moderation` | Content moderation tools |
-| `@hobenakicoffee/libraries/providers/theme-provider` | Theme provider component |
-| `@hobenakicoffee/libraries/lib/utils` | Class merging utility (`cn()`) |
-| `@hobenakicoffee/libraries/components/ui/*` | UI components |
+| `@hobenakicoffee/libraries/nuqs` | URL state management parsers |
+| `@hobenakicoffee/libraries/scripts` | Build/utility scripts |
 
 ---
 
@@ -174,9 +172,9 @@ SupporterPlatforms.DISCORD    // "discord"
 SupporterPlatforms.REDDIT     // "reddit"
 SupporterPlatforms.PINTEREST  // "pinterest"
 SupporterPlatformS.MEDIUM     // "medium"
-SupporterPlatforms.DEVTO      // "devto"
-SupporterPlatforms.BEHANCE    // "behance"
-SupporterPlatforms.DRIBBBLE   // "dribbble"
+SupporterPlatformS.DEVTO      // "devto"
+SupporterPlatformS.BEHANCE    // "behance"
+SupporterPlatformS.DRIBBBLE   // "dribbble"
 ```
 
 ### Service Types
@@ -207,6 +205,18 @@ formatAmount(-500);    // "৳500" (absolute value)
 // With direction sign
 formatSignedAmount(1000, "credit");  // "+ ৳1,000"
 formatSignedAmount(500, "debit");   // "- ৳500"
+```
+
+### formatCount
+
+Formats a count with appropriate suffixes (K, M, B).
+
+```ts
+import { formatCount } from "@hobenakicoffee/libraries/utils";
+
+formatCount(500);    // "500"
+formatCount(1000);   // "1K"
+formatCount(1500000); // "1.5M"
 ```
 
 ### formatDate
@@ -268,6 +278,34 @@ getUserPageLink("johndoe", "https://custom.com");
 // "https://custom.com/@johndoe"
 ```
 
+### getProductLink
+
+Generates a product page URL.
+
+```ts
+import { getProductLink } from "@hobenakicoffee/libraries/utils";
+
+getProductLink("johndoe", "my-product");
+// "https://hobenakicoffee.com/@johndoe/shop/products/my-product"
+
+getProductLink("johndoe", "my-product", "https://custom.com");
+// "https://custom.com/@johndoe/shop/products/my-product"
+```
+
+### getNewsletterPostLink
+
+Generates a newsletter post URL.
+
+```ts
+import { getNewsletterPostLink } from "@hobenakicoffee/libraries/utils";
+
+getNewsletterPostLink("johndoe", "my-post");
+// "/@johndoe/posts/my-post"
+
+getNewsletterPostLink("johndoe", "my-post", "https://hobenakicoffee.com");
+// "https://hobenakicoffee.com/@johndoe/posts/my-post"
+```
+
 ### getUserNameInitials
 
 Extracts initials from a name.
@@ -298,20 +336,16 @@ getSocialLink("johndoe", SupporterPlatforms.GITHUB);
 // "https://github.com/johndoe"
 ```
 
-### getSocialUrl
+### getSocialHandle
 
-Generates social sharing URLs with support for platform usernames.
+Extracts the handle/username from a social media URL.
 
 ```ts
-import { getSocialUrl } from "@hobenakicoffee/libraries/utils";
+import { getSocialHandle } from "@hobenakicoffee/libraries/utils";
 
-// With our platform username
-getSocialUrl("johndoe");
-// "https://hobenakicoffee.com/@johndoe"
-
-// With platform and supporter name
-getSocialUrl(null, "instagram", "johndoe");
-// "https://instagram.com/johndoe"
+getSocialHandle("https://twitter.com/johndoe"); // "johndoe"
+getSocialHandle("@johndoe");                     // "johndoe"
+getSocialHandle("johndoe");                     // "johndoe"
 ```
 
 ### openInNewWindow
@@ -468,12 +502,12 @@ normalizeUnicode("café");  // "cafe"
 
 ### banglaBadWords
 
-Array of Bangla profanity words (710+ words) for content moderation.
+Array of Bangla profanity words for content moderation.
 
 ```ts
 import { banglaBadWords } from "@hobenakicoffee/libraries/moderation";
 
-console.log(banglaBadWords.length); // 710+
+console.log(banglaBadWords.length); // word count
 ```
 
 ---
@@ -505,185 +539,61 @@ type PaymentStatus = Enums<"payment_status_enum">;
 type SupporterPlatform = Enums<"supporter_platform_enum">;
 ```
 
-### Database Tables
+### Custom Types
 
-- `activities` - User activity tracking
-- `coffee_gifts` - Coffee gift transactions
-- `conversation_participants` - Chat participants
-- `conversations` - Chat conversations
-- `follows` - User follow relationships
-- `manager_role_permissions` - Manager role permissions
-- `manager_user_roles` - Manager user role assignments
-- `managers` - Manager profiles
-- `messages` - Chat messages
-- `messages_*` - Monthly partitioned message tables
-- `payout_methods` - User payout methods
-- `profiles` - User profiles
-- `supporters` - Supporter records
-- `transactions` - Payment transactions
-- `wallets` - User wallets
-- `withdrawal_requests` - Withdrawal requests
-
-### Database Enums
-
-- `manager_permission` - Manager permissions
-- `manager_role` - Manager roles (super_admin, content_manager, etc.)
-- `manager_status` - Manager account status
-- `payment_status_enum` - Payment statuses
-- `payout_provider` - Payout provider types
-- `provider_enum` - Payment providers
-- `reference_type_enum` - Transaction reference types
-- `supporter_platform_enum` - Supporter platform types
-- `transaction_direction_enum` - Debit/credit
-- `user_role` - User roles
-- `visibility_enum` - Public/private visibility
-- `withdrawal_status` - Withdrawal request statuses
-
----
-
-## UI Components
-
-The library includes 30+ accessible UI components built on Radix UI.
-
-### Importing Components
+The library also exports custom types for common data structures:
 
 ```ts
-// Individual imports (recommended for tree-shaking)
-import { Button } from "@hobenakicoffee/libraries/components/ui/button";
-import { Card } from "@hobenakicoffee/libraries/components/ui/card";
-import { Dialog } from "@hobenakicoffee/libraries/components/ui/dialog";
-import { Input } from "@hobenakicoffee/libraries/components/ui/input";
-
-// All components available:
-import { Alert } from "@hobenakicoffee/libraries/components/ui/alert";
-import { AlertDialog } from "@hobenakicoffee/libraries/components/ui/alert-dialog";
-import { Avatar } from "@hobenakicoffee/libraries/components/ui/avatar";
-import { Badge } from "@hobenakicoffee/libraries/components/ui/badge";
-import { Breadcrumb } from "@hobenakicoffee/libraries/components/ui/breadcrumb";
-import { Button, ButtonGroup } from "@hobenakicoffee/libraries/components/ui/button";
-import { Calendar } from "@hobenakicoffee/libraries/components/ui/calendar";
-import { Card, Chart } from "@hobenakicoffee/libraries/components/ui/card";
-import { Checkbox } from "@hobenakicoffee/libraries/components/ui/checkbox";
-import { Dialog } from "@hobenakicoffee/libraries/components/ui/dialog";
-import { Drawer } from "@hobenakicoffee/libraries/components/ui/drawer";
-import { DropdownMenu } from "@hobenakicoffee/libraries/components/ui/dropdown-menu";
-import { Empty, EmptyMinimal } from "@hobenakicoffee/libraries/components/ui/empty";
-import { Field, Input, InputGroup, InputOtp } from "@hobenakicoffee/libraries/components/ui/input";
-import { Item } from "@hobenakicoffee/libraries/components/ui/item";
-import { Label } from "@hobenakicoffee/libraries/components/ui/label";
-import { Popover } from "@hobenakicoffee/libraries/components/ui/popover";
-import { RadioGroup } from "@hobenakicoffee/libraries/components/ui/radio-group";
-import { Select } from "@hobenakicoffee/libraries/components/ui/select";
-import { Separator } from "@hobenakicoffee/libraries/components/ui/separator";
-import { Sheet } from "@hobenakicoffee/libraries/components/ui/sheet";
-import { Sidebar } from "@hobenakicoffee/libraries/components/ui/sidebar";
-import { Skeleton } from "@hobenakicoffee/libraries/components/ui/skeleton";
-import { Sonner } from "@hobenakicoffee/libraries/components/ui/sonner";
-import { Spinner } from "@hobenakicoffee/libraries/components/ui/spinner";
-import { Table } from "@hobenakicoffee/libraries/components/ui/table";
-import { Tabs } from "@hobenakicoffee/libraries/components/ui/tabs";
-import { Textarea } from "@hobenakicoffee/libraries/components/ui/textarea";
-import { Toggle, ToggleGroup } from "@hobenakicoffee/libraries/components/ui/toggle";
-import { Tooltip } from "@hobenakicoffee/libraries/components/ui/tooltip";
-```
-
-### Component Variants
-
-Components use `cva` (class-variance-authority) for variants:
-
-```ts
-import { Button } from "@hobenakicoffee/libraries/components/ui/button";
-import { Badge } from "@hobenakicoffee/libraries/components/ui/badge";
-
-// Button variants
-<Button variant="default" />
-<Button variant="destructive" />
-<Button variant="outline" />
-<Button variant="secondary" />
-<Button variant="ghost" />
-<Button variant="link" />
-
-// Button sizes
-<Button size="default" />
-<Button size="sm" />
-<Button size="lg" />
-<Button size="icon" />
-
-// Badge variants
-<Badge variant="default" />
-<Badge variant="secondary" />
-<Badge variant="destructive" />
-<Badge variant="outline" />
-```
-
-### Turnstile Captcha
-
-```ts
-import { TurnstileCaptcha } from "@hobenakicoffee/libraries/components/turnstile-captcha";
-
-<TurnstileCaptcha
-  siteKey="your-site-key"
-  onSuccess={(token) => console.log(token)}
-  onError={() => console.error("Error")}
-  theme="auto"
-/>
+import type { TransactionMetadata, ActivityMetadata, SupportersMetadata } from "@hobenakicoffee/libraries/types";
 ```
 
 ---
 
-## Theme Provider (`@hobenakicoffee/libraries/providers/theme-provider`)
+## Nuqs (`@hobenakicoffee/libraries/nuqs`)
 
-Dark/light mode theming with system preference support.
+URL state management parsers using nuqs and zod.
 
-```tsx
-import { ThemeProvider, useTheme } from "@hobenakicoffee/libraries/providers/theme-provider";
+```ts
+import { parseAsSortOrder, parseAsDateRange, parseAsLastTimeRange } from "@hobenakicoffee/libraries/nuqs";
 
-// Wrap your app
-function App({ children }) {
-  return (
-    <ThemeProvider defaultTheme="system" storageKey="my-app-theme">
-      {children}
-    </ThemeProvider>
-  );
-}
+// Sort order
+parseAsSortOrder.parse("asc"); // "asc"
+parseAsSortOrder.parse("invalid"); // throws
 
-// Use in components
+// Date range
+parseAsDateRange.parse({ from: new Date(), to: new Date() });
+
+// Last time range
+parseAsLastTimeRange.parse("last_7_days");
+parseAsLastTimeRange.parse("last_30_days");
+parseAsLastTimeRange.parse("last_90_days");
+parseAsLastTimeRange.parse("last_180_days");
+parseAsLastTimeRange.parse("last_year");
+```
+
+---
+
+## Hooks
+
+### useIsMobile
+
+React hook to detect if the viewport is mobile-sized.
+
+```ts
+import { useIsMobile } from "@hobenakicoffee/libraries/hooks";
+
 function MyComponent() {
-  const { theme, setTheme } = useTheme();
-
-  return (
-    <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-      Toggle Theme
-    </button>
-  );
+  const isMobile = useIsMobile();
+  
+  return <div>{isMobile ? "Mobile" : "Desktop"}</div>;
 }
-```
-
-Props:
-- `children` - React nodes
-- `defaultTheme` - "light" | "dark" | "system" (default: "system")
-- `storageKey` - localStorage key (default: "hobenakicoffee-app-ui-themes")
-
----
-
-## Utils (`@hobenakicoffee/libraries/lib/utils`)
-
-### cn
-
-Class name merging utility combining `clsx` and `tailwind-merge`.
-
-```ts
-import { cn } from "@hobenakicoffee/libraries/lib/utils";
-
-cn("px-2 py-1", "bg-red-500", condition && "text-white");
-// Returns merged class string
 ```
 
 ---
 
 ## API Reference
 
-### Constants and Types
+### Constants
 
 | Export | Type | Description |
 |--------|------|-------------|
@@ -714,14 +624,17 @@ cn("px-2 py-1", "bg-red-500", condition && "text-white");
 |----------|-------------|
 | `formatAmount` | Format number as ৳ currency |
 | `formatSignedAmount` | Format with + or - sign |
+| `formatCount` | Format count with K, M, B suffixes |
 | `formatDate` | Format date string |
 | `formatNumber` | Format with thousand separators |
 | `formatToPlainText` | Convert value to plain text |
 | `formatMetadataKey` | Format metadata key to readable text |
 | `getUserPageLink` | Generate user profile URL |
+| `getProductLink` | Generate product page URL |
+| `getNewsletterPostLink` | Generate newsletter post URL |
 | `getInitials` | Get name initials |
 | `getSocialLink` | Generate social profile URL |
-| `getSocialUrl` | Generate social sharing URL |
+| `getSocialHandle` | Extract handle from social URL |
 | `openInNewWindow` | Open URL in new tab |
 | `shareToFacebook` | Share to Facebook |
 | `shareToInstagram` | Share to Instagram |
@@ -738,7 +651,6 @@ cn("px-2 py-1", "bg-red-500", condition && "text-white");
 | Function | Description |
 |----------|-------------|
 | `moderateText` | Check text for profanity |
-| `checkBanglaWords` | Check for Bangla bad words |
 | `normalizeLeetspeak` | Convert leetspeak to normal |
 | `normalizeUnicode` | Remove Unicode diacritics |
 | `banglaBadWords` | Bangla profanity word list |
@@ -780,6 +692,9 @@ bun run format
 # Check formatting
 bun run format:check
 
+# Check formatting issues
+bun run format:doctor
+
 # Clean build artifacts
 bun run clean
 ```
@@ -790,7 +705,7 @@ bun run clean
 
 ```
 src/
-├── index.ts                 # Main entry
+├── index.ts                 # Main entry (re-exports constants)
 ├── constants/
 │   ├── common.ts           # Visibility
 │   ├── legal.ts            # productInfo, companyInfo
@@ -801,9 +716,12 @@ src/
 ├── utils/
 │   ├── check-moderation.ts
 │   ├── format-amount.ts
+│   ├── format-count.ts
 │   ├── format-date.ts
 │   ├── format-number.ts
 │   ├── format-plain-text.ts
+│   ├── get-newsletter-post-link.ts
+│   ├── get-product-link.ts
 │   ├── get-social-handle.ts
 │   ├── get-social-link.ts
 │   ├── get-user-name-initials.ts
@@ -819,58 +737,22 @@ src/
 │   └── index.ts            # Exports
 ├── moderation/
 │   ├── datasets/
-│   │   ├── bn.ts           # Bangla bad words (710+)
+│   │   ├── bn.ts           # Bangla bad words
 │   │   └── index.ts
-│   ├── normalizer.ts
 │   ├── profanity-service.ts
+│   ├── normalizer.ts
 │   └── index.ts            # Exports
 ├── types/
 │   ├── supabase.ts         # Full Supabase types
-│   └── index.ts
-├── lib/
-│   └── utils.ts            # cn() utility
-├── providers/
-│   └── theme-provider.tsx  # Theme provider
-└── components/
-    ├── turnstile-captcha.tsx
-    └── ui/                 # 30+ UI components
-        ├── alert.tsx
-        ├── alert-dialog.tsx
-        ├── avatar.tsx
-        ├── badge.tsx
-        ├── breadcrumb.tsx
-        ├── button.tsx
-        ├── button-group.tsx
-        ├── calendar.tsx
-        ├── card.tsx
-        ├── chart.tsx
-        ├── checkbox.tsx
-        ├── dialog.tsx
-        ├── drawer.tsx
-        ├── dropdown-menu.tsx
-        ├── empty.tsx
-        ├── empty-minimal.tsx
-        ├── field.tsx
-        ├── input.tsx
-        ├── input-group.tsx
-        ├── input-otp.tsx
-        ├── item.tsx
-        ├── label.tsx
-        ├── popover.tsx
-        ├── radio-group.tsx
-        ├── select.tsx
-        ├── separator.tsx
-        ├── sheet.tsx
-        ├── sidebar.tsx
-        ├── skeleton.tsx
-        ├── sonner.tsx
-        ├── spinner.tsx
-        ├── table.tsx
-        ├── tabs.tsx
-        ├── textarea.tsx
-        ├── toggle.tsx
-        ├── toggle-group.tsx
-        └── tooltip.tsx
+│   └── index.ts            # Exports + custom types
+├── nuqs/
+│   ├── common.ts           # URL state parsers
+│   └── index.ts            # Exports
+├── hooks/
+│   └── use-mobile.ts       # Mobile detection hook
+└── scripts/
+    ├── check-env-encryption.ts
+    └── index.ts            # Exports
 ```
 
 ---
@@ -880,25 +762,16 @@ src/
 ### Runtime
 
 - `@fontsource-variable/noto-sans-bengali` - Bengali font
-- `@hugeicons/core-free-icons` - Hugeicons
-- `@hugeicons/react` - React icons
-- `@marsidev/react-turnstile` - Turnstile captcha
-- `@tailwindcss/vite` - Tailwind CSS
 - `class-variance-authority` - Component variants
-- `glin-profanity` - Profanity detection
-- `input-otp` - OTP input
-- `next-themes` - Theme provider
+- `clsx` - Class name utility
+- `nuqs` - URL state management
+- `obscenity` - Profanity detection
 - `openai` - OpenAI API
-- `radix-ui` - UI primitives
 - `react` / `react-dom` - React
-- `react-day-picker` - Calendar
-- `recharts` - Charts
-- `shadcn` - UI components
-- `sonner` - Toast notifications
 - `tailwind-merge` - Tailwind merge
 - `tailwindcss` - Styling
 - `tw-animate-css` - Animations
-- `vaul` - Drawer
+- `zod` - Schema validation
 
 ### Dev
 
