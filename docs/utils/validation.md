@@ -54,4 +54,4 @@ result.error;       // Error if any
 ## Related
 
 - [Utils Overview](../utils/overview)
-- [Moderation](../moderation)
+- [Moderation Overview](../moderation/)

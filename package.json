@@ -37,7 +37,7 @@
     "prepare": "lefthook install",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview"
+    "docs:preview": "vitepress preview --port 8080"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.0",

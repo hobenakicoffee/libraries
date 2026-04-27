@@ -21,6 +21,7 @@ const EXPORTS = [
   { path: "/nuqs", name: "nuqs", desc: "URL state parsers (zod)" },
   { path: "/scripts", name: "scripts", desc: "Build utilities" },
   { path: "/hooks", name: "hooks", desc: "React hooks" },
+  { path: "/docs", name: "docs", desc: "Documentation & guides" },
 ];
 
 const App = () => {
@@ -87,7 +88,7 @@ const App = () => {
             and moderation tools.
           </p>
 
-          <div className="group relative mx-auto inline-block cursor-pointer">
+          <div className="group relative mx-auto inline-flex cursor-pointer items-center gap-3">
             <div className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 p-1 pr-3 font-mono text-sm shadow-[0_0_40px_rgba(99,102,241,0.15)] transition-all group-hover:border-cyan-500/50 group-hover:shadow-[0_0_60px_rgba(99,102,241,0.25)]">
               <button
                 className="flex items-center gap-2 rounded-md bg-slate-800 px-3 py-2 text-slate-200 transition-colors hover:bg-slate-700"
@@ -101,6 +102,13 @@ const App = () => {
               </button>
               <span className="text-slate-500">{copied ? "✓" : "›"}</span>
             </div>
+            <a
+              className="inline-flex items-center gap-2 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 font-mono text-indigo-400 text-sm transition-all hover:border-indigo-500/60 hover:bg-indigo-500/20"
+              href="/docs/"
+            >
+              <span>Documentation</span>
+              <span className="text-indigo-500">→</span>
+            </a>
           </div>
         </div>
 

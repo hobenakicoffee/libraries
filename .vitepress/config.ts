@@ -4,6 +4,7 @@ export default defineConfig({
   lang: "en-US",
   srcDir: "docs",
   lastUpdated: true,
+  base: "/docs/",
 
   title: "@hobenakicoffee/libraries",
   description:
@@ -77,7 +78,7 @@ export default defineConfig({
     socialLinks: [
       {
         icon: "github",
-        link: "https://github.com/shamscorner/hobenakicoffee",
+        link: "https://github.com/hobenakicoffee",
       },
     ],
   },
