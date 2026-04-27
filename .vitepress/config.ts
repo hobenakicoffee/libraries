@@ -1,6 +1,7 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
+  lang: "en-US",
   srcDir: "docs",
   lastUpdated: true,
 
@@ -14,7 +15,17 @@ export default defineConfig({
       { text: "Getting Started", link: "/getting-started" },
     ],
 
+    footer: {
+      message: "Released under the MIT License.",
+      copyright:
+        'Copyright © 2014-present <a href="https://shamscorner.com">Shamscorner LLC</a>',
+    },
+
     outline: "deep",
+
+    search: {
+      provider: "local",
+    },
 
     sidebar: [
       {
