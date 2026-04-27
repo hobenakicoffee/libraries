@@ -15,6 +15,7 @@ import { Visibility, PaymentStatuses, SupporterPlatforms } from "@hobenakicoffee
 ## Exports
 
 | Export | Description |
+| ------- | ----------- |
 | `Visibility` | Public and private visibility constants |
 | `productInfo` | Product metadata (name, domain, socials) |
 | `companyInfo` | Company information (contact, legal) |

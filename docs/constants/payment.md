@@ -11,6 +11,7 @@ import { PaymentTypes, PaymentStatuses, PaymentProviders, PaymentDirections, Pay
 ## Payment Types
 
 | Constant | Value |
+| -------- | ---- |
 | `PaymentTypes.SUBSCRIPTION` | `"subscription"` |
 | `PaymentTypes.ONE_TIME` | `"one-time"` |
 | `PaymentTypes.PAYOUT` | `"payout"` |
@@ -22,6 +23,7 @@ import { PaymentTypes, PaymentStatuses, PaymentProviders, PaymentDirections, Pay
 ## Payment Statuses
 
 | Constant | Value |
+| -------- | ---- |
 | `PaymentStatuses.PENDING` | `"pending"` |
 | `PaymentStatuses.PROCESSING` | `"processing"` |
 | `PaymentStatuses.COMPLETED` | `"completed"` |
@@ -34,6 +36,7 @@ import { PaymentTypes, PaymentStatuses, PaymentProviders, PaymentDirections, Pay
 ## Payment Providers
 
 | Constant | Value |
+| -------- | ---- |
 | `PaymentProviders.HOBENAKICOFFEE` | `"HobeNakiCoffee"` |
 | `PaymentProviders.BKASH` | `"Bkash"` |
 | `PaymentProviders.NAGAD` | `"Nagad"` |
@@ -48,12 +51,14 @@ import { PaymentTypes, PaymentStatuses, PaymentProviders, PaymentDirections, Pay
 ## Payment Directions
 
 | Constant | Value |
+| -------- | ---- |
 | `PaymentDirections.DEBIT` | `"debit"` |
 | `PaymentDirections.CREDIT` | `"credit"` |
 
 ## Payout Providers
 
 | Constant | Value |
+| -------- | ---- |
 | `PayoutProviders.BKASH` | `"bkash"` |
 | `PayoutProviders.NAGAD` | `"nagad"` |
 | `PayoutProviders.ROCKET` | `"rocket"` |
@@ -62,6 +67,7 @@ import { PaymentTypes, PaymentStatuses, PaymentProviders, PaymentDirections, Pay
 ## Withdrawal Statuses
 
 | Constant | Value |
+| -------- | ---- |
 | `WithdrawalStatuses.REQUESTED` | `"requested"` |
 | `WithdrawalStatuses.APPROVED` | `"approved"` |
 | `WithdrawalStatuses.PROCESSING` | `"processing"` |
@@ -71,4 +77,4 @@ import { PaymentTypes, PaymentStatuses, PaymentProviders, PaymentDirections, Pay
 
 ## Related
 
-- [Constants](./index)
+- [Constants Overview](./overview)

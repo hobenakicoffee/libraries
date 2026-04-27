@@ -15,6 +15,7 @@ import { formatAmount, formatDate, getUserPageLink } from "@hobenakicoffee/libra
 ## Exports
 
 | Function | Description |
+| -------- | ----------- |
 | `formatAmount` | Format number as Bangladeshi Taka (৳) |
 | `formatCount` | Format count with K, M, B suffixes |
 | `formatDate` | Format date string |

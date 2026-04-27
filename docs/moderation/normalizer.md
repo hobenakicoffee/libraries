@@ -40,4 +40,4 @@ console.log(banglaBadWords.length); // => word count
 
 ## Related
 
-- [Moderation Index](./index)
+- [Moderation Overview](../moderation)

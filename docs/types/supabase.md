@@ -78,4 +78,4 @@ type SupporterPlatform = Enums<"supporter_platform_enum">;
 
 ## Related
 
-- [Types Index](./index)
+- [Types Overview](./overview)

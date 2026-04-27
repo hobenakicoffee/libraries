@@ -15,6 +15,7 @@ import { parseAsSortOrder, parseAsDateRange, parseAsLastTimeRange } from "@hoben
 ## Exports
 
 | Parser | Description |
+| ------ | ----------- |
 | `parseAsSortOrder` | Parse "asc" or "desc" sort order |
 | `parseAsDateRange` | Parse date range object |
 | `parseAsLastTimeRange` | Parse last X days/weeks/months |

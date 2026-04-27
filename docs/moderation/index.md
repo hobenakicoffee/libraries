@@ -15,6 +15,7 @@ import { moderateText, normalizeLeetspeak, normalizeUnicode, banglaBadWords } fr
 ## Exports
 
 | Function | Description |
+| -------- | ----------- |
 | `moderateText` | Check text for profanity |
 | `normalizeLeetspeak` | Convert leetspeak to normal text |
 | `normalizeUnicode` | Normalize Unicode characters |

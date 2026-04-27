@@ -2,6 +2,7 @@ import { defineConfig } from "vitepress";
 
 export default defineConfig({
   srcDir: "docs",
+  lastUpdated: true,
 
   title: "@hobenakicoffee/libraries",
   description:
@@ -12,6 +13,8 @@ export default defineConfig({
       { text: "Home", link: "/" },
       { text: "Getting Started", link: "/getting-started" },
     ],
+
+    outline: "deep",
 
     sidebar: [
       {
@@ -24,7 +27,7 @@ export default defineConfig({
       {
         text: "Constants",
         items: [
-          { text: "Overview", link: "/constants" },
+          { text: "Overview", link: "/constants/overview" },
           { text: "Visibility", link: "/constants/visibility" },
           { text: "Payment", link: "/constants/payment" },
           { text: "Platforms", link: "/constants/platforms" },
@@ -34,7 +37,7 @@ export default defineConfig({
       {
         text: "Utilities",
         items: [
-          { text: "Overview", link: "/utils" },
+          { text: "Overview", link: "/utils/overview" },
           { text: "Format", link: "/utils/format" },
           { text: "Validation", link: "/utils/validation" },
           { text: "Links", link: "/utils/links" },
@@ -44,7 +47,7 @@ export default defineConfig({
       {
         text: "Types",
         items: [
-          { text: "Overview", link: "/types" },
+          { text: "Overview", link: "/types/overview" },
           { text: "Supabase", link: "/types/supabase" },
         ],
       },

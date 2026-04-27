@@ -23,6 +23,7 @@ validatePhoneNumber("1234567890");  // => false
 Supported prefixes:
 
 | Prefix | Operator |
+| ----- | -------- |
 | `013` | Banglalion |
 | `014` | Banglalion |
 | `015` | Teletalk |
@@ -52,5 +53,5 @@ result.error;       // Error if any
 
 ## Related
 
-- [Utils Index](../utils/index)
-- [Moderation](../moderation/index)
+- [Utils Overview](../utils/overview)
+- [Moderation](../moderation)

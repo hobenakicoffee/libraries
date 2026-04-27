@@ -15,6 +15,7 @@ import { useIsMobile } from "@hobenakicoffee/libraries/hooks";
 ## Exports
 
 | Hook | Description |
+| ---- | ----------- |
 | `useIsMobile` | Detect if viewport is mobile-sized |
 
 ## useIsMobile

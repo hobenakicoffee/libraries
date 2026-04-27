@@ -11,6 +11,7 @@ import { ServiceTypes } from "@hobenakicoffee/libraries/constants";
 ## Values
 
 | Constant | Value | Description |
+| -------- | ---- | ----------- |
 | `ServiceTypes.GIFT` | `"gift"` | Coffee/tip gift |
 | `ServiceTypes.EXCLUSIVE_CONTENT` | `"exclusive_content"` | Premium content access |
 | `ServiceTypes.WITHDRAWAL` | `"withdrawal"` | Payout request |
@@ -30,4 +31,4 @@ const isExclusive = ServiceTypes.EXCLUSIVE_CONTENT;
 
 ## Related
 
-- [Constants](./index)
+- [Constants Overview](./overview)

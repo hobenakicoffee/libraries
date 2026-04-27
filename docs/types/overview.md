@@ -15,6 +15,7 @@ import type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "@hoben
 ## Exports
 
 | Type | Description |
+| ---- | ----------- |
 | `Database` | Full Supabase database type |
 | `Tables<T>` | Table row types |
 | `TablesInsert<T>` | Insert types for tables |

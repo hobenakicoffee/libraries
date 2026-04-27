@@ -73,4 +73,4 @@ formatMetadataKey("is_monthly");     // => "Is monthly"
 
 ## Related
 
-- [Utils Index](../utils/index)
+- [Utils Overview](../utils/overview)

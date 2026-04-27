@@ -15,6 +15,7 @@ import { checkEnvEncryption } from "@hobenakicoffee/libraries/scripts";
 ## Exports
 
 | Function | Description |
+| -------- | ----------- |
 | `checkEnvEncryption` | Check if environment variables are encrypted |
 
 ## checkEnvEncryption

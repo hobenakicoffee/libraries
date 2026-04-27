@@ -11,6 +11,7 @@ import { SupporterPlatforms } from "@hobenakicoffee/libraries/constants";
 ## Values
 
 | Constant | Value |
+| -------- | ---- |
 | `SupporterPlatforms.FACEBOOK` | `"facebook"` |
 | `SupporterPlatforms.X` | `"x"` |
 | `SupporterPlatforms.INSTAGRAM` | `"instagram"` |
@@ -44,5 +45,5 @@ getSocialLink("johndoe", SupporterPlatforms.INSTAGRAM);
 
 ## Related
 
-- [Constants](./index)
+- [Constants Overview](./overview)
 - [Utils - Links](../utils/links)

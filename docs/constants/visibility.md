@@ -11,6 +11,7 @@ import { Visibility } from "@hobenakicoffee/libraries/constants";
 ## Values
 
 | Constant | Value | Type |
+| ------- | ----- | ---- |
 | `Visibility.PUBLIC` | `"public"` | `Visibility` |
 | `Visibility.PRIVATE` | `"private"` | `Visibility` |
 
@@ -32,4 +33,4 @@ const isPrivate = Visibility.PRIVATE;
 
 ## Related
 
-- [Constants](./index)
+- [Constants Overview](./overview)

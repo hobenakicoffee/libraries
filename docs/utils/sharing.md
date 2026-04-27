@@ -98,4 +98,4 @@ toHumanReadable("HTTPResponseCode"); // => "HTTP Response Code"
 
 ## Related
 
-- [Utils Index](../utils/index)
+- [Utils Overview](../utils/overview)
