@@ -103,7 +103,7 @@ const App = () => {
               <span className="text-slate-500">{copied ? "✓" : "›"}</span>
             </div>
             <a
-              className="inline-flex items-center gap-2 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 font-mono text-indigo-400 text-sm transition-all hover:border-indigo-500/60 hover:bg-indigo-500/20"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-mono text-sm text-white transition-all hover:bg-indigo-600/90"
               href="/docs/"
             >
               <span>Documentation</span>
