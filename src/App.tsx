@@ -36,9 +36,9 @@ const App = () => {
   return (
     <div className="min-dvh relative flex flex-col overflow-hidden bg-[#0a0c10] text-slate-200">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
-        <div className="absolute top-0 left-1/4 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-indigo-500/5 blur-3xl" />
-        <div className="absolute right-1/4 bottom-0 h-[400px] w-[400px] translate-y-1/2 rounded-full bg-cyan-500/5 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_0.5px,transparent_0.5px),linear-gradient(to_bottom,#1e293b_0.5px,transparent_0.5px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+        <div className="absolute top-0 left-1/4 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-indigo-500/[0.03] blur-3xl" />
+        <div className="absolute right-1/4 bottom-0 h-[400px] w-[400px] translate-y-1/2 rounded-full bg-cyan-500/[0.03] blur-3xl" />
       </div>
 
       <header className="relative z-10 flex items-center justify-between px-6 py-4 md:px-8">
@@ -123,7 +123,7 @@ const App = () => {
                 key={exp.path}
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <div className="absolute inset-0 bg-linearnt-to-r from-cyan-500/0 to-indigo-500/0 opacity-0 transition-opacity group-hover:from-cyan-500/5 group-hover:to-indigo-500/5 group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-linear-to-r from-cyan-500/0 to-indigo-500/0 opacity-0 transition-opacity group-hover:from-cyan-500/[0.03] group-hover:to-indigo-500/[0.03] group-hover:opacity-100" />
                 <div className="relative">
                   <span className="text-cyan-400 text-xs">
                     @hobenakicoffee/libraries

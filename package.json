@@ -22,8 +22,13 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
+    "dev:docs": "vitepress dev",
+    "build:app": "tsc -b && vite build",
+    "build:docs": "vitepress build",
+    "build": "bun run build:app && bun run build:docs && cp -r .vitepress/dist dist/docs",
+    "preview:app": "vite preview",
+    "preview:docs": "vitepress preview --port 8080",
+    "preview": "bun run preview:app",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "typecheck": "tsc --noEmit",
@@ -36,10 +41,7 @@
     "check": "ultracite check",
     "fix": "ultracite fix",
     "check:env": "bun run src/scripts/check-env-encryption.ts",
-    "prepare": "lefthook install",
-    "docs:dev": "vitepress dev",
-    "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview --port 8080"
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.0",
