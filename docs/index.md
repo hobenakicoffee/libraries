@@ -11,8 +11,8 @@ hero:
       text: Get Started
       link: /getting-started
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Shamscorner LLC
+      link: https://shamscorner.com
 
 features:
   - title: Constants
@@ -27,3 +27,44 @@ features:
     details: Type-safe URL state parsers using zod for sorting, filtering, and date ranges.
   - title: Scripts
     details: Build utilities and environment encryption helpers.
+---
+
+<script setup>
+import { VPTeamMembers } from 'vitepress/theme'
+
+const members = [
+  {
+    avatar: 'https://avatars.githubusercontent.com/u/17263087?v=4',
+    name: 'Shamim Hossain',
+    title: 'Founder & CTO',
+    links: [
+      { icon: 'github', link: 'https://github.com/shamscorner' },
+      { icon: 'twitter', link: 'https://twitter.com/shamscorner' }
+    ]
+  },
+  {
+    avatar: 'https://avatars.githubusercontent.com/u/96902380?v=4',
+    name: 'Musfiq Rahman',
+    title: 'Co-Founder & Developer',
+    links: [
+      { icon: 'github', link: 'https://github.com/shamscorner' },
+      { icon: 'twitter', link: 'https://twitter.com/shamscorner' }
+    ]
+  },
+  {
+    avatar: 'https://avatars.githubusercontent.com/u/39709519?v=4',
+    name: 'Masud Rana',
+    title: 'Co-Founder & Developer',
+    links: [
+      { icon: 'github', link: 'https://github.com/shamscorner' },
+      { icon: 'twitter', link: 'https://twitter.com/shamscorner' }
+    ]
+  }
+]
+</script>
+
+## Our Team
+
+Say hello to our awesome team.
+
+<VPTeamMembers size="small" :members />
