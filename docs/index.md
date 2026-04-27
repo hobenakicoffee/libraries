@@ -8,17 +8,22 @@ hero:
   tagline: Essential for our heavy ecosystem.
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Get Started
+      link: /getting-started
     - theme: alt
       text: API Examples
       link: /api-examples
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
----
+  - title: Constants
+    details: Payment types, statuses, platforms, visibility, and service type constants.
+  - title: Utilities
+    details: Format amounts, dates, validate phone numbers, social links, and more.
+  - title: TypeScript Types
+    details: Full Supabase database types and custom type definitions.
+  - title: Moderation
+    details: Profanity detection for English and Bengali with leetspeak normalization.
+  - title: URL State (nuqs)
+    details: Type-safe URL state parsers using zod for sorting, filtering, and date ranges.
+  - title: Scripts
+    details: Build utilities and environment encryption helpers.

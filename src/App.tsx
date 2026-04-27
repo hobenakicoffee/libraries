@@ -70,7 +70,7 @@ const App = () => {
 
           <h2 className="mb-4 font-bold font-mono text-3xl tracking-tight md:text-5xl">
             <span className="text-slate-100">Shared </span>
-            <span className="bg-linearnt-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
               constants,
             </span>
             <br />
