@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { productInfo } from "@/constants/legal";
 
+declare const __LATEST_VERSION__: string;
+
 const EXPORTS = [
   {
     path: "/constants",
@@ -62,7 +64,9 @@ const App = () => {
             <h1 className="font-mono font-semibold text-slate-100 text-sm tracking-tight">
               @hobenakicoffee/libraries
             </h1>
-            <p className="font-mono text-slate-500 text-xs">v3.4.2</p>
+            <p className="font-mono text-slate-500 text-xs">
+              {__LATEST_VERSION__}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-900/50 px-2 py-1 font-mono text-slate-400 text-xs">
