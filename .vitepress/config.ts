@@ -12,7 +12,7 @@ export default defineConfig({
 
   themeConfig: {
     nav: [
-      { text: "Home", link: "https://developers.hobenakicoffee.com" },
+      { text: "Home", link: "https://developer.hobenakicoffee.com" },
       { text: "Getting Started", link: "/getting-started" },
     ],
 
@@ -32,7 +32,7 @@ export default defineConfig({
       {
         text: "Guide",
         items: [
-          { text: "Home", link: "https://developers.hobenakicoffee.com" },
+          { text: "Home", link: "https://developer.hobenakicoffee.com" },
           { text: "Getting Started", link: "/getting-started" },
         ],
       },
