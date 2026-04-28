@@ -33,6 +33,8 @@ jobs:
           fi
 
   publish:
+    needs: check
+    if: needs.check.outputs.should_publish == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -65,6 +67,11 @@ jobs:
 
       - name: Publish
         run: npm publish
+
+      - name: Create git tag
+        run: |
+          git tag v${{ needs.check.outputs.version }}
+          git push origin v${{ needs.check.outputs.version }}
 
       - name: Notify Slack on success
         if: success()
