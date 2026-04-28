@@ -4,7 +4,7 @@ export default defineConfig({
   lang: "en-US",
   srcDir: "docs",
   lastUpdated: true,
-  base: "/docs/",
+  base: "/libraries/docs/",
 
   title: "@hobenakicoffee/libraries",
   description:
