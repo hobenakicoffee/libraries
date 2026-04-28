@@ -116,7 +116,7 @@ const App = () => {
             </div>
             <a
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-mono text-sm text-white transition-all hover:bg-indigo-600/90"
-              href="/libraries/docs/"
+              href="/docs/"
             >
               <span>Documentation</span>
               <span className="text-indigo-500">→</span>
@@ -133,9 +133,7 @@ const App = () => {
               <a
                 className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/50 p-3 font-mono transition-all hover:border-slate-600"
                 href={
-                  exp.path === "/docs"
-                    ? `/libraries${exp.path}`
-                    : `/libraries${exp.path}/overview`
+                  exp.path === "/docs" ? exp.path : `/docs${exp.path}/overview`
                 }
                 key={exp.path}
                 style={{ animationDelay: `${i * 50}ms` }}

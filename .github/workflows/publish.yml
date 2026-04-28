@@ -10,6 +10,28 @@ permissions:
   contents: read
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.check.outputs.should_publish }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if version changed
+        id: check
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if git tag | grep -q "^v$VERSION$"; then
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+
   publish:
     runs-on: ubuntu-latest
     steps:
