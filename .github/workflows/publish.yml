@@ -28,7 +28,7 @@ jobs:
         run: bun run test
 
       - name: Build
-        run: bun run build
+        run: bun run build:app
 
       - name: Setup Node.js for npm publish
         uses: actions/setup-node@v4
@@ -38,7 +38,8 @@ jobs:
 
       - name: Get package version
         id: pkg
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        run: echo "version=$(node -p "require('./package.json').version")" >>
+          $GITHUB_OUTPUT
 
       - name: Publish
         run: npm publish

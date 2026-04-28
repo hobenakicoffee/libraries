@@ -12,14 +12,26 @@ const EXPORTS = [
     name: "utils",
     desc: "Formatters, validators, social helpers",
   },
-  { path: "/types", name: "types", desc: "Supabase + custom TypeScript types" },
+  {
+    path: "/types",
+    name: "types",
+    desc: "Supabase + custom TypeScript types",
+  },
   {
     path: "/moderation",
     name: "moderation",
     desc: "Profanity detection EN/BN",
   },
-  { path: "/nuqs", name: "nuqs", desc: "URL state parsers (zod)" },
-  { path: "/scripts", name: "scripts", desc: "Build utilities" },
+  {
+    path: "/nuqs",
+    name: "nuqs",
+    desc: "URL state parsers (zod)",
+  },
+  {
+    path: "/scripts",
+    name: "scripts",
+    desc: "Build utilities",
+  },
   { path: "/hooks", name: "hooks", desc: "React hooks" },
   { path: "/docs", name: "docs", desc: "Documentation & guides" },
 ];
@@ -88,7 +100,7 @@ const App = () => {
             and moderation tools.
           </p>
 
-          <div className="group relative mx-auto inline-flex cursor-pointer items-center gap-3">
+          <div className="group relative mx-auto inline-flex cursor-pointer flex-col items-center gap-3 md:flex-row">
             <div className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 p-1 pr-3 font-mono text-sm shadow-[0_0_40px_rgba(99,102,241,0.15)] transition-all group-hover:border-cyan-500/50 group-hover:shadow-[0_0_60px_rgba(99,102,241,0.25)]">
               <button
                 className="flex items-center gap-2 rounded-md bg-slate-800 px-3 py-2 text-slate-200 transition-colors hover:bg-slate-700"
@@ -104,7 +116,7 @@ const App = () => {
             </div>
             <a
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-mono text-sm text-white transition-all hover:bg-indigo-600/90"
-              href="/docs/"
+              href="/libraries/docs/"
             >
               <span>Documentation</span>
               <span className="text-indigo-500">→</span>
@@ -118,8 +130,13 @@ const App = () => {
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {EXPORTS.map((exp, i) => (
-              <div
+              <a
                 className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/50 p-3 font-mono transition-all hover:border-slate-600"
+                href={
+                  exp.path === "/docs"
+                    ? `/libraries${exp.path}`
+                    : `/libraries${exp.path}/overview`
+                }
                 key={exp.path}
                 style={{ animationDelay: `${i * 50}ms` }}
               >
@@ -130,10 +147,10 @@ const App = () => {
                   </span>
                   <span className="text-slate-500 text-xs">{exp.path}</span>
                 </div>
-                <p className="relative mt-1 text-slate-500 text-xs">
+                <div className="relative mt-1 text-slate-500 text-xs">
                   {exp.desc}
-                </p>
-              </div>
+                </div>
+              </a>
             ))}
           </div>
         </div>
