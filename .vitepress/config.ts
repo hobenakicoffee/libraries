@@ -50,6 +50,10 @@ export default withMermaid(
               { text: "Getting Started", link: "/getting-started" },
               { text: "Libraries", link: "/libraries/" },
               { text: "Shop Service", link: "/shop-service/frontend/index" },
+              {
+                text: "Memberships Hub",
+                link: "/memberships-hub/frontend/index",
+              },
             ],
           },
         ],
@@ -113,7 +117,6 @@ export default withMermaid(
           ...common,
           {
             text: "Shop Service",
-            collapsed: false,
             items: [
               {
                 text: "Frontend",
@@ -174,6 +177,62 @@ export default withMermaid(
                   {
                     text: "RPC Reference",
                     link: "/shop-service/backend/rpc-reference",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        "/memberships-hub/": [
+          ...common,
+          {
+            text: "Memberships Hub",
+            items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/memberships-hub/frontend/" },
+                  { text: "Feed", link: "/memberships-hub/frontend/feed" },
+                  {
+                    text: "Interactions",
+                    link: "/memberships-hub/frontend/interactions",
+                  },
+                  { text: "Boost", link: "/memberships-hub/frontend/boost" },
+                  {
+                    text: "Creator Dashboard",
+                    link: "/memberships-hub/frontend/creator-dashboard",
+                  },
+                ],
+              },
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/memberships-hub/backend/" },
+                  {
+                    text: "Feed Items",
+                    link: "/memberships-hub/backend/feed-items",
+                  },
+                  {
+                    text: "Interactions",
+                    link: "/memberships-hub/backend/interactions",
+                  },
+                  {
+                    text: "Boost Campaigns",
+                    link: "/memberships-hub/backend/boost-campaigns",
+                  },
+                  {
+                    text: "Affinity Ranking",
+                    link: "/memberships-hub/backend/affinity-ranking",
+                  },
+                  {
+                    text: "RPC Reference",
+                    link: "/memberships-hub/backend/rpcs-reference",
+                  },
+                  {
+                    text: "Platform Settings",
+                    link: "/memberships-hub/backend/platform-settings",
                   },
                 ],
               },
