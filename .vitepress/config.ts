@@ -1,5 +1,10 @@
 import { defineConfig } from "vitepress";
 
+const common = [
+  { text: "Go back", link: "/getting-started" },
+  { text: "Home", link: "https://developer.hobenakicoffee.com" },
+];
+
 export default defineConfig({
   lang: "en-US",
   srcDir: "docs",
@@ -9,6 +14,10 @@ export default defineConfig({
   title: "@hobenakicoffee/libraries",
   description:
     "A framework-agnostic TypeScript package providing shared constants, utilities, types, and moderation tools.",
+
+  sitemap: {
+    hostname: "https://developer.hobenakicoffee.com/docs/",
+  },
 
   themeConfig: {
     nav: [
@@ -28,52 +37,71 @@ export default defineConfig({
       provider: "local",
     },
 
-    sidebar: [
-      {
-        text: "Guide",
-        items: [
-          { text: "Home", link: "https://developer.hobenakicoffee.com" },
-          { text: "Getting Started", link: "/getting-started" },
-        ],
-      },
-      {
-        text: "Constants",
-        items: [
-          { text: "Overview", link: "/constants/overview" },
-          { text: "Visibility", link: "/constants/visibility" },
-          { text: "Payment", link: "/constants/payment" },
-          { text: "Platforms", link: "/constants/platforms" },
-          { text: "Services", link: "/constants/services" },
-        ],
-      },
-      {
-        text: "Utilities",
-        items: [
-          { text: "Overview", link: "/utils/overview" },
-          { text: "Format", link: "/utils/format" },
-          { text: "Validation", link: "/utils/validation" },
-          { text: "Links", link: "/utils/links" },
-          { text: "Sharing", link: "/utils/sharing" },
-        ],
-      },
-      {
-        text: "Types",
-        items: [
-          { text: "Overview", link: "/types/overview" },
-          { text: "Supabase", link: "/types/supabase" },
-        ],
-      },
-      {
-        text: "More",
-        items: [
-          { text: "Moderation", link: "/moderation" },
-          { text: "Normalizer", link: "/moderation/normalizer" },
-          { text: "nuqs", link: "/nuqs" },
-          { text: "Hooks", link: "/hooks" },
-          { text: "Scripts", link: "/scripts" },
-        ],
-      },
-    ],
+    sidebar: {
+      "/": [
+        {
+          text: "Guide",
+          items: [
+            { text: "Home", link: "https://developer.hobenakicoffee.com" },
+            { text: "Getting Started", link: "/getting-started" },
+            { text: "Libraries", link: "/libraries/overview" },
+          ],
+        },
+      ],
+      "/libraries/": [
+        ...common,
+        { text: "Overview", link: "/libraries/overview" },
+        {
+          text: "Libraries",
+          items: [
+            {
+              text: "Constants",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/libraries/constants/overview" },
+                { text: "Visibility", link: "/libraries/constants/visibility" },
+                { text: "Payment", link: "/libraries/constants/payment" },
+                { text: "Platforms", link: "/libraries/constants/platforms" },
+                { text: "Services", link: "/libraries/constants/services" },
+              ],
+            },
+            {
+              text: "Utilities",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/libraries/utils/overview" },
+                { text: "Format", link: "/libraries/utils/format" },
+                { text: "Validation", link: "/libraries/utils/validation" },
+                { text: "Links", link: "/libraries/utils/links" },
+                { text: "Sharing", link: "/libraries/utils/sharing" },
+              ],
+            },
+            {
+              text: "Types",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/libraries/types/overview" },
+                { text: "Supabase", link: "/libraries/types/supabase" },
+              ],
+            },
+            {
+              text: "More",
+              collapsed: false,
+              items: [
+                { text: "Moderation", link: "/libraries/more/moderation" },
+                {
+                  text: "Normalizer",
+                  link: "/libraries/more/moderation/normalizer",
+                },
+                { text: "nuqs", link: "/libraries/more/nuqs" },
+                { text: "Hooks", link: "/libraries/more/hooks" },
+                { text: "Scripts", link: "/libraries/more/scripts" },
+              ],
+            },
+          ],
+        },
+      ],
+    },
 
     socialLinks: [
       {
