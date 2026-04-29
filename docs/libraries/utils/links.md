@@ -93,5 +93,5 @@ openInNewWindow("https://example.com");
 
 ## Related
 
-- [Utils Overview](../utils/overview)
+- [Utils Overview](../utils/)
 - [Constants - Platforms](../constants/platforms)

@@ -77,4 +77,4 @@ import { PaymentTypes, PaymentStatuses, PaymentProviders, PaymentDirections, Pay
 
 ## Related
 
-- [Constants Overview](./overview)
+- [Constants Overview](./)

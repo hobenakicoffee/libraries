@@ -1,0 +1,250 @@
+# Checkout & Payments RPCs
+
+Two RPCs handle the money side of the shop: `initiate_shop_checkout` creates the order, and `handle_shop_payment_success` finalises it for online payments. COD orders skip the second step entirely.
+
+## Public read RPCs (called before checkout)
+
+### `get_shop_by_username`
+
+```sql
+public.get_shop_by_username(
+  p_username       varchar,
+  p_featured_limit integer default 6
+) → jsonb
+```
+
+Public (anon). Returns shop config, profile info, and up to `p_featured_limit` featured products. Used by the Astro shop landing page and the profile card widget.
+
+```json
+{
+  "success": true,
+  "shop": {
+    "shop_name": "Brew & Co.",
+    "shop_description": "Specialty coffee roasted weekly",
+    "logo_url": "...",
+    "theme_config": { "primary": "#6f4e37" },
+    "seo_title": "Brew & Co. — Specialty Coffee"
+  },
+  "profile": { "username": "brewco", "display_name": "Brew & Co.", "avatar_url": "..." },
+  "featured_products": [ ... ]
+}
+```
+
+---
+
+### `get_shop_products`
+
+```sql
+public.get_shop_products(
+  p_username    varchar,
+  p_category_id uuid    default null,
+  p_limit       integer default 12,
+  p_cursor_sort integer default null,
+  p_cursor_id   uuid    default null
+) → jsonb
+```
+
+Public, cursor-paginated. Use `(sort_order, id)` from the last row of the previous page as the next cursor.
+
+```json
+{
+  "success": true,
+  "products": [ ... ],
+  "has_more": true
+}
+```
+
+---
+
+### `get_product_by_slug`
+
+```sql
+public.get_product_by_slug(p_username varchar, p_product_slug varchar) → jsonb
+```
+
+Public. Returns the full product detail including `option_definitions`, variants (with `options` JSONB), file metadata, and all shipping/COD fields.
+
+```json
+{
+  "success": true,
+  "product": {
+    "id": "...",
+    "title": "Single-Origin Ethiopia Yirgacheffe",
+    "product_type": "physical",
+    "price": 850,
+    "option_definitions": [
+      { "name": "Grind",  "values": ["Whole Bean", "Coarse", "Medium", "Fine"] },
+      { "name": "Weight", "values": ["250g", "500g"] }
+    ],
+    "shipping_fee_inside_dhaka": 60,
+    "shipping_fee_outside_dhaka": 120,
+    "processing_min_days": 1,
+    "processing_max_days": 2,
+    "cod_enabled": true,
+    "variants": [
+      { "id": "...", "options": {"Grind":"Whole Bean","Weight":"250g"}, "price_adjustment": 0, "stock_count": 12 },
+      { "id": "...", "options": {"Grind":"Whole Bean","Weight":"500g"}, "price_adjustment": 200, "stock_count": 8 }
+    ],
+    "files": []
+  }
+}
+```
+
+---
+
+## `initiate_shop_checkout`
+
+```sql
+public.initiate_shop_checkout(
+  p_items          jsonb,
+  p_address_id     uuid    default null,
+  p_buyer_notes    text    default null,
+  p_payment_method shop_payment_method_enum default 'online'
+) → jsonb
+```
+
+The primary checkout RPC. Creates `shop_orders` and `shop_order_items` in one transaction.
+
+### Item format
+
+```json
+{
+  "p_items": [
+    { "product_id": "uuid", "variant_id": "uuid", "quantity": 2 },
+    { "product_id": "uuid", "quantity": 1 }
+  ]
+}
+```
+
+### What it validates (in order)
+
+1. **Auth** — `auth.uid()` must be set
+2. **Cart not empty** — `jsonb_array_length(p_items) > 0`
+3. **Products exist** — each `product_id` must be active and not deleted
+4. **Single seller** — all items must be from the same creator (`MIXED_SELLERS`)
+5. **Not own product** — buyer cannot buy their own product
+6. **COD rules** (when `p_payment_method = 'cod'`):
+   - All items must be physical (`COD_NOT_ALLOWED_FOR_DIGITAL`)
+   - All items must have `cod_enabled = true` (`MIXED_COD_AND_NON_COD`)
+   - Seller must be eligible right now (`SELLER_COD_BLOCKED`)
+7. **Variant match** — if `variant_id` provided, must belong to that product
+8. **Stock** — quantity ≤ available stock
+9. **Address** — physical items require a valid `p_address_id`
+
+### How shipping fee is picked
+
+```sql
+v_inside_dhaka := (lower(v_address.district) = 'dhaka');
+
+v_item_shipping := case
+  when v_inside_dhaka then product.shipping_fee_inside_dhaka
+  else product.shipping_fee_outside_dhaka
+end;
+```
+
+### Platform fee calculation
+
+```sql
+-- Platform fee rate is READ from platform_settings here, not from client
+v_platform_fee_rate := get_platform_setting('platform_fee_rate');  -- 0.10
+
+v_platform_fee := round((subtotal + shipping_total) * v_platform_fee_rate, 2);
+v_seller_net   := (subtotal + shipping_total) - v_platform_fee;
+```
+
+### Online vs COD branching
+
+| | Online | COD |
+|---|---|---|
+| Initial item status | `pending` | `processing` |
+| Stock decremented | Later (in `handle_shop_payment_success`) | **At checkout** |
+| Transaction row | Later (after IPN) | Later (after cash confirmed) |
+| Address required | Only if physical | Yes (physical only) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "order_id": "uuid",
+  "order_number": "SHOP-20240115-A3F2",
+  "payment_method": "online",
+  "subtotal": 1700.00,
+  "shipping_total": 120.00,
+  "total": 1820.00,
+  "platform_fee": 182.00,
+  "seller_net": 1638.00
+}
+```
+
+For online orders, the frontend takes `order_number`, creates an SSLCommerz session with the `total`, and redirects the user. For COD, navigate directly to the confirmation page — no gateway needed.
+
+**Errors:** `UNAUTHENTICATED`, `EMPTY_CART`, `PRODUCT_NOT_FOUND`, `VARIANT_NOT_FOUND`, `INSUFFICIENT_STOCK`, `MIXED_SELLERS`, `CANNOT_BUY_OWN_PRODUCT`, `SHIPPING_ADDRESS_REQUIRED`, `ADDRESS_NOT_FOUND`, `COD_NOT_ALLOWED_FOR_DIGITAL`, `MIXED_COD_AND_NON_COD`, `SELLER_COD_BLOCKED`, `INVALID_QUANTITY`
+
+---
+
+## `handle_shop_payment_success`
+
+```sql
+public.handle_shop_payment_success(
+  p_order_id                 uuid,
+  p_transaction_reference_id uuid
+) → jsonb
+```
+
+Called by the SSLCommerz IPN Edge Function after payment is confirmed. **Never call this for COD orders** — it returns `COD_ORDER_INVALID_PATH`.
+
+### What it does
+
+1. **Idempotency check** — if `transaction_reference_id` is already set on the order, returns `{ "idempotent": true }` immediately. Safe to call multiple times from the IPN webhook.
+
+2. **Links transaction** — sets `shop_orders.transaction_reference_id`
+
+3. **Per-item branching:**
+
+   | Item type | Actions |
+   |---|---|
+   | Digital | Creates download tokens for each file, marks status `fulfilled`, increments `sales_count` |
+   | Physical | Marks status `processing` |
+
+4. **Decrements stock** — for both digital and physical items
+
+### Download token creation
+
+```sql
+-- Token = 64-char crypto-random (two UUID4s concatenated, hyphens stripped)
+v_token := replace(gen_random_uuid()::text, '-', '')
+        || replace(gen_random_uuid()::text, '-', '');
+v_token := substring(v_token, 1, 64);
+
+insert into shop_download_tokens (
+  order_item_id, file_id, buyer_profile_id,
+  token, max_downloads, expires_at
+)
+select
+  item.id, file.id, order.buyer_profile_id,
+  v_token,
+  product.max_downloads,
+  now() + (product.download_expires_hours * interval '1 hour')
+...
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "order_number": "SHOP-20240115-A3F2",
+  "has_digital": true,
+  "has_physical": false,
+  "download_tokens": [
+    { "file_name": "recipe-book.pdf", "token": "abc123..." }
+  ],
+  "buyer_profile_id": "uuid",
+  "seller_profile_id": "uuid"
+}
+```
+
+The Edge Function uses `buyer_profile_id` and `seller_profile_id` to dispatch in-app and email notifications.
+
+**Errors:** `ORDER_NOT_FOUND`, `COD_ORDER_INVALID_PATH`

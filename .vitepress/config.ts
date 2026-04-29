@@ -44,13 +44,14 @@ export default defineConfig({
           items: [
             { text: "Home", link: "https://developer.hobenakicoffee.com" },
             { text: "Getting Started", link: "/getting-started" },
-            { text: "Libraries", link: "/libraries/overview" },
+            { text: "Libraries", link: "/libraries/" },
+            { text: "Shop Service", link: "/shop-service/frontend/index" },
           ],
         },
       ],
       "/libraries/": [
         ...common,
-        { text: "Overview", link: "/libraries/overview" },
+        { text: "Overview", link: "/libraries/" },
         {
           text: "Libraries",
           items: [
@@ -58,7 +59,7 @@ export default defineConfig({
               text: "Constants",
               collapsed: false,
               items: [
-                { text: "Overview", link: "/libraries/constants/overview" },
+                { text: "Overview", link: "/libraries/constants/" },
                 { text: "Visibility", link: "/libraries/constants/visibility" },
                 { text: "Payment", link: "/libraries/constants/payment" },
                 { text: "Platforms", link: "/libraries/constants/platforms" },
@@ -69,7 +70,7 @@ export default defineConfig({
               text: "Utilities",
               collapsed: false,
               items: [
-                { text: "Overview", link: "/libraries/utils/overview" },
+                { text: "Overview", link: "/libraries/utils/" },
                 { text: "Format", link: "/libraries/utils/format" },
                 { text: "Validation", link: "/libraries/utils/validation" },
                 { text: "Links", link: "/libraries/utils/links" },
@@ -80,7 +81,7 @@ export default defineConfig({
               text: "Types",
               collapsed: false,
               items: [
-                { text: "Overview", link: "/libraries/types/overview" },
+                { text: "Overview", link: "/libraries/types/" },
                 { text: "Supabase", link: "/libraries/types/supabase" },
               ],
             },
@@ -88,14 +89,85 @@ export default defineConfig({
               text: "More",
               collapsed: false,
               items: [
-                { text: "Moderation", link: "/libraries/more/moderation" },
+                { text: "Moderation", link: "/libraries/moderation" },
                 {
                   text: "Normalizer",
-                  link: "/libraries/more/moderation/normalizer",
+                  link: "/libraries/moderation/normalizer",
                 },
-                { text: "nuqs", link: "/libraries/more/nuqs" },
-                { text: "Hooks", link: "/libraries/more/hooks" },
-                { text: "Scripts", link: "/libraries/more/scripts" },
+                { text: "nuqs", link: "/libraries/nuqs" },
+                { text: "Hooks", link: "/libraries/hooks" },
+                { text: "Scripts", link: "/libraries/scripts" },
+              ],
+            },
+          ],
+        },
+      ],
+      "/shop-service/": [
+        ...common,
+        {
+          text: "Shop Service",
+          collapsed: false,
+          items: [
+            {
+              text: "Frontend",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/shop-service/frontend/" },
+                { text: "Theming", link: "/shop-service/frontend/theming" },
+                {
+                  text: "Public Pages",
+                  link: "/shop-service/frontend/public-pages",
+                },
+                {
+                  text: "Studio Settings",
+                  link: "/shop-service/frontend/studio-settings",
+                },
+                {
+                  text: "Studio Products",
+                  link: "/shop-service/frontend/studio-products",
+                },
+                {
+                  text: "Studio Orders",
+                  link: "/shop-service/frontend/studio-orders",
+                },
+                { text: "Checkout", link: "/shop-service/frontend/checkout" },
+                {
+                  text: "Buyer Orders",
+                  link: "/shop-service/frontend/buyer-orders",
+                },
+              ],
+            },
+            {
+              text: "Backend",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/shop-service/backend/" },
+                { text: "Schema", link: "/shop-service/backend/schema" },
+                {
+                  text: "RPC Helpers",
+                  link: "/shop-service/backend/rpc-helpers",
+                },
+                {
+                  text: "RPC Products",
+                  link: "/shop-service/backend/rpc-products",
+                },
+                {
+                  text: "RPC Checkout",
+                  link: "/shop-service/backend/rpc-checkout",
+                },
+                {
+                  text: "RPC Orders",
+                  link: "/shop-service/backend/rpc-orders",
+                },
+                { text: "RPC COD", link: "/shop-service/backend/rpc-cod" },
+                {
+                  text: "RPC Dashboard",
+                  link: "/shop-service/backend/rpc-dashboard",
+                },
+                {
+                  text: "RPC Reference",
+                  link: "/shop-service/backend/rpc-reference",
+                },
               ],
             },
           ],

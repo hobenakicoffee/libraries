@@ -31,4 +31,4 @@ const isExclusive = ServiceTypes.EXCLUSIVE_CONTENT;
 
 ## Related
 
-- [Constants Overview](./overview)
+- [Constants Overview](./)

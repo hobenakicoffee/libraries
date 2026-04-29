@@ -45,5 +45,5 @@ getSocialLink("johndoe", SupporterPlatforms.INSTAGRAM);
 
 ## Related
 
-- [Constants Overview](./overview)
+- [Constants Overview](./)
 - [Utils - Links](../utils/links)

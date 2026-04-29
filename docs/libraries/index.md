@@ -33,9 +33,9 @@ import { formatCurrency, cn } from "@hobenakicoffee/libraries/lib/utils";
 
 ## Related
 
-- [Constants](../constants/overview)
-- [Utilities](../utils/overview)
-- [Types](../types/overview)
-- [Moderation](../moderation/index)
-- [nuqs](../nuqs/index)
-- [Scripts](../scripts/index)
+- [Constants](./constants/index)
+- [Utilities](./utils/index)
+- [Types](./types/index)
+- [Moderation](./moderation/index)
+- [nuqs](./nuqs/index)
+- [Scripts](./scripts/index)

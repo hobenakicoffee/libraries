@@ -53,5 +53,5 @@ result.error;       // Error if any
 
 ## Related
 
-- [Utils Overview](../utils/overview)
+- [Utils Overview](../utils/)
 - [Moderation Overview](../moderation/)

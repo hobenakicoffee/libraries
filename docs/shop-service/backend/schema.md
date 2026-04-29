@@ -1,0 +1,481 @@
+# Database Schema
+
+All tables are in the `public` schema with RLS enabled. Clients access data exclusively through RPCs — direct table access is blocked by the RLS policies described here.
+
+## Table overview
+
+| Table | Rows represent | Key FKs |
+|---|---|---|
+| `platform_settings` | Singleton platform config knobs | — |
+| `user_addresses` | Buyer address book entries | `profiles` |
+| `shop_settings` | One shop config per creator | `profiles` |
+| `shop_categories` | Creator-defined product categories | `profiles` |
+| `shop_products` | Individual products | `profiles`, `shop_categories` |
+| `shop_product_variants` | Multi-axis variant combinations | `shop_products` |
+| `shop_product_files` | Files attached to digital products | `shop_products` |
+| `shop_policies` | Creator-customised policy text | `profiles` |
+| `shop_orders` | One row per checkout session | `profiles` (×2), `transactions` |
+| `shop_order_items` | Line items within an order | `shop_orders`, `shop_products`, `shop_product_variants` |
+| `shop_download_tokens` | Secure download links for digital files | `shop_order_items`, `shop_product_files`, `profiles` |
+
+Plus one **column addition** to an existing table:
+
+```sql
+alter table public.wallets
+  add column cod_debt numeric(12,2) not null default 0 check (cod_debt >= 0);
+```
+
+---
+
+## `platform_settings`
+
+Singleton key-value config. Service-role write only.
+
+```sql
+create table public.platform_settings (
+  key         varchar(64)  primary key,
+  value       jsonb        not null,
+  description text,
+  updated_at  timestamptz  not null default now()
+);
+```
+
+**Seeded rows:**
+
+| `key` | `value` | Purpose |
+|---|---|---|
+| `platform_fee_rate` | `0.10` | Fraction of order total taken as platform fee |
+| `cod_wallet_floor` | `-500` | Min `(balance − cod_debt)` before shop is deactivated |
+| `cod_settlement_max_days` | `30` | Days a COD order can age before triggering deactivation |
+
+**RLS:** `SELECT` allowed for `anon` and `authenticated`. No INSERT/UPDATE/DELETE policies — only service role can write.
+
+---
+
+## `wallets` (column addition)
+
+```sql
+alter table public.wallets
+  add column cod_debt numeric(12,2) not null default 0 check (cod_debt >= 0);
+```
+
+`cod_debt` (positive number) represents COD platform fees the seller owes but hasn't paid yet. Eligibility is computed as `balance − cod_debt ≥ cod_wallet_floor`. See [COD & Wallet Debt](./rpc-cod) for the full flow.
+
+---
+
+## `user_addresses`
+
+```sql
+create table public.user_addresses (
+  id             uuid        primary key default gen_random_uuid(),
+  profile_id     uuid        not null references public.profiles(id) on delete cascade,
+
+  label          varchar(50),              -- "Home", "Office"
+  recipient_name varchar(100) not null,
+  phone          varchar(20)  not null,
+  address_line1  varchar(255) not null,
+  address_line2  varchar(255),
+  city           varchar(100) not null,
+  district       varchar(100) not null,    -- 'Dhaka' → inside-Dhaka shipping rate
+  postal_code    varchar(20),
+  is_default     boolean      not null default false,
+
+  created_at     timestamptz  not null default now(),
+  updated_at     timestamptz  not null default now()
+);
+```
+
+**Key constraint:**
+
+```sql
+-- Enforces exactly one default address per profile
+create unique index idx_user_addresses_one_default
+  on public.user_addresses(profile_id)
+  where is_default = true;
+```
+
+**RLS:** Users can SELECT, INSERT, UPDATE, DELETE their own rows (`profile_id = auth.uid()`).
+
+::: tip Snapshot vs. live join
+`shop_orders.shipping_address` is a JSONB snapshot taken at checkout. There is no FK back to `user_addresses`. Editing or deleting an address never affects historical orders.
+:::
+
+---
+
+## `shop_settings`
+
+One row per creator. Controls whether the shop is visible and how it looks.
+
+```sql
+create table public.shop_settings (
+  id                  uuid        primary key default gen_random_uuid(),
+  profile_id          uuid        not null unique references public.profiles(id) on delete cascade,
+
+  shop_name           varchar(100) not null,
+  shop_description    text,
+  logo_url            text,
+  banner_url          text,
+  is_active           boolean      not null default false,
+  deactivation_reason varchar(40),  -- 'wallet_below_floor' | 'cod_aging' | 'manual' | null
+
+  theme_config        jsonb        not null default '{}',
+  seo_title           varchar(60),
+  seo_description     varchar(160),
+
+  created_at          timestamptz  not null default now(),
+  updated_at          timestamptz  not null default now()
+);
+```
+
+**`deactivation_reason`** is set automatically by the cron job and cleared when the seller reactivates. The frontend uses it to render the Studio banner with actionable copy.
+
+**RLS:**
+- `SELECT` — active shops visible to all, plus owner always sees their own
+- `INSERT/UPDATE` — owner only (`profile_id = auth.uid()`)
+- `DELETE` — owner only
+
+---
+
+## `shop_categories`
+
+Creator-scoped categories. Slugs are unique per shop, not globally.
+
+```sql
+create table public.shop_categories (
+  id          uuid        primary key default gen_random_uuid(),
+  profile_id  uuid        not null references public.profiles(id) on delete cascade,
+
+  name        varchar(100) not null,
+  slug        varchar(100) not null,
+  sort_order  integer      not null default 0,
+  is_visible  boolean      not null default true,
+
+  created_at  timestamptz  not null default now(),
+  updated_at  timestamptz  not null default now(),
+
+  constraint shop_categories_profile_slug_unique unique (profile_id, slug)
+);
+```
+
+Products reference `category_id` with `ON DELETE SET NULL` — deleting a category nulls the reference on products, it doesn't delete them.
+
+---
+
+## `shop_products`
+
+The core product table. `product_type` forks schema usage.
+
+```sql
+create table public.shop_products (
+  id                         uuid     primary key default gen_random_uuid(),
+  profile_id                 uuid     not null references public.profiles(id) on delete cascade,
+  category_id                uuid     references public.shop_categories(id) on delete set null,
+
+  title                      varchar(200) not null,
+  slug                       varchar(200) not null,
+  description                text,
+  cover_image_url            text,
+  images                     text[]   not null default '{}',
+  product_type               shop_product_type_enum not null,
+
+  sku                        varchar(100),            -- optional, not unique
+
+  price                      numeric(10,2) not null check (price >= 0),
+  compare_at_price           numeric(10,2),           -- null = no sale/strikethrough
+
+  -- Variant axis definitions (max 3). Empty array = no variants.
+  option_definitions         jsonb    not null default '[]',
+
+  -- Physical-only
+  weight_grams               integer,
+  shipping_fee_inside_dhaka  numeric(10,2) not null default 0 check (...),
+  shipping_fee_outside_dhaka numeric(10,2) not null default 0 check (...),
+  processing_min_days        integer  check (processing_min_days >= 0),
+  processing_max_days        integer  check (processing_max_days >= 0),
+  requires_shipping          boolean  not null default false,
+  cod_enabled                boolean  not null default false,
+
+  -- Digital-only
+  max_downloads              integer  not null default 5,
+  download_expires_hours     integer  not null default 72,
+
+  -- Shared inventory
+  stock_count                integer  check (stock_count >= 0),   -- null = unlimited
+  low_stock_threshold        integer  not null default 5,
+
+  is_active    boolean  not null default true,
+  is_featured  boolean  not null default false,
+  is_deleted   boolean  not null default false,
+  sort_order   integer  not null default 0,
+  tags         text[]   not null default '{}',
+  sales_count  integer  not null default 0 check (sales_count >= 0),
+
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+
+  constraint shop_products_profile_slug_unique unique (profile_id, slug),
+  constraint shop_products_cod_only_physical
+    check (cod_enabled = false or product_type = 'physical'),
+  constraint shop_products_processing_window_valid
+    check (processing_min_days is null or processing_max_days is null
+           or processing_min_days <= processing_max_days),
+  constraint shop_products_option_axes_max_3
+    check (jsonb_array_length(option_definitions) <= 3)
+);
+```
+
+**Important notes:**
+
+- When variants exist, `product.stock_count` is ignored — stock is tracked per variant
+- `sales_count` is incremented on fulfillment (digital) or delivery (physical)
+- `is_deleted = true` hides from public pages but is visible in Studio
+- Direct DELETE is blocked by RLS; always go through `delete_shop_product`
+
+**RLS:**
+- `SELECT` — active + non-deleted visible to all; owner sees everything
+- `INSERT/UPDATE` — owner only
+- `DELETE` — always `false` (blocked — use the RPC)
+
+---
+
+## `shop_product_variants`
+
+Multi-axis variant rows. One per unique option combination per product.
+
+```sql
+create table public.shop_product_variants (
+  id               uuid    primary key default gen_random_uuid(),
+  product_id       uuid    not null references public.shop_products(id) on delete cascade,
+
+  options          jsonb   not null,    -- {"Size":"M","Color":"Red"}
+  price_adjustment numeric(10,2) not null default 0,
+  stock_count      integer check (stock_count >= 0),  -- null = inherit product
+  sku              varchar(100),
+  image_url        text,               -- variant-specific photo
+  sort_order       integer not null default 0,
+  is_active        boolean not null default true,
+
+  constraint shop_product_variants_options_is_object
+    check (jsonb_typeof(options) = 'object' and options <> '{}')
+);
+
+-- Unique combination per product
+create unique index shop_product_variants_unique_combination
+  on public.shop_product_variants(product_id, options);
+```
+
+::: warning options is immutable
+Once a variant is created, its `options` field cannot be changed. The `upsert_shop_product_variant` RPC returns `OPTIONS_IMMUTABLE` if you pass `p_options` on an edit. To change the combination, delete the variant (blocked if it has orders) and create a new one.
+:::
+
+---
+
+## `shop_product_files`
+
+Files for digital products. `storage_path` is **never returned to clients**.
+
+```sql
+create table public.shop_product_files (
+  id              uuid    primary key default gen_random_uuid(),
+  product_id      uuid    not null references public.shop_products(id) on delete restrict,
+
+  file_name       varchar(255) not null,
+  storage_path    text    not null,   -- private bucket path, NEVER exposed
+  file_size_bytes bigint,
+  mime_type       varchar(100),
+  sort_order      integer not null default 0,
+  is_deleted      boolean not null default false,
+
+  created_at      timestamptz not null default now()
+);
+```
+
+`ON DELETE RESTRICT` on `product_id` means you cannot hard-delete a product that has files with active download tokens. Use soft delete.
+
+---
+
+## `shop_policies`
+
+One row per `(profile_id, policy_type)`. Only customisations are stored.
+
+```sql
+create table public.shop_policies (
+  id          uuid    primary key default gen_random_uuid(),
+  profile_id  uuid    not null references public.profiles(id) on delete cascade,
+
+  policy_type shop_policy_type_enum not null,
+  content     text    not null,   -- markdown
+  is_enabled  boolean not null default true,
+
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+
+  constraint shop_policies_profile_type_unique unique (profile_id, policy_type)
+);
+```
+
+**Policy types:** `return_refund | digital_products | shipping | privacy | terms_of_service`
+
+When no row exists for a given type, the frontend falls back to its static default template.
+
+---
+
+## `shop_orders`
+
+One row per checkout session.
+
+```sql
+create table public.shop_orders (
+  id                       uuid    primary key default gen_random_uuid(),
+  order_number             varchar(20) unique not null,   -- SHOP-YYYYMMDD-XXXX
+
+  seller_profile_id        uuid    not null references public.profiles(id),
+  buyer_profile_id         uuid    not null references public.profiles(id),
+
+  payment_method           shop_payment_method_enum not null default 'online',
+  has_digital              boolean not null default false,
+  has_physical             boolean not null default false,
+
+  -- Financials (all snapshotted at checkout)
+  subtotal                 numeric(10,2) not null,
+  shipping_total           numeric(10,2) not null default 0,
+  platform_fee             numeric(10,2) not null,
+  platform_fee_rate        numeric(5,4)  not null,   -- snapshotted for audit
+  seller_net               numeric(10,2) not null,
+
+  transaction_reference_id uuid references public.transactions(reference_id) on delete set null,
+  shipping_address         jsonb,   -- snapshot; no FK back to user_addresses
+  buyer_notes              text,
+  seller_notes             text,
+
+  cod_settled_at           timestamptz,  -- set when last COD item is confirmed
+
+  created_at               timestamptz not null default now(),
+  updated_at               timestamptz not null default now(),
+
+  -- COD orders cannot contain digital items
+  constraint shop_orders_cod_no_digital
+    check (payment_method = 'online' or has_digital = false)
+);
+```
+
+::: info No status column
+`shop_orders` has no status column. Status is computed from item statuses in `get_order_by_number`. See [Design Decision #4](./#_4-order-status-is-item-level-not-order-level).
+:::
+
+**RLS:** Buyer and seller can both SELECT their own orders. INSERT/UPDATE/DELETE blocked for all authenticated users (RPC-only).
+
+---
+
+## `shop_order_items`
+
+Line items. All pricing fields are **immutable snapshots**.
+
+```sql
+create table public.shop_order_items (
+  id              uuid    primary key default gen_random_uuid(),
+  order_id        uuid    not null references public.shop_orders(id) on delete cascade,
+  product_id      uuid    not null references public.shop_products(id) on delete restrict,
+  variant_id      uuid    references public.shop_product_variants(id) on delete restrict,
+
+  -- Immutable snapshots
+  product_title   varchar(200) not null,
+  product_type    shop_product_type_enum not null,
+  variant_label   varchar(255),           -- "Size: M / Color: Red"
+  variant_options jsonb,                  -- snapshot of variant.options
+  unit_price      numeric(10,2) not null, -- base price + price_adjustment
+  shipping_cost   numeric(10,2) not null default 0,
+  quantity        integer not null default 1 check (quantity > 0),
+
+  status          shop_order_item_status_enum not null default 'pending',
+
+  -- Physical fulfillment
+  carrier         varchar(100),
+  tracking_number varchar(200),
+  tracking_url    text,
+  shipped_at      timestamptz,
+  delivered_at    timestamptz,
+
+  -- COD-specific
+  cod_settled_at      timestamptz,
+  cancellation_reason text,
+
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now(),
+
+  -- Cancelled items must have a reason; non-cancelled must not
+  constraint shop_order_items_cancellation_reason_consistency
+    check (
+      (status = 'cancelled' and cancellation_reason is not null)
+      or (status <> 'cancelled' and cancellation_reason is null)
+    )
+);
+```
+
+**`ON DELETE RESTRICT`** on `product_id` and `variant_id` enforces that products/variants with live order items cannot be hard-deleted.
+
+**RLS:** Buyer and seller can SELECT. INSERT/UPDATE/DELETE blocked (RPC-only).
+
+---
+
+## `shop_download_tokens`
+
+One row per `(order_item, file)` pair. Used to vend secure downloads.
+
+```sql
+create table public.shop_download_tokens (
+  id               uuid    primary key default gen_random_uuid(),
+  order_item_id    uuid    not null references public.shop_order_items(id) on delete cascade,
+  file_id          uuid    not null references public.shop_product_files(id) on delete restrict,
+  buyer_profile_id uuid    not null references public.profiles(id),
+
+  token            varchar(64) unique not null,   -- 64-char crypto-random
+  download_count   integer not null default 0 check (download_count >= 0),
+  max_downloads    integer not null check (max_downloads > 0),
+  expires_at       timestamptz not null,
+
+  created_at       timestamptz not null default now()
+);
+```
+
+**RLS:** Buyers can SELECT their own tokens. INSERT/UPDATE/DELETE blocked (Edge Function only).
+
+---
+
+## Enums
+
+```sql
+create type public.shop_product_type_enum as enum (
+  'digital', 'physical'
+);
+
+create type public.shop_order_item_status_enum as enum (
+  'pending', 'paid', 'fulfilled', 'processing',
+  'shipped', 'delivered', 'cancelled', 'refunded'
+);
+
+create type public.shop_payment_method_enum as enum (
+  'online', 'cod'
+);
+
+create type public.shop_policy_type_enum as enum (
+  'return_refund', 'digital_products', 'shipping',
+  'privacy', 'terms_of_service'
+);
+```
+
+---
+
+## Indexes
+
+Key indexes beyond the primary keys:
+
+| Table | Index | Purpose |
+|---|---|---|
+| `user_addresses` | `(profile_id) WHERE is_default = true` (unique) | One default per profile |
+| `shop_products` | `(profile_id, is_active, sort_order) WHERE is_deleted = false` | Paginated product grid |
+| `shop_products` | `(profile_id, is_featured) WHERE is_featured = true ...` | Profile card featured strip |
+| `shop_products` | `(profile_id, sales_count desc) WHERE is_active ...` | Top-sellers list |
+| `shop_orders` | `(seller_profile_id, created_at desc)` | Seller order list |
+| `shop_orders` | `(seller_profile_id, created_at) WHERE payment_method = 'cod' AND cod_settled_at IS NULL` | COD aging check |
+| `shop_order_items` | `(order_id, status) WHERE status = 'delivered' AND cod_settled_at IS NULL` | Cash-pending tab |
