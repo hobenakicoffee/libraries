@@ -49,6 +49,7 @@ export default withMermaid(
               { text: "Home", link: "https://developer.hobenakicoffee.com" },
               { text: "Getting Started", link: "/getting-started" },
               { text: "Libraries", link: "/libraries/" },
+              { text: "Coffee Gifts", link: "/coffee-gifts/frontend/" },
               { text: "Shop Service", link: "/shop-service/frontend/index" },
               {
                 text: "Memberships Hub",
@@ -112,6 +113,61 @@ export default withMermaid(
                   { text: "nuqs", link: "/libraries/nuqs" },
                   { text: "Hooks", link: "/libraries/hooks" },
                   { text: "Scripts", link: "/libraries/scripts" },
+                ],
+              },
+            ],
+          },
+        ],
+        "/coffee-gifts/": [
+          ...common,
+          {
+            text: "Coffee Gifts",
+            items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/coffee-gifts/frontend/" },
+                  {
+                    text: "Sending a Gift",
+                    link: "/coffee-gifts/frontend/sending-a-gift",
+                  },
+                  {
+                    text: "Anonymous vs Authenticated",
+                    link: "/coffee-gifts/frontend/anonymous-vs-authenticated",
+                  },
+                  {
+                    text: "Displaying Gifts",
+                    link: "/coffee-gifts/frontend/displaying-gifts",
+                  },
+                  { text: "Stats", link: "/coffee-gifts/frontend/stats" },
+                ],
+              },
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/coffee-gifts/backend/" },
+                  {
+                    text: "Database Schema",
+                    link: "/coffee-gifts/backend/database-schema",
+                  },
+                  {
+                    text: "RPC: Perform Coffee Gift",
+                    link: "/coffee-gifts/backend/rpc-perform-coffee-gift",
+                  },
+                  {
+                    text: "RPC: Stats",
+                    link: "/coffee-gifts/backend/rpc-stats",
+                  },
+                  {
+                    text: "Payment Pipeline",
+                    link: "/coffee-gifts/backend/payment-pipeline",
+                  },
+                  {
+                    text: "Security & RLS",
+                    link: "/coffee-gifts/backend/security-and-rls",
+                  },
                 ],
               },
             ],
