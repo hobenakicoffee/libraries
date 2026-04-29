@@ -59,6 +59,10 @@ export default withMermaid(
                 text: "Newsletter Service",
                 link: "/newsletter-service/frontend/",
               },
+              {
+                text: "Payments & Memberships",
+                link: "/payments-and-memberships/frontend/",
+              },
             ],
           },
         ],
@@ -167,6 +171,90 @@ export default withMermaid(
                   {
                     text: "Security & RLS",
                     link: "/coffee-gifts/backend/security-and-rls",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        "/payments-and-memberships/": [
+          ...common,
+          {
+            text: "Payments & Memberships",
+            items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [
+                  {
+                    text: "Overview",
+                    link: "/payments-and-memberships/frontend/",
+                  },
+                  {
+                    text: "Wallet",
+                    link: "/payments-and-memberships/frontend/wallet",
+                  },
+                  {
+                    text: "Payout Methods",
+                    link: "/payments-and-memberships/frontend/payout-methods",
+                  },
+                  {
+                    text: "Transactions",
+                    link: "/payments-and-memberships/frontend/transactions",
+                  },
+                  {
+                    text: "Withdrawal",
+                    link: "/payments-and-memberships/frontend/withdrawal",
+                  },
+                  {
+                    text: "Activities",
+                    link: "/payments-and-memberships/frontend/activities",
+                  },
+                  {
+                    text: "Memberships",
+                    link: "/payments-and-memberships/frontend/memberships",
+                  },
+                ],
+              },
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [
+                  {
+                    text: "Overview",
+                    link: "/payments-and-memberships/backend/",
+                  },
+                  {
+                    text: "Enums",
+                    link: "/payments-and-memberships/backend/enums",
+                  },
+                  {
+                    text: "Wallets",
+                    link: "/payments-and-memberships/backend/wallets",
+                  },
+                  {
+                    text: "Payout Methods",
+                    link: "/payments-and-memberships/backend/payout-methods",
+                  },
+                  {
+                    text: "Transactions",
+                    link: "/payments-and-memberships/backend/transactions",
+                  },
+                  {
+                    text: "Withdrawal Requests",
+                    link: "/payments-and-memberships/backend/withdrawal-requests",
+                  },
+                  {
+                    text: "Activities",
+                    link: "/payments-and-memberships/backend/activities",
+                  },
+                  {
+                    text: "Memberships",
+                    link: "/payments-and-memberships/backend/memberships",
+                  },
+                  {
+                    text: "Payment Functions",
+                    link: "/payments-and-memberships/backend/payment-functions",
                   },
                 ],
               },
