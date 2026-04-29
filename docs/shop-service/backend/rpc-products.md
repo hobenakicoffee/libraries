@@ -1,5 +1,32 @@
 # Products, Variants & Files RPCs
 
+```mermaid
+flowchart TB
+    subgraph "Product Structure"
+        A[shop_products] --> B[option_definitions JSONB]
+        A --> C[product_type]
+        A --> D[price + stock]
+    end
+    
+    subgraph "Variant System"
+        B --> E[Axis definitions<br/>(e.g. Size, Color)]
+        E --> F[shop_product_variants]
+        F --> G[options JSONB<br/>{Size: M, Color: Red}]
+    end
+    
+    subgraph "Digital Files"
+        A --> H[shop_product_files]
+        H --> I[storage_path<br/>(private)]
+        I --> J[shop_download_tokens]
+    end
+    
+    subgraph "Validation"
+        G --> K[All keys match axes?]
+        G --> L[All values in list?]
+        G --> M[All axes covered?]
+    end
+```
+
 Covers all RPCs for managing the product catalogue, multi-axis variants, and digital product files. Also includes address and category RPCs which are prerequisite for product setup.
 
 ## Address RPCs

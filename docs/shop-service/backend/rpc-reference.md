@@ -1,5 +1,33 @@
 # All RPCs — Quick Reference
 
+```mermaid
+flowchart TB
+    subgraph "Public (anon)"
+        A[get_shop_by_username]
+        B[get_shop_products]
+        C[get_product_by_slug]
+        D[get_shop_policies]
+    end
+    
+    subgraph "Authenticated"
+        E[Addresses]
+        F[Settings]
+        G[Products]
+        H[Variants]
+        I[Files]
+        J[Policies]
+        K[Checkout]
+        L[Orders]
+        M[COD]
+    end
+    
+    subgraph "Service Role Only"
+        N[handle_payment_success]
+        O[auto_deactivate]
+        P[topup_cod_debt]
+    end
+```
+
 34 RPCs total. All are `SECURITY DEFINER` with `SET search_path = ''`. All return `jsonb` (except `get_platform_setting` which returns `numeric` and `get_user_addresses` which returns a table).
 
 ## Convention

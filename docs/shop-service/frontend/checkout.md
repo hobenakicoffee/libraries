@@ -1,5 +1,42 @@
 # Checkout Flow
 
+```mermaid
+stateDiagram-v2
+    [*] --> CartReview
+    CartReview --> Address : Continue
+    Address --> Payment : Continue
+    Payment --> OrderSubmission : Pay
+    
+    state CartReview {
+        [*] --> DisplayItems
+        DisplayItems --> EditQuantity
+        EditQuantity --> DisplayItems
+        DisplayItems --> AddNote
+        AddNote --> DisplayItems
+    }
+    
+    state Address {
+        [*] --> SelectOrCreate
+        SelectOrCreate --> ValidateDhaka
+        ValidateDhaka --> [*]
+    }
+    
+    state Payment {
+        [*] --> ChooseMethod
+        ChooseMethod --> ValidateCOD
+        ValidateCOD --> [*]
+    }
+    
+    OrderSubmission --> SuccessOnline : online
+    OrderSubmission --> SuccessCOD : cod
+    
+    SuccessOnline --> SSLCommerz
+    SSLCommerz --> [*]
+    
+    SuccessCOD --> OrderConfirmation
+    OrderConfirmation --> [*]
+```
+
 The checkout is a four-step flow at `/checkout`. Cart state lives in a zustand store. URL state (step progress) is managed via `nuqs`.
 
 ## Cart store

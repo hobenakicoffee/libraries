@@ -1,5 +1,26 @@
 # Order Detail & Downloads
 
+```mermaid
+flowchart LR
+    subgraph Buyers
+        A["Order History<br/>/account/orders"] --> B["Order Detail<br/>/orders/:number"]
+        B --> C{Product Type}
+        C -->|Digital| D[Download Tokens]
+        C -->|Physical| E[Tracking Info]
+    end
+    
+    subgraph Auto-Update
+        F["Poll every 30s"] -.-> B
+    end
+    
+    subgraph StatusFlow
+        G[processing] --> H[partially_shipped]
+        H --> I[complete]
+        G --> J[cancelled]
+        J --> K[refunded]
+    end
+```
+
 Buyer-facing order pages: order history list, order detail, and digital file downloads.
 
 ## Order history (`/account/orders`)

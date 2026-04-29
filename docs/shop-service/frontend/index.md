@@ -2,6 +2,35 @@
 
 ## Three runtime surfaces
 
+```mermaid
+graph TB
+    subgraph "React SPA (@hobenakicoffee/app)"
+        A["Creator Studio<br/Buyer flows"] --> B[TanStack Query]
+        B --> C[RPC calls]
+    end
+    
+    subgraph "Astro Marketing Site"
+        D["/@[username]/shops"] --> E[SSR]
+        E --> F[React Islands]
+    end
+    
+    subgraph "Supabase Edge Functions"
+        G["shop-payment-ipn"]
+        H["shop-download"]
+        I["shop-notify"]
+        J["generate-shop-theme"]
+    end
+    
+    C --> K[Supabase DB]
+    F --> K
+    G --> K
+    H --> K
+    I --> K
+    J --> K
+    
+    K --> L["@hobenakicoffee/libraries<br/Shared Types"]
+```
+
 The shop service runs across three codebases that share types via `@hobenakicoffee/libraries`:
 
 **React SPA (`@hobenakicoffee/app`)** — Creator Studio (seller management) and authenticated buyer flows (cart, checkout, address book, order history). Data via TanStack Query. Routing via TanStack Router. URL state via `nuqs`. Forms via shadcn + RHF.

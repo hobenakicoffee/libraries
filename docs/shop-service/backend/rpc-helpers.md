@@ -1,5 +1,26 @@
 # Helpers & Eligibility RPCs
 
+```mermaid
+flowchart TB
+    subgraph "Eligibility Check"
+        A[check_shop_active_eligibility] --> B[Read wallet]
+        B --> C{Available >= floor?}
+        C -->|Yes| D[eligible: true]
+        C -->|No| E[reasons += wallet_below_floor]
+        
+        F[Check COD Aging] --> G{Any delivered COD<br/>> max_days?}
+        G -->|No| D
+        G -->|Yes| H[reasons += cod_aging]
+    end
+    
+    subgraph "Platform Settings"
+        I[get_platform_setting] --> J[key]
+        J --> K[platform_fee_rate]
+        J --> L[cod_wallet_floor]
+        J --> M[cod_settlement_max_days]
+    end
+```
+
 These two functions are used internally by almost every other RPC. You'll rarely call them directly, but understanding them is essential before reading the checkout and COD pages.
 
 ## `get_platform_setting`

@@ -1,5 +1,38 @@
 # Public Pages (Astro SSR)
 
+```mermaid
+graph TB
+    subgraph "Cloudflare Workers"
+        A["/@[username]/shops"] --> B[Shop Landing]
+        A --> C["/[slug]"]
+        A --> D["/policies"]
+    end
+    
+    subgraph SSR
+        B --> E[Theme CSS Vars]
+        C --> F[Product Detail]
+        D --> G[Policies]
+    end
+    
+    subgraph "React Islands"
+        H[ProductGridIsland] 
+        I[PurchaseIsland]
+        I --> J[GalleryIsland]
+    end
+    
+    E --> H
+    F --> I
+    F --> J
+    
+    H --> K[RPC: get_shop_products]
+    I --> L[RPC: get_product_by_slug]
+    D --> M[RPC: get_shop_policies]
+    
+    K --> N[(Supabase)]
+    L --> N
+    M --> N
+```
+
 Three public routes render server-side via Cloudflare Workers:
 
 | Route | RPC | Page |

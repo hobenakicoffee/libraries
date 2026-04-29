@@ -1,5 +1,30 @@
 # Shop Service — Backend Overview
 
+```mermaid
+graph TB
+    subgraph "Frontend Apps"
+        A["React SPA<br/Studio + Buyer"] --> D[RPC Calls]
+        B["Astro SSR<br/Public Pages"] --> D
+        C["Edge Functions<br/IPN + Download"] --> D
+    end
+    
+    subgraph "PostgreSQL (Supabase)"
+        D --> E[RPC Layer]
+        E --> F[Tables + Views]
+        F --> G[RLS Policies]
+    end
+    
+    subgraph "Core Tables"
+        H[shop_settings]
+        I[shop_products]
+        J[shop_product_variants]
+        K[shop_orders]
+        L[shop_order_items]
+        M[shop_download_tokens]
+        N[platform_settings]
+    end
+```
+
 The shop service is a multi-product e-commerce layer built entirely on PostgreSQL (Supabase). All business logic lives in RPCs (`SECURITY DEFINER` functions) so clients never touch tables directly — they call functions and receive typed JSONB responses.
 
 ## What's in this section

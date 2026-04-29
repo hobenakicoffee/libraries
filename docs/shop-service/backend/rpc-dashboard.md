@@ -1,5 +1,32 @@
 # Dashboard & Cron RPCs
 
+```mermaid
+flowchart TB
+    subgraph "get_shop_overview"
+        A[RPC Call] --> B[Revenue Aggregation]
+        B --> C[last_30_days]
+        B --> D[prev_30_days]
+        B --> E[all_time]
+        
+        F[Order Counts] --> G[same buckets]
+        
+        H[Metrics] --> I[pending_count<br/>physical items in processing]
+        H --> J[cash_pending_count<br/>COD delivered, unsettled]
+        
+        K[Top Items] --> L[sales_count desc]
+        M[Recent Orders] --> N[created_at desc]
+        
+        O[Eligibility] --> P[check_shop_active_eligibility]
+    end
+    
+    subgraph "Auto-Deactivate Cron"
+        Q[Daily @ 3AM] --> R[Runs eligibility check]
+        R --> S{Eligible?}
+        S -->|Yes| T[No change]
+        S -->|No| U[Set is_active=false]
+U --> V[Set deactivation_reason]
+```
+
 ## `get_shop_overview`
 
 ```sql

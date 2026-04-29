@@ -1,5 +1,34 @@
 # Studio — Order Management
 
+```mermaid
+stateDiagram-v2
+    [*] --> processing
+    
+    state processing {
+        [*] --> ShipPhysical
+    }
+    
+    ShipPhysical --> shipped : Tracking Added
+    
+    state shipped {
+        [*] --> MarkDelivered
+    }
+    
+    MarkDelivered --> delivered : Marked
+    
+    state delivered {
+        [*] --> COD_Confirm
+        COD_Confirm --> settled : Cash Confirmed
+    }
+    
+    settled --> [*]
+    delivered --> [*]
+    
+    processing --> cancelled : Cancel
+    ShipPhysical --> cancelled : Cancel
+    delivered --> cancelled : Cancel
+```
+
 The orders tab at `/studio/shop/orders` shows the seller's order list with status filtering. Each order card includes buyer info, per-item fulfillment actions, and COD-specific controls.
 
 ## Overview dashboard

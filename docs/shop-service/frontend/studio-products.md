@@ -1,5 +1,30 @@
 # Studio — Products & Variants
 
+```mermaid
+flowchart TB
+    subgraph "Product Editor"
+        A[Basic Info] --> B{Product Type}
+        B -->|Physical| C[Shipping + Stock]
+        B -->|Digital| D[Files + Downloads]
+    end
+    
+    subgraph "Option System"
+        C --> E[Option Definitions]
+        E --> F["Axis 1..3<br/>(e.g. Size, Color)"]
+        F --> G[Variant Grid]
+    end
+    
+    subgraph "Variant Management"
+        G --> H[Cartesian Product]
+        H --> I{Existing?}
+        I -->|Yes| J[Edit Row]
+        I -->|No| K[Create Row]
+    end
+    
+    J --> L[Save + Update]
+    K --> M[Save + Create]
+```
+
 The product editor at `/studio/shop/products/[id]` (or `/new`) is one form with conditional sections gated on `product_type`. Variant management lives in a sub-section that becomes available once `option_definitions` is set.
 
 ## Product list

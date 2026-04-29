@@ -1,5 +1,40 @@
 # Database Schema
 
+```mermaid
+erDiagram
+    PROFILES ||--o{ USER_ADDRESSES : has
+    PROFILES ||--o{ SHOP_SETTINGS : owns
+    PROFILES ||--o{ SHOP_CATEGORIES : has
+    PROFILES ||--o{ SHOP_PRODUCTS : creates
+    PROFILES ||--o{ SHOP_ORDERS : sells
+    PROFILES ||--o{ SHOP_ORDERS : buys
+    
+    SHOP_SETTINGS ||--|| SHOP_CATEGORIES : "profile_id FK"
+    SHOP_SETTINGS ||--|| SHOP_PRODUCTS : "profile_id FK"
+    SHOP_SETTINGS ||--o{ SHOP_POLICIES : owns
+    
+    SHOP_PRODUCTS ||--o{ SHOP_PRODUCT_VARIANTS : has
+    SHOP_PRODUCTS ||--o{ SHOP_PRODUCT_FILES : has
+    
+    SHOP_ORDERS ||--o{ SHOP_ORDER_ITEMS : contains
+    
+    SHOP_ORDER_ITEMS }o--|| SHOP_PRODUCTS : references
+    SHOP_ORDER_ITEMS }o--|| SHOP_PRODUCT_VARIANTS : optional
+    SHOP_ORDER_ITEMS }o--|| SHOP_PRODUCT_FILES : "digital only"
+    
+    SHOP_ORDER_ITEMS ||--o{ SHOP_DOWNLOAD_TOKENS : generates
+    
+    WALLETS {
+        uuid id PK
+        numeric balance
+        numeric cod_debt
+    }
+    
+    PLATFORM_SETTINGS {
+        varchar key PK
+        jsonb value
+    }
+
 All tables are in the `public` schema with RLS enabled. Clients access data exclusively through RPCs — direct table access is blocked by the RLS policies described here.
 
 ## Table overview

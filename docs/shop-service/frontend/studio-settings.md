@@ -1,5 +1,31 @@
 # Studio — Settings, Shipping & Policies
 
+```mermaid
+graph TB
+    subgraph "/studio/shop/settings/*"
+        A[basic] --> B[Shop Config]
+        A --> C[SEO]
+        A --> D[Logo/Banner]
+        
+        E[shipping] --> F[Bulk Shipping Rates]
+        F --> G[All Physical Products]
+        
+        H[policies] --> I[Policy Overrides]
+        I --> J[Merge with Defaults]
+        
+        K[theme] --> L[Theme Editor]
+        L --> M[CSS Variables]
+    end
+    
+    subgraph "Eligibility Check"
+        N[is_active toggle] --> O{Check Eligibility}
+        O -->|Pass| P[Shop Live]
+        O -->|Fail| Q[SHOW_INELIGIBLE]
+    end
+    
+    Q --> R[Deactivation Banner]
+```
+
 Three settings panels under `/studio/shop/settings/*`:
 
 | Sub-route | Panel | RPC |

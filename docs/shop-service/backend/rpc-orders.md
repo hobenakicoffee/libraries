@@ -1,5 +1,46 @@
 # Orders & Fulfillment RPCs
 
+```mermaid
+stateDiagram-v2
+    [*] --> pending
+    
+    pending --> paid : payment_success
+    pending --> processing : COD checkout
+    
+    paid --> shipped : update_tracking
+    processing --> shipped : update_tracking
+    
+    shipped --> delivered : mark_delivered
+    
+    delivered --> fulfilled : digital_fulfilled
+    
+    delivered --> settled : cod_cash_confirmed
+    
+    fulfilled --> [*]
+    delivered --> [*]
+    settled --> [*]
+    
+    pending --> cancelled : cancel_item (COD)
+    shipped --> cancelled : cancel_item (COD)
+    delivered --> cancelled : cancel_item (COD)
+    
+    note right of pending
+        Online: awaiting payment
+    end note
+    
+    note right of processing
+        COD: awaiting shipment
+    end note
+    
+    note right of shipped
+        In transit
+    end note
+    
+    note right of delivered
+        With buyer, COD: awaiting cash
+    end note
+```
+
 These RPCs cover reading orders (buyer and seller views) and the physical fulfillment flow (tracking, mark delivered). COD-specific RPCs (cash confirmation, cancellation) are on the [next page](./rpc-cod).
 
 ## `get_order_by_number`

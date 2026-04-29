@@ -1,5 +1,29 @@
 # Theming System
 
+```mermaid
+flowchart LR
+    subgraph "Build Phase"
+        A[ShopThemeConfig<br/>(JSONB)] --> B[buildShopCssVars]
+        B --> C[CSS Variables<br/>(--shop-*)]
+    end
+    
+    subgraph "Runtime"
+        C --> D[Astro SSR]
+        D --> E[Inline style<br/>&lt;style is:inline&gt;]
+        E --> F[Browser Render]
+    end
+    
+    subgraph "Components"
+        F --> G[Tailwind arbitrary<br/>bg-[--shop-primary]]
+    end
+    
+    subgraph "Editor"
+        H[Theme Editor] --> I[Color/Font/Radius]
+        I --> J[Preset Themes]
+        I --> K[AI Generate]
+H --> L[Live Preview<br/>(iframe)]
+```
+
 Each shop has a `theme_config` JSONB blob stored on `shop_settings`. Astro SSR converts it to CSS custom properties inlined in the `<head>`. Components reference those variables via Tailwind's arbitrary-value syntax.
 
 ## `ShopThemeConfig` shape

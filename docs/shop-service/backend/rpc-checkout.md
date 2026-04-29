@@ -1,5 +1,34 @@
 # Checkout & Payments RPCs
 
+```mermaid
+flowchart LR
+    subgraph "Pre-Checkout (Public)"
+        A[get_shop_by_username] --> B[Shop Landing]
+        C[get_product_by_slug] --> D[Product Detail]
+        E[get_shop_products] --> E
+    end
+    
+    subgraph "Checkout Flow"
+        F["initiate_shop_checkout"] --> G{Payment Method}
+        G -->|online| H[Create Order<br/>status=pending]
+        G -->|cod| I[Create Order<br/>status=processing]
+    end
+    
+    subgraph "Online Payment"
+        H --> J[SSLCommerz Gateway]
+        J --> K[IPN Webhook]
+        K --> L[handle_shop_payment_success]
+        L --> M[Digital: fulfilled<br/>Tokens created]
+        L --> N[Physical: processing<br/>Stock decremented]
+    end
+    
+    subgraph "COD Flow"
+        I --> O[Seller Ship]
+        O --> P[update_tracking]
+        P --> Q[mark_delivered]
+Q --> R[confirm_cod_cash]
+```
+
 Two RPCs handle the money side of the shop: `initiate_shop_checkout` creates the order, and `handle_shop_payment_success` finalises it for online payments. COD orders skip the second step entirely.
 
 ## Public read RPCs (called before checkout)

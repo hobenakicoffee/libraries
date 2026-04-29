@@ -1,5 +1,36 @@
 # COD & Wallet Debt RPCs
 
+```mermaid
+stateDiagram-v2
+    [*] --> pending
+    
+    pending --> processing : checkout (COD)
+    processing --> processing : stock -decremented
+    
+    processing --> shipped : update_tracking
+    
+    shipped --> delivered : mark_delivered
+    
+    delivered --> settled : cash_confirmed
+    
+    settled --> [*]
+    
+    processing --> cancelled : cancel_item
+    shipped --> cancelled : cancel_item
+    delivered --> cancelled : cancel_item
+    
+    note right of settled
+        fee debited from wallet
+        cod_debt if insufficient
+        transaction row created
+    end note
+    
+    note right of cancelled
+        stock +restored
+        no fee charged
+    end note
+```
+
 These RPCs handle the cash-on-delivery settlement flow. Read [Design Decisions #5, #6, and #14](./) first if you haven't already — this page assumes you understand the COD lifecycle and `cod_debt` model.
 
 ## COD lifecycle recap
