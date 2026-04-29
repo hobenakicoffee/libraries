@@ -1,0 +1,304 @@
+# Creator Studio
+
+Creator Studio is the author-facing management interface. It includes stat cards, a post list with Published/Drafts tabs, draft creation, search, per-post analytics, and post lifecycle actions (publish, unpublish, delete).
+
+## Stat Cards
+
+The three stat cards at the top of Creator Studio are powered by `get_newsletter_stats()`:
+
+```ts
+const { data } = await supabase.rpc('get_newsletter_stats', {
+  p_profile_id: profileId,
+  p_from: thirtyDaysAgo.toISOString(),
+  p_to: now.toISOString(),
+})
+
+const { total_post_views, newsletter_subs, post_sales_revenue } = data[0]
+```
+
+| Field | What it Shows |
+|---|---|
+| `total_post_views` | Sum of views on posts published within the range |
+| `newsletter_subs` | Active memberships with `period_start` in the range |
+| `post_sales_revenue` | Net revenue (bigint) from pay-per-post sales in the range |
+
+### Date Range Presets
+
+```ts
+const now = new Date()
+
+const presets = {
+  last7:  { from: subDays(now, 7),  to: now },
+  last30: { from: subDays(now, 30), to: now },
+  last90: { from: subDays(now, 90), to: now },
+  allTime: { from: new Date(0), to: now },  // epoch = all-time
+}
+
+async function loadStats(preset = 'last30') {
+  const { from, to } = presets[preset]
+  const { data } = await supabase.rpc('get_newsletter_stats', {
+    p_profile_id: profileId,
+    p_from: from.toISOString(),
+    p_to: to.toISOString(),
+  })
+  return data[0]
+}
+```
+
+> `newsletter_subs` counts memberships whose `period_start` falls within the range — pass a wide range (epoch → now) to get the all-time subscriber count.
+
+---
+
+## Post List — Published Tab
+
+```ts
+const { data: posts } = await supabase.rpc('get_posts_page', {
+  p_profile_id: profileId,
+  p_status: 'published',
+  p_from: thirtyDaysAgo.toISOString(),
+  p_to: now.toISOString(),
+  p_limit: 20,
+})
+```
+
+The response includes all post fields plus `draft_count` — the current number of drafts for the profile, returned on every row as a convenience column.
+
+### Published Post Response Fields
+
+```ts
+type PostListItem = {
+  id: string
+  title: string
+  slug: string
+  subtitle: string | null
+  excerpt: string | null
+  cover_image_url: string | null
+  is_members_only: boolean
+  is_pay_per_post: boolean
+  price: number | null
+  tags: string[]
+  view_count: number
+  like_count: number
+  click_count: number
+  purchase_count: number
+  revenue_total: number     // bigint as number
+  published_at: string      // ISO 8601
+  created_at: string
+  updated_at: string
+  draft_count: number       // convenience: quota indicator
+}
+```
+
+---
+
+## Post List — Drafts Tab
+
+```ts
+const { data: drafts } = await supabase.rpc('get_posts_page', {
+  p_profile_id: profileId,
+  p_status: 'draft',
+  p_from: thirtyDaysAgo.toISOString(),
+  p_to: now.toISOString(),
+  p_limit: 20,
+})
+```
+
+For drafts, the date range filters on `created_at` (not `published_at`), and pagination uses `updated_at` as the cursor. Adjust your cursor extraction accordingly:
+
+```ts
+// Published posts: cursor from published_at
+const nextCursor = posts[posts.length - 1].published_at
+
+// Drafts: cursor from updated_at
+const nextCursor = drafts[drafts.length - 1].updated_at
+```
+
+### Draft Quota Indicator
+
+Use the `draft_count` value from any row to render the quota bar:
+
+```svelte
+<p>{drafts[0]?.draft_count ?? 0} / 50 drafts</p>
+
+{#if (drafts[0]?.draft_count ?? 0) >= 45}
+  <p class="warning">
+    You're approaching the 50-draft limit. Publish or delete old drafts.
+  </p>
+{/if}
+```
+
+---
+
+## Pagination
+
+Both tabs use cursor-based pagination:
+
+```ts
+let cursor: string | null = null
+let hasMore = true
+
+async function loadPage(status: 'published' | 'draft', reset = false) {
+  if (reset) { cursor = null; hasMore = true }
+
+  const { data } = await supabase.rpc('get_posts_page', {
+    p_profile_id: profileId,
+    p_status: status,
+    p_from: p_from.toISOString(),
+    p_to: p_to.toISOString(),
+    p_limit: 20,
+    p_cursor: cursor,
+  })
+
+  if (data && data.length > 0) {
+    const lastItem = data[data.length - 1]
+    // Use the right timestamp depending on tab
+    cursor = status === 'published' ? lastItem.published_at : lastItem.updated_at
+    hasMore = data.length === 20
+  } else {
+    hasMore = false
+  }
+
+  return data ?? []
+}
+```
+
+---
+
+## Search
+
+```ts
+const { data } = await supabase.rpc('get_posts_page', {
+  p_profile_id: profileId,
+  p_status: 'published',
+  p_from: p_from.toISOString(),
+  p_to: p_to.toISOString(),
+  p_search: 'typescript',
+})
+```
+
+Search is ILIKE and works on both `title` and `subtitle`. It is compatible with pagination — always reset the cursor when the search term changes.
+
+---
+
+## Creating a Draft
+
+```ts
+const { data, error } = await supabase.rpc('create_newsletter_draft', {
+  p_profile_id: profileId,
+})
+
+const { id, title, slug } = data[0]
+// Redirect to the editor: /studio/posts/{id}/edit
+```
+
+The draft is created with title `"Untitled Post"` (or `"Untitled Post 2"`, `"Untitled Post 3"`, etc. if previous untitled drafts exist). The slug is auto-generated by the lifecycle trigger.
+
+### Draft Limit Guard
+
+The `trg_newsletter_draft_limit` trigger blocks creation if 50 drafts already exist. The error surfaces as a Postgres exception:
+
+```ts
+const { data, error } = await supabase.rpc('create_newsletter_draft', { p_profile_id })
+
+if (error?.code === 'P0001' && error.message.includes('DRAFT_LIMIT_REACHED')) {
+  showDraftLimitDialog()
+  return
+}
+```
+
+---
+
+## Unpublishing a Post
+
+```ts
+const { data, error } = await supabase.rpc('unpublish_newsletter_post', {
+  p_post_id: postId,
+})
+
+if (data.success) {
+  // Post moved back to draft
+  showToast(`Post moved to drafts (${data.draft_count}/50)`)
+} else {
+  switch (data.error) {
+    case 'DRAFT_LIMIT_REACHED':
+      showDraftLimitWarning(data.message)
+      break
+    case 'NOT_PUBLISHED':
+      showError('This post is not currently published.')
+      break
+    case 'FORBIDDEN':
+      showError('You do not own this post.')
+      break
+  }
+}
+```
+
+The RPC returns a structured JSON object — it never throws an exception to the client for quota errors, so you can safely switch on `data.error`.
+
+---
+
+## Per-Post Analytics Dialog
+
+When a user opens the Analytics dialog for a post, call `get_post_analytics()`:
+
+```ts
+const { data } = await supabase.rpc('get_post_analytics', {
+  p_post_id: postId,
+  p_from: thirtyDaysAgo.toISOString(),
+  p_to: now.toISOString(),
+})
+```
+
+The result is one row per day in the range. The aggregate columns are repeated on every row — read them from `data[0]`:
+
+```ts
+const { total_views, total_clicks, total_sales, conv_rate } = data[0]
+
+// Chart data: one point per day
+const chartData = data.map(row => ({
+  date:      row.chart_date,
+  views:     row.day_views,
+  clicks:    row.day_clicks,
+  purchases: row.day_purchases,
+  revenue:   row.day_revenue,
+}))
+```
+
+### Rendering the Chart
+
+```ts
+// Example with a charting library
+const series = [
+  { name: 'Views',    data: chartData.map(d => [d.date, d.views])     },
+  { name: 'Clicks',   data: chartData.map(d => [d.date, d.clicks])    },
+  { name: 'Purchases',data: chartData.map(d => [d.date, d.purchases]) },
+]
+```
+
+### Displaying Revenue
+
+`revenue_total` and `day_revenue` are stored as `bigint` in the smallest currency unit. Divide by 100 to get the decimal value for BDT (or your currency):
+
+```ts
+const displayRevenue = (revenue: number) => `৳${(revenue / 100).toFixed(2)}`
+```
+
+> Note: If your currency doesn't use two decimal places, adjust accordingly.
+
+---
+
+## Deleting a Post
+
+Posts can be deleted directly via the Supabase client — no custom RPC is needed. The `ON DELETE CASCADE` on all related tables ensures likes, access grants, versions, and analytics rows are cleaned up automatically:
+
+```ts
+const { error } = await supabase
+  .from('newsletter_posts')
+  .delete()
+  .eq('id', postId)
+  .eq('profile_id', profileId)  // RLS enforces this, but explicit is safer
+```
+
+---
+
+**Next:** [Payments — Buying Posts & Memberships](./payments.md)

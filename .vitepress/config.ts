@@ -54,6 +54,10 @@ export default withMermaid(
                 text: "Memberships Hub",
                 link: "/memberships-hub/frontend/index",
               },
+              {
+                text: "Newsletter Service",
+                link: "/newsletter-service/frontend/",
+              },
             ],
           },
         ],
@@ -177,6 +181,72 @@ export default withMermaid(
                   {
                     text: "RPC Reference",
                     link: "/shop-service/backend/rpc-reference",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        "/newsletter-service/": [
+          ...common,
+          {
+            text: "Newsletter Service",
+            items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/newsletter-service/frontend/" },
+                  {
+                    text: "Reader Feed",
+                    link: "/newsletter-service/frontend/reader-feed",
+                  },
+                  {
+                    text: "Post Access",
+                    link: "/newsletter-service/frontend/post-access",
+                  },
+                  {
+                    text: "Interactions",
+                    link: "/newsletter-service/frontend/interactions",
+                  },
+                  {
+                    text: "Creator Studio",
+                    link: "/newsletter-service/frontend/creator-studio",
+                  },
+                  {
+                    text: "Payments",
+                    link: "/newsletter-service/frontend/payments",
+                  },
+                ],
+              },
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/newsletter-service/backend/" },
+                  {
+                    text: "Schema",
+                    link: "/newsletter-service/backend/tables",
+                  },
+                  {
+                    text: "Newsletter Posts",
+                    link: "/newsletter-service/backend/newsletter-posts",
+                  },
+                  {
+                    text: "Engagement & Access",
+                    link: "/newsletter-service/backend/engagement-and-access",
+                  },
+                  {
+                    text: "Analytics",
+                    link: "/newsletter-service/backend/analytics",
+                  },
+                  {
+                    text: "Triggers & RLS",
+                    link: "/newsletter-service/backend/triggers-and-rls",
+                  },
+                  {
+                    text: "RPC Reference",
+                    link: "/newsletter-service/backend/rpcs",
                   },
                 ],
               },
