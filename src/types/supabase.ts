@@ -464,30 +464,6 @@ export type Database = {
           },
         ];
       };
-      messages_2026_02: {
-        Row: {
-          content: string;
-          conversation_id: string;
-          created_at: string;
-          id: number;
-          sender_id: string;
-        };
-        Insert: {
-          content: string;
-          conversation_id: string;
-          created_at?: string;
-          id?: number;
-          sender_id: string;
-        };
-        Update: {
-          content?: string;
-          conversation_id?: string;
-          created_at?: string;
-          id?: number;
-          sender_id?: string;
-        };
-        Relationships: [];
-      };
       messages_2026_03: {
         Row: {
           content: string;
@@ -513,6 +489,54 @@ export type Database = {
         Relationships: [];
       };
       messages_2026_04: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
+      messages_2026_05: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
+      messages_2026_06: {
         Row: {
           content: string;
           conversation_id: string;
@@ -881,6 +905,27 @@ export type Database = {
           },
         ];
       };
+      platform_settings: {
+        Row: {
+          description: string | null;
+          key: string;
+          updated_at: string;
+          value: Json;
+        };
+        Insert: {
+          description?: string | null;
+          key: string;
+          updated_at?: string;
+          value: Json;
+        };
+        Update: {
+          description?: string | null;
+          key?: string;
+          updated_at?: string;
+          value?: Json;
+        };
+        Relationships: [];
+      };
       post_access_grants: {
         Row: {
           created_at: string;
@@ -1169,6 +1214,589 @@ export type Database = {
           },
         ];
       };
+      shop_categories: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_visible: boolean;
+          name: string;
+          profile_id: string;
+          slug: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_visible?: boolean;
+          name: string;
+          profile_id: string;
+          slug: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_visible?: boolean;
+          name?: string;
+          profile_id?: string;
+          slug?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_categories_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_download_tokens: {
+        Row: {
+          buyer_profile_id: string;
+          created_at: string;
+          download_count: number;
+          expires_at: string;
+          file_id: string;
+          id: string;
+          max_downloads: number;
+          order_item_id: string;
+          token: string;
+        };
+        Insert: {
+          buyer_profile_id: string;
+          created_at?: string;
+          download_count?: number;
+          expires_at: string;
+          file_id: string;
+          id?: string;
+          max_downloads: number;
+          order_item_id: string;
+          token: string;
+        };
+        Update: {
+          buyer_profile_id?: string;
+          created_at?: string;
+          download_count?: number;
+          expires_at?: string;
+          file_id?: string;
+          id?: string;
+          max_downloads?: number;
+          order_item_id?: string;
+          token?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_download_tokens_buyer_profile_id_fkey";
+            columns: ["buyer_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_download_tokens_file_id_fkey";
+            columns: ["file_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_product_files";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_download_tokens_order_item_id_fkey";
+            columns: ["order_item_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_order_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_order_items: {
+        Row: {
+          cancellation_reason: string | null;
+          carrier: string | null;
+          cod_settled_at: string | null;
+          created_at: string;
+          delivered_at: string | null;
+          id: string;
+          order_id: string;
+          product_id: string;
+          product_title: string;
+          product_type: Database["public"]["Enums"]["shop_product_type_enum"];
+          quantity: number;
+          shipped_at: string | null;
+          shipping_cost: number;
+          status: Database["public"]["Enums"]["shop_order_item_status_enum"];
+          tracking_number: string | null;
+          tracking_url: string | null;
+          unit_price: number;
+          updated_at: string;
+          variant_id: string | null;
+          variant_label: string | null;
+          variant_options: Json | null;
+        };
+        Insert: {
+          cancellation_reason?: string | null;
+          carrier?: string | null;
+          cod_settled_at?: string | null;
+          created_at?: string;
+          delivered_at?: string | null;
+          id?: string;
+          order_id: string;
+          product_id: string;
+          product_title: string;
+          product_type: Database["public"]["Enums"]["shop_product_type_enum"];
+          quantity?: number;
+          shipped_at?: string | null;
+          shipping_cost?: number;
+          status?: Database["public"]["Enums"]["shop_order_item_status_enum"];
+          tracking_number?: string | null;
+          tracking_url?: string | null;
+          unit_price: number;
+          updated_at?: string;
+          variant_id?: string | null;
+          variant_label?: string | null;
+          variant_options?: Json | null;
+        };
+        Update: {
+          cancellation_reason?: string | null;
+          carrier?: string | null;
+          cod_settled_at?: string | null;
+          created_at?: string;
+          delivered_at?: string | null;
+          id?: string;
+          order_id?: string;
+          product_id?: string;
+          product_title?: string;
+          product_type?: Database["public"]["Enums"]["shop_product_type_enum"];
+          quantity?: number;
+          shipped_at?: string | null;
+          shipping_cost?: number;
+          status?: Database["public"]["Enums"]["shop_order_item_status_enum"];
+          tracking_number?: string | null;
+          tracking_url?: string | null;
+          unit_price?: number;
+          updated_at?: string;
+          variant_id?: string | null;
+          variant_label?: string | null;
+          variant_options?: Json | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_order_items_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_order_items_variant_id_fkey";
+            columns: ["variant_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_product_variants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_orders: {
+        Row: {
+          buyer_notes: string | null;
+          buyer_profile_id: string;
+          cod_settled_at: string | null;
+          created_at: string;
+          has_digital: boolean;
+          has_physical: boolean;
+          id: string;
+          order_number: string;
+          payment_method: Database["public"]["Enums"]["shop_payment_method_enum"];
+          platform_fee: number;
+          platform_fee_rate: number;
+          seller_net: number;
+          seller_notes: string | null;
+          seller_profile_id: string;
+          shipping_address: Json | null;
+          shipping_total: number;
+          subtotal: number;
+          transaction_reference_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          buyer_notes?: string | null;
+          buyer_profile_id: string;
+          cod_settled_at?: string | null;
+          created_at?: string;
+          has_digital?: boolean;
+          has_physical?: boolean;
+          id?: string;
+          order_number: string;
+          payment_method?: Database["public"]["Enums"]["shop_payment_method_enum"];
+          platform_fee: number;
+          platform_fee_rate: number;
+          seller_net: number;
+          seller_notes?: string | null;
+          seller_profile_id: string;
+          shipping_address?: Json | null;
+          shipping_total?: number;
+          subtotal: number;
+          transaction_reference_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          buyer_notes?: string | null;
+          buyer_profile_id?: string;
+          cod_settled_at?: string | null;
+          created_at?: string;
+          has_digital?: boolean;
+          has_physical?: boolean;
+          id?: string;
+          order_number?: string;
+          payment_method?: Database["public"]["Enums"]["shop_payment_method_enum"];
+          platform_fee?: number;
+          platform_fee_rate?: number;
+          seller_net?: number;
+          seller_notes?: string | null;
+          seller_profile_id?: string;
+          shipping_address?: Json | null;
+          shipping_total?: number;
+          subtotal?: number;
+          transaction_reference_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_orders_buyer_profile_id_fkey";
+            columns: ["buyer_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_orders_seller_profile_id_fkey";
+            columns: ["seller_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_orders_transaction_reference_id_fkey";
+            columns: ["transaction_reference_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["reference_id"];
+          },
+        ];
+      };
+      shop_policies: {
+        Row: {
+          content: string;
+          created_at: string;
+          id: string;
+          is_enabled: boolean;
+          policy_type: Database["public"]["Enums"]["shop_policy_type_enum"];
+          profile_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          content: string;
+          created_at?: string;
+          id?: string;
+          is_enabled?: boolean;
+          policy_type: Database["public"]["Enums"]["shop_policy_type_enum"];
+          profile_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          content?: string;
+          created_at?: string;
+          id?: string;
+          is_enabled?: boolean;
+          policy_type?: Database["public"]["Enums"]["shop_policy_type_enum"];
+          profile_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_policies_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_product_files: {
+        Row: {
+          created_at: string;
+          file_name: string;
+          file_size_bytes: number | null;
+          id: string;
+          is_deleted: boolean;
+          mime_type: string | null;
+          product_id: string;
+          sort_order: number;
+          storage_path: string;
+        };
+        Insert: {
+          created_at?: string;
+          file_name: string;
+          file_size_bytes?: number | null;
+          id?: string;
+          is_deleted?: boolean;
+          mime_type?: string | null;
+          product_id: string;
+          sort_order?: number;
+          storage_path: string;
+        };
+        Update: {
+          created_at?: string;
+          file_name?: string;
+          file_size_bytes?: number | null;
+          id?: string;
+          is_deleted?: boolean;
+          mime_type?: string | null;
+          product_id?: string;
+          sort_order?: number;
+          storage_path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_product_files_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_products";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_product_variants: {
+        Row: {
+          id: string;
+          image_url: string | null;
+          is_active: boolean;
+          options: Json;
+          price_adjustment: number;
+          product_id: string;
+          sku: string | null;
+          sort_order: number;
+          stock_count: number | null;
+        };
+        Insert: {
+          id?: string;
+          image_url?: string | null;
+          is_active?: boolean;
+          options: Json;
+          price_adjustment?: number;
+          product_id: string;
+          sku?: string | null;
+          sort_order?: number;
+          stock_count?: number | null;
+        };
+        Update: {
+          id?: string;
+          image_url?: string | null;
+          is_active?: boolean;
+          options?: Json;
+          price_adjustment?: number;
+          product_id?: string;
+          sku?: string | null;
+          sort_order?: number;
+          stock_count?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_product_variants_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_products";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_products: {
+        Row: {
+          category_id: string | null;
+          cod_enabled: boolean;
+          compare_at_price: number | null;
+          cover_image_url: string | null;
+          created_at: string;
+          description: string | null;
+          download_expires_hours: number;
+          id: string;
+          images: string[];
+          is_active: boolean;
+          is_deleted: boolean;
+          is_featured: boolean;
+          low_stock_threshold: number;
+          max_downloads: number;
+          option_definitions: Json;
+          price: number;
+          processing_max_days: number | null;
+          processing_min_days: number | null;
+          product_type: Database["public"]["Enums"]["shop_product_type_enum"];
+          profile_id: string;
+          requires_shipping: boolean;
+          sales_count: number;
+          shipping_fee_inside_dhaka: number;
+          shipping_fee_outside_dhaka: number;
+          sku: string | null;
+          slug: string;
+          sort_order: number;
+          stock_count: number | null;
+          tags: string[];
+          title: string;
+          updated_at: string;
+          weight_grams: number | null;
+        };
+        Insert: {
+          category_id?: string | null;
+          cod_enabled?: boolean;
+          compare_at_price?: number | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          download_expires_hours?: number;
+          id?: string;
+          images?: string[];
+          is_active?: boolean;
+          is_deleted?: boolean;
+          is_featured?: boolean;
+          low_stock_threshold?: number;
+          max_downloads?: number;
+          option_definitions?: Json;
+          price: number;
+          processing_max_days?: number | null;
+          processing_min_days?: number | null;
+          product_type: Database["public"]["Enums"]["shop_product_type_enum"];
+          profile_id: string;
+          requires_shipping?: boolean;
+          sales_count?: number;
+          shipping_fee_inside_dhaka?: number;
+          shipping_fee_outside_dhaka?: number;
+          sku?: string | null;
+          slug: string;
+          sort_order?: number;
+          stock_count?: number | null;
+          tags?: string[];
+          title: string;
+          updated_at?: string;
+          weight_grams?: number | null;
+        };
+        Update: {
+          category_id?: string | null;
+          cod_enabled?: boolean;
+          compare_at_price?: number | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          download_expires_hours?: number;
+          id?: string;
+          images?: string[];
+          is_active?: boolean;
+          is_deleted?: boolean;
+          is_featured?: boolean;
+          low_stock_threshold?: number;
+          max_downloads?: number;
+          option_definitions?: Json;
+          price?: number;
+          processing_max_days?: number | null;
+          processing_min_days?: number | null;
+          product_type?: Database["public"]["Enums"]["shop_product_type_enum"];
+          profile_id?: string;
+          requires_shipping?: boolean;
+          sales_count?: number;
+          shipping_fee_inside_dhaka?: number;
+          shipping_fee_outside_dhaka?: number;
+          sku?: string | null;
+          slug?: string;
+          sort_order?: number;
+          stock_count?: number | null;
+          tags?: string[];
+          title?: string;
+          updated_at?: string;
+          weight_grams?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_products_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_products_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_settings: {
+        Row: {
+          banner_url: string | null;
+          created_at: string;
+          deactivation_reason: string | null;
+          id: string;
+          is_active: boolean;
+          logo_url: string | null;
+          profile_id: string;
+          seo_description: string | null;
+          seo_title: string | null;
+          shop_description: string | null;
+          shop_name: string;
+          theme_config: Json;
+          updated_at: string;
+        };
+        Insert: {
+          banner_url?: string | null;
+          created_at?: string;
+          deactivation_reason?: string | null;
+          id?: string;
+          is_active?: boolean;
+          logo_url?: string | null;
+          profile_id: string;
+          seo_description?: string | null;
+          seo_title?: string | null;
+          shop_description?: string | null;
+          shop_name: string;
+          theme_config?: Json;
+          updated_at?: string;
+        };
+        Update: {
+          banner_url?: string | null;
+          created_at?: string;
+          deactivation_reason?: string | null;
+          id?: string;
+          is_active?: boolean;
+          logo_url?: string | null;
+          profile_id?: string;
+          seo_description?: string | null;
+          seo_title?: string | null;
+          shop_description?: string | null;
+          shop_name?: string;
+          theme_config?: Json;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_settings_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       supporters: {
         Row: {
           conversation_id: string | null;
@@ -1359,6 +1987,62 @@ export type Database = {
           },
         ];
       };
+      user_addresses: {
+        Row: {
+          address_line1: string;
+          address_line2: string | null;
+          city: string;
+          created_at: string;
+          district: string;
+          id: string;
+          is_default: boolean;
+          label: string | null;
+          phone: string;
+          postal_code: string | null;
+          profile_id: string;
+          recipient_name: string;
+          updated_at: string;
+        };
+        Insert: {
+          address_line1: string;
+          address_line2?: string | null;
+          city: string;
+          created_at?: string;
+          district: string;
+          id?: string;
+          is_default?: boolean;
+          label?: string | null;
+          phone: string;
+          postal_code?: string | null;
+          profile_id: string;
+          recipient_name: string;
+          updated_at?: string;
+        };
+        Update: {
+          address_line1?: string;
+          address_line2?: string | null;
+          city?: string;
+          created_at?: string;
+          district?: string;
+          id?: string;
+          is_default?: boolean;
+          label?: string | null;
+          phone?: string;
+          postal_code?: string | null;
+          profile_id?: string;
+          recipient_name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_addresses_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_services: {
         Row: {
           config: Json | null;
@@ -1400,6 +2084,7 @@ export type Database = {
       wallets: {
         Row: {
           balance: number;
+          cod_debt: number;
           created_at: string;
           currency: string;
           id: string;
@@ -1409,6 +2094,7 @@ export type Database = {
         };
         Insert: {
           balance?: number;
+          cod_debt?: number;
           created_at?: string;
           currency?: string;
           id?: string;
@@ -1418,6 +2104,7 @@ export type Database = {
         };
         Update: {
           balance?: number;
+          cod_debt?: number;
           created_at?: string;
           currency?: string;
           id?: string;
@@ -1513,11 +2200,27 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      add_shop_product_file: {
+        Args: {
+          p_file_name: string;
+          p_file_size_bytes?: number;
+          p_mime_type?: string;
+          p_product_id: string;
+          p_sort_order?: number;
+          p_storage_path: string;
+        };
+        Returns: Json;
+      };
       authorize_manager: {
         Args: {
           requested_permission: Database["public"]["Enums"]["manager_permission"];
         };
         Returns: boolean;
+      };
+      auto_deactivate_ineligible_shops: { Args: never; Returns: Json };
+      cancel_cod_order_item: {
+        Args: { p_order_item_id: string; p_reason: string };
+        Returns: Json;
       };
       check_newsletter_post_access: {
         Args: { p_post_id: string };
@@ -1526,7 +2229,15 @@ export type Database = {
           has_access: boolean;
         }[];
       };
+      check_shop_active_eligibility: {
+        Args: { p_profile_id: string };
+        Returns: Json;
+      };
       cleanup_orphaned_post_images: { Args: never; Returns: undefined };
+      confirm_cod_cash_received: {
+        Args: { p_order_item_id: string };
+        Returns: Json;
+      };
       create_manager: {
         Args: {
           manager_department?: string;
@@ -1546,8 +2257,26 @@ export type Database = {
       };
       create_next_month_partition: { Args: never; Returns: undefined };
       custom_access_token_hook: { Args: { event: Json }; Returns: Json };
+      delete_shop_category: { Args: { p_category_id: string }; Returns: Json };
+      delete_shop_policy: {
+        Args: {
+          p_policy_type: Database["public"]["Enums"]["shop_policy_type_enum"];
+        };
+        Returns: Json;
+      };
+      delete_shop_product: { Args: { p_product_id: string }; Returns: Json };
+      delete_shop_product_file: { Args: { p_file_id: string }; Returns: Json };
+      delete_shop_product_variant: {
+        Args: { p_variant_id: string };
+        Returns: Json;
+      };
+      delete_user_address: { Args: { p_address_id: string }; Returns: Json };
       drop_old_partitions: { Args: never; Returns: undefined };
       follow_user: { Args: { target_user_id: string }; Returns: undefined };
+      get_buyer_orders: {
+        Args: { p_cursor?: string; p_limit?: number };
+        Returns: Json;
+      };
       get_conversations: {
         Args: { p_limit?: number; p_offset?: number };
         Returns: {
@@ -1607,6 +2336,8 @@ export type Database = {
         Args: { p_recipient_id: string };
         Returns: string;
       };
+      get_order_by_number: { Args: { p_order_number: string }; Returns: Json };
+      get_platform_setting: { Args: { p_key: string }; Returns: number };
       get_popular_content: {
         Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
         Returns: {
@@ -1661,6 +2392,10 @@ export type Database = {
           view_count: number;
         }[];
       };
+      get_product_by_slug: {
+        Args: { p_product_slug: string; p_username: string };
+        Returns: Json;
+      };
       get_reader_feed: {
         Args: {
           p_cursor?: string;
@@ -1693,6 +2428,26 @@ export type Database = {
           title: string;
           view_count: number;
         }[];
+      };
+      get_seller_orders: {
+        Args: { p_cursor?: string; p_item_status?: string; p_limit?: number };
+        Returns: Json;
+      };
+      get_shop_by_username: {
+        Args: { p_featured_limit?: number; p_username: string };
+        Returns: Json;
+      };
+      get_shop_overview: { Args: never; Returns: Json };
+      get_shop_policies: { Args: { p_username: string }; Returns: Json };
+      get_shop_products: {
+        Args: {
+          p_category_id?: string;
+          p_cursor_id?: string;
+          p_cursor_sort?: number;
+          p_limit?: number;
+          p_username: string;
+        };
+        Returns: Json;
       };
       get_supporter_coffee_gifts_stats: {
         Args: {
@@ -1768,6 +2523,22 @@ export type Database = {
           supporter_id: string;
         }[];
       };
+      get_user_addresses: {
+        Args: never;
+        Returns: {
+          address_line1: string;
+          address_line2: string;
+          city: string;
+          created_at: string;
+          district: string;
+          id: string;
+          is_default: boolean;
+          label: string;
+          phone: string;
+          postal_code: string;
+          recipient_name: string;
+        }[];
+      };
       gift_newsletter_post: {
         Args: {
           p_expires_at?: string;
@@ -1777,6 +2548,10 @@ export type Database = {
           p_transaction_reference_id?: string;
         };
         Returns: string;
+      };
+      handle_shop_payment_success: {
+        Args: { p_order_id: string; p_transaction_reference_id: string };
+        Returns: Json;
       };
       handle_successful_payment: {
         Args: {
@@ -1801,12 +2576,25 @@ export type Database = {
         };
         Returns: boolean;
       };
+      initiate_shop_checkout: {
+        Args: {
+          p_address_id?: string;
+          p_buyer_notes?: string;
+          p_items: Json;
+          p_payment_method?: Database["public"]["Enums"]["shop_payment_method_enum"];
+        };
+        Returns: Json;
+      };
       is_admin: { Args: never; Returns: boolean };
       is_following: { Args: { target_user_id: string }; Returns: boolean };
       is_manager: { Args: { user_email: string }; Returns: boolean };
       mark_conversation_as_read: {
         Args: { p_conversation_id: string };
         Returns: undefined;
+      };
+      mark_order_item_delivered: {
+        Args: { p_order_item_id: string };
+        Returns: Json;
       };
       perform_coffee_gift: {
         Args: {
@@ -1886,6 +2674,14 @@ export type Database = {
         Args: { p_post_id: string };
         Returns: undefined;
       };
+      reorder_shop_categories: {
+        Args: { p_category_ids: string[] };
+        Returns: Json;
+      };
+      reorder_shop_products: {
+        Args: { p_product_ids: string[] };
+        Returns: Json;
+      };
       request_withdrawal: {
         Args: { p_amount: number; p_payout_method_id: string };
         Returns: string;
@@ -1905,8 +2701,98 @@ export type Database = {
         Args: { p_post_id: string };
         Returns: Json;
       };
+      topup_seller_cod_debt: {
+        Args: { p_amount: number; p_profile_id: string };
+        Returns: Json;
+      };
       unfollow_user: { Args: { target_user_id: string }; Returns: undefined };
       unpublish_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
+      update_order_tracking: {
+        Args: {
+          p_carrier?: string;
+          p_order_item_id: string;
+          p_tracking_number: string;
+          p_tracking_url?: string;
+        };
+        Returns: Json;
+      };
+      upsert_shop_category: {
+        Args: {
+          p_category_id?: string;
+          p_is_visible?: boolean;
+          p_name?: string;
+          p_slug?: string;
+          p_sort_order?: number;
+        };
+        Returns: Json;
+      };
+      upsert_shop_policy: {
+        Args: {
+          p_content?: string;
+          p_is_enabled?: boolean;
+          p_policy_type: Database["public"]["Enums"]["shop_policy_type_enum"];
+        };
+        Returns: Json;
+      };
+      upsert_shop_product: {
+        Args: {
+          p_category_id?: string;
+          p_cod_enabled?: boolean;
+          p_compare_at_price?: number;
+          p_cover_image_url?: string;
+          p_description?: string;
+          p_download_expires_hours?: number;
+          p_images?: string[];
+          p_is_active?: boolean;
+          p_is_featured?: boolean;
+          p_low_stock_threshold?: number;
+          p_max_downloads?: number;
+          p_option_definitions?: Json;
+          p_price?: number;
+          p_processing_max_days?: number;
+          p_processing_min_days?: number;
+          p_product_id?: string;
+          p_product_type?: Database["public"]["Enums"]["shop_product_type_enum"];
+          p_requires_shipping?: boolean;
+          p_shipping_fee_inside_dhaka?: number;
+          p_shipping_fee_outside_dhaka?: number;
+          p_sku?: string;
+          p_slug?: string;
+          p_sort_order?: number;
+          p_stock_count?: number;
+          p_tags?: string[];
+          p_title?: string;
+          p_weight_grams?: number;
+        };
+        Returns: Json;
+      };
+      upsert_shop_product_variant: {
+        Args: {
+          p_image_url?: string;
+          p_is_active?: boolean;
+          p_options?: Json;
+          p_price_adjustment?: number;
+          p_product_id?: string;
+          p_sku?: string;
+          p_sort_order?: number;
+          p_stock_count?: number;
+          p_variant_id?: string;
+        };
+        Returns: Json;
+      };
+      upsert_shop_settings: {
+        Args: {
+          p_banner_url?: string;
+          p_is_active?: boolean;
+          p_logo_url?: string;
+          p_seo_description?: string;
+          p_seo_title?: string;
+          p_shop_description?: string;
+          p_shop_name?: string;
+          p_theme_config?: Json;
+        };
+        Returns: Json;
+      };
       upsert_supporter: {
         Args: {
           p_amount?: number;
@@ -1919,6 +2805,21 @@ export type Database = {
           p_user_profile_id?: string;
         };
         Returns: string;
+      };
+      upsert_user_address: {
+        Args: {
+          p_address_id?: string;
+          p_address_line1?: string;
+          p_address_line2?: string;
+          p_city?: string;
+          p_district?: string;
+          p_is_default?: boolean;
+          p_label?: string;
+          p_phone?: string;
+          p_postal_code?: string;
+          p_recipient_name?: string;
+        };
+        Returns: Json;
       };
     };
     Enums: {
@@ -2016,6 +2917,23 @@ export type Database = {
         | "implemented"
         | "rejected"
         | "duplicate";
+      shop_order_item_status_enum:
+        | "pending"
+        | "paid"
+        | "fulfilled"
+        | "processing"
+        | "shipped"
+        | "delivered"
+        | "cancelled"
+        | "refunded";
+      shop_payment_method_enum: "online" | "cod";
+      shop_policy_type_enum:
+        | "return_refund"
+        | "digital_products"
+        | "shipping"
+        | "privacy"
+        | "terms_of_service";
+      shop_product_type_enum: "digital" | "physical";
       supporter_platform_enum:
         | "facebook"
         | "x"
@@ -2278,6 +3196,25 @@ export const Constants = {
         "rejected",
         "duplicate",
       ],
+      shop_order_item_status_enum: [
+        "pending",
+        "paid",
+        "fulfilled",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled",
+        "refunded",
+      ],
+      shop_payment_method_enum: ["online", "cod"],
+      shop_policy_type_enum: [
+        "return_refund",
+        "digital_products",
+        "shipping",
+        "privacy",
+        "terms_of_service",
+      ],
+      shop_product_type_enum: ["digital", "physical"],
       supporter_platform_enum: [
         "facebook",
         "x",
