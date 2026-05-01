@@ -15,7 +15,8 @@
     "./types": "./src/types/index.ts",
     "./utils": "./src/utils/index.ts",
     "./nuqs": "./src/nuqs/index.ts",
-    "./scripts": "./src/scripts/index.ts"
+    "./scripts": "./src/scripts/index.ts",
+    "./hooks": "./src/hooks/index.ts"
   },
   "files": [
     "src",

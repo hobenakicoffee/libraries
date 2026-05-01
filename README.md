@@ -1,6 +1,7 @@
 # @hobenakicoffee/libraries
 
 Framework-agnostic shared constants, utilities, types, and moderation tools for "হবে নাকি Coffee?" projects.
+**Version: 4.1.1**
 
 ## Installation
 
@@ -29,16 +30,19 @@ import { SupporterPlatforms } from "@hobenakicoffee/libraries/constants";
 import { formatAmount, formatDate, getUserPageLink } from "@hobenakicoffee/libraries/utils";
 
 // Types only
-import { Database, Tables } from "@hobenakicoffee/libraries/types";
+import type { Database, Tables } from "@hobenakicoffee/libraries/types";
 
 // Moderation tools
-import { moderateText } from "@hobenakicoffee/libraries/moderation";
+import { containsProfanity, containsBanglaSwear } from "@hobenakicoffee/libraries/moderation";
 
 // URL state management
 import { parseAsSortOrder } from "@hobenakicoffee/libraries/nuqs";
 
 // Scripts
 import { checkEnvEncryption } from "@hobenakicoffee/libraries/scripts";
+
+// Hooks
+import { useIsMobile } from "@hobenakicoffee/libraries/hooks";
 ```
 
 ## Entry Points Overview
@@ -52,6 +56,7 @@ import { checkEnvEncryption } from "@hobenakicoffee/libraries/scripts";
 | `@hobenakicoffee/libraries/moderation` | Content moderation tools |
 | `@hobenakicoffee/libraries/nuqs` | URL state management parsers |
 | `@hobenakicoffee/libraries/scripts` | Build/utility scripts |
+| `@hobenakicoffee/libraries/hooks` | React hooks |
 
 ---
 
@@ -466,48 +471,15 @@ result.error        // Error if any
 
 ## Moderation (`@hobenakicoffee/libraries/moderation`)
 
-### moderateText
+### containsProfanity / containsBanglaSwear
 
 Local profanity detection for English and Bangla.
 
 ```ts
-import { moderateText } from "@hobenakicoffee/libraries/moderation";
+import { containsProfanity, containsBanglaSwear, badwordsMatcher } from "@hobenakicoffee/libraries/moderation";
 
-const result = moderateText("some bad word here");
-
-result.isAllowed  // boolean
-result.matched    // Array of matched words
-```
-
-### normalizeLeetspeak
-
-Converts leetspeak to normal text (e.g., "h4x0r" -> "haxor").
-
-```ts
-import { normalizeLeetspeak } from "@hobenakicoffee/libraries/moderation";
-
-normalizeLeetspeak("h4x0r");  // "haxor"
-normalizeLeetspeak("p@ssw0rd"); // "password"
-```
-
-### normalizeUnicode
-
-Normalizes Unicode characters (removes diacritics).
-
-```ts
-import { normalizeUnicode } from "@hobenakicoffee/libraries/moderation";
-
-normalizeUnicode("café");  // "cafe"
-```
-
-### banglaBadWords
-
-Array of Bangla profanity words for content moderation.
-
-```ts
-import { banglaBadWords } from "@hobenakicoffee/libraries/moderation";
-
-console.log(banglaBadWords.length); // word count
+const hasProfanity = containsProfanity("some bad word here");
+const hasBanglaProfanity = containsBanglaSwear("কিছু খারাপ শব্দ");
 ```
 
 ---
@@ -635,11 +607,11 @@ function MyComponent() {
 | `getInitials` | Get name initials |
 | `getSocialLink` | Generate social profile URL |
 | `getSocialHandle` | Extract handle from social URL |
-| `openInNewWindow` | Open URL in new tab |
-| `shareToFacebook` | Share to Facebook |
-| `shareToInstagram` | Share to Instagram |
-| `shareToLinkedIn` | Share to LinkedIn |
-| `shareToX` | Share to X (Twitter) |
+| `openToNewWindow` | Open URL in new tab |
+| `postToFacebook` | Share to Facebook |
+| `postToInstagram` | Share to Instagram |
+| `postToLinkedIn` | Share to LinkedIn |
+| `postToX` | Share to X (Twitter) |
 | `downloadQrSvgAsPng` | Download QR as PNG |
 | `printQrSvg` | Print QR code |
 | `toHumanReadable` | Convert camelCase/snake_case to readable |
@@ -650,9 +622,9 @@ function MyComponent() {
 
 | Function | Description |
 |----------|-------------|
-| `moderateText` | Check text for profanity |
-| `normalizeLeetspeak` | Convert leetspeak to normal |
-| `normalizeUnicode` | Remove Unicode diacritics |
+| `containsProfanity` | Check text for profanity (English + Bangla) |
+| `containsBanglaSwear` | Check text for Bangla profanity |
+| `badwordsMatcher` | English profanity matcher (obscenity) |
 | `banglaBadWords` | Bangla profanity word list |
 
 ---
@@ -740,7 +712,6 @@ src/
 │   │   ├── bn.ts           # Bangla bad words
 │   │   └── index.ts
 │   ├── profanity-service.ts
-│   ├── normalizer.ts
 │   └── index.ts            # Exports
 ├── types/
 │   ├── supabase.ts         # Full Supabase types
