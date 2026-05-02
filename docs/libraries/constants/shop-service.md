@@ -5,7 +5,7 @@ Constants for shop product configuration.
 ## Usage
 
 ```ts
-import { MAX_PRODUCT_PRICE, ShopProductType } from "@hobenakicoffee/libraries/constants";
+import { MAX_PRODUCT_PRICE, ShopProductTypes } from "@hobenakicoffee/libraries/constants";
 ```
 
 ## Values
@@ -13,8 +13,8 @@ import { MAX_PRODUCT_PRICE, ShopProductType } from "@hobenakicoffee/libraries/co
 | Constant | Value | Description |
 | -------- | ---- | ----------- |
 | `MAX_PRODUCT_PRICE` | `9_999_999_999` | Maximum allowed product price |
-| `ShopProductType.digital` | `"digital"` | Digital product (downloads, etc.) |
-| `ShopProductType.physical` | `"physical"` | Physical product (shipped items) |
+| `ShopProductTypes.digital` | `"digital"` | Digital product (downloads, etc.) |
+| `ShopProductTypes.physical` | `"physical"` | Physical product (shipped items) |
 
 ## Types
 
@@ -27,15 +27,15 @@ type ShopProductType = "digital" | "physical";
 ## Example
 
 ```ts
-import { MAX_PRODUCT_PRICE, ShopProductType } from "@hobenakicoffee/libraries";
+import { MAX_PRODUCT_PRICE, ShopProductTypes } from "@hobenakicoffee/libraries";
 
 const maxPrice = MAX_PRODUCT_PRICE;
 // => 9999999999
 
-const productType = ShopProductType.digital;
+const productType = ShopProductTypes.digital;
 // => "digital"
 
-const physicalType = ShopProductType.physical;
+const physicalType = ShopProductTypes.physical;
 // => "physical"
 ```
 

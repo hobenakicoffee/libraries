@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { ShopProductType as ShopProductTypeType } from "./shop-service";
-import { MAX_PRODUCT_PRICE, ShopProductType } from "./shop-service";
+import { MAX_PRODUCT_PRICE, ShopProductTypes } from "./shop-service";
 
 describe("MAX_PRODUCT_PRICE", () => {
   test("should be a positive number", () => {
@@ -15,20 +15,20 @@ describe("MAX_PRODUCT_PRICE", () => {
 describe("ShopProductType", () => {
   test("should contain all expected product type keys", () => {
     const expectedKeys = ["digital", "physical"];
-    expect(Object.keys(ShopProductType)).toEqual(expectedKeys);
+    expect(Object.keys(ShopProductTypes)).toEqual(expectedKeys);
   });
 
   test("should have correct values for each product type", () => {
-    expect(ShopProductType.digital).toBe("digital");
-    expect(ShopProductType.physical).toBe("physical");
+    expect(ShopProductTypes.digital).toBe("digital");
+    expect(ShopProductTypes.physical).toBe("physical");
   });
 
   test("should have 2 product types", () => {
-    expect(Object.keys(ShopProductType).length).toBe(2);
+    expect(Object.keys(ShopProductTypes).length).toBe(2);
   });
 
   test("all values should be lowercase strings", () => {
-    for (const type of Object.values(ShopProductType)) {
+    for (const type of Object.values(ShopProductTypes)) {
       expect(typeof type).toBe("string");
       expect(type).toMatch(/^[a-z]+$/);
     }

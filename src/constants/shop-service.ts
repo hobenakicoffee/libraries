@@ -1,9 +1,9 @@
 export const MAX_PRODUCT_PRICE = 9_999_999_999;
 
-export const ShopProductType = {
+export const ShopProductTypes = {
   digital: "digital",
   physical: "physical",
 } as const;
 
 export type ShopProductType =
-  (typeof ShopProductType)[keyof typeof ShopProductType];
+  (typeof ShopProductTypes)[keyof typeof ShopProductTypes];
