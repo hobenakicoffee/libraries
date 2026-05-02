@@ -27,6 +27,8 @@ import { Visibility, PaymentStatuses, SupporterPlatforms } from "@hobenakicoffee
 | `WithdrawalStatuses` | Withdrawal status constants |
 | `SupporterPlatforms` | Social platform constants |
 | `ServiceTypes` | Service type constants |
+| `MAX_PRODUCT_PRICE` | Maximum product price constant |
+| `ShopProductType` | Digital and physical product type constants |
 
 ## Related
 
@@ -34,3 +36,4 @@ import { Visibility, PaymentStatuses, SupporterPlatforms } from "@hobenakicoffee
 - [Payment](./payment)
 - [Platforms](./platforms)
 - [Services](./services)
+- [Shop Service](./shop-service)
