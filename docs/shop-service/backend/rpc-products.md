@@ -27,7 +27,7 @@ flowchart TB
     end
 ```
 
-Covers all RPCs for managing the product catalogue, multi-axis variants, and digital product files. Also includes address and category RPCs which are prerequisite for product setup.
+Covers all RPCs for managing the product catalogue, multi-axis variants, and digital product files. Also includes address RPCs which are prerequisite for product setup.
 
 ## Address RPCs
 
@@ -85,46 +85,6 @@ public.delete_user_address(p_address_id uuid) → jsonb
 ```
 
 Hard-deletes the address. Safe because `shop_orders.shipping_address` is a snapshot — no FK back to this table.
-
----
-
-## Category RPCs
-
-### `upsert_shop_category`
-
-```sql
-public.upsert_shop_category(
-  p_category_id uuid    default null,
-  p_name        varchar default null,
-  p_slug        varchar default null,   -- auto-generated from name if omitted
-  p_sort_order  integer default null,
-  p_is_visible  boolean default null
-) → jsonb
-```
-
-Slug is auto-generated from `p_name` via `lower(regexp_replace(name, '[^a-zA-Z0-9]+', '-', 'g'))` if not provided. Unique per `(profile_id, slug)`.
-
-**Errors:** `UNAUTHENTICATED`, `MISSING_NAME`, `NOT_FOUND`, `SLUG_CONFLICT`
-
----
-
-### `delete_shop_category`
-
-```sql
-public.delete_shop_category(p_category_id uuid) → jsonb
-```
-
-Deletes the category. Products in the category have their `category_id` set to `NULL` automatically via `ON DELETE SET NULL`.
-
----
-
-### `reorder_shop_categories`
-
-```sql
-public.reorder_shop_categories(p_category_ids uuid[]) → jsonb
-```
-
-Pass the IDs in the desired order. Sets `sort_order` to `index − 1` for each. Used by the drag-and-drop category list in Studio.
 
 ---
 

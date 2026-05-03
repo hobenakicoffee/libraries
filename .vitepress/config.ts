@@ -285,6 +285,10 @@ export default withMermaid(
                     link: "/shop-service/frontend/studio-products",
                   },
                   {
+                    text: "Studio Categories",
+                    link: "/shop-service/frontend/studio-categories",
+                  },
+                  {
                     text: "Studio Orders",
                     link: "/shop-service/frontend/studio-orders",
                   },
@@ -308,6 +312,10 @@ export default withMermaid(
                   {
                     text: "RPC Products",
                     link: "/shop-service/backend/rpc-products",
+                  },
+                  {
+                    text: "RPC Categories",
+                    link: "/shop-service/backend/rpc-categories",
                   },
                   {
                     text: "RPC Checkout",
