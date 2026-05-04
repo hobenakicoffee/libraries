@@ -1196,6 +1196,7 @@ export type Database = {
           id: string;
           is_visible: boolean;
           name: string;
+          product_count: number;
           profile_id: string;
           slug: string;
           sort_order: number;
@@ -1206,6 +1207,7 @@ export type Database = {
           id?: string;
           is_visible?: boolean;
           name: string;
+          product_count?: number;
           profile_id: string;
           slug: string;
           sort_order?: number;
@@ -1216,6 +1218,7 @@ export type Database = {
           id?: string;
           is_visible?: boolean;
           name?: string;
+          product_count?: number;
           profile_id?: string;
           slug?: string;
           sort_order?: number;
