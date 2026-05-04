@@ -170,6 +170,10 @@ Checks whether any `shop_order_items` row references this product:
 Soft-deleted products remain visible in Studio with a "deleted" badge so the creator knows the history. Public pages exclude them (`is_deleted = false` in all public queries).
 :::
 
+::: info Product count trigger
+When a product is deleted (soft or hard), the category's `product_count` is decremented automatically via the `trg_shop_products_product_count` trigger. Restoring a soft-deleted product increments the count back.
+:::
+
 ---
 
 ### `reorder_shop_products`

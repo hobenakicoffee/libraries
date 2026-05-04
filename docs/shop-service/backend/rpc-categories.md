@@ -25,8 +25,9 @@ public.upsert_shop_category(
   p_category_id uuid    default null,
   p_name        varchar default null,
   p_slug        varchar default null,   -- auto-generated from name if omitted
+  p_description varchar default null,   -- optional description text
   p_sort_order  integer default null,
-  p_is_visible  boolean default null
+  p_is_visible boolean default null
 ) → jsonb
 ```
 
@@ -37,6 +38,7 @@ public.upsert_shop_category(
 | `p_category_id` | uuid | `null` = create, uuid = edit |
 | `p_name` | varchar | Required on create |
 | `p_slug` | varchar | Auto-generated from name if omitted |
+| `p_description` | varchar | Optional description |
 | `p_sort_order` | integer | Optional position |
 | `p_is_visible` | boolean | Visibility toggle |
 

@@ -173,26 +173,52 @@ create table public.shop_settings (
 
 ## `shop_categories`
 
-Creator-scoped categories. Slugs are unique per shop, not globally.
+Creator-scoped categories. Slugs are unique per shop, not globally. Products reference via `category_id` with `ON DELETE SET NULL`.
 
 ```sql
 create table public.shop_categories (
-  id          uuid        primary key default gen_random_uuid(),
-  profile_id  uuid        not null references public.profiles(id) on delete cascade,
+  id             uuid        primary key default gen_random_uuid(),
+  profile_id     uuid        not null references public.profiles(id) on delete cascade,
 
-  name        varchar(100) not null,
-  slug        varchar(100) not null,
-  sort_order  integer      not null default 0,
-  is_visible  boolean      not null default true,
+  name          varchar(100) not null,
+  slug          varchar(100) not null,
+  description   text,                       -- optional category description
+  sort_order    integer     not null default 0,
+  is_visible    boolean     not null default true,
+  product_count integer     not null default 0 check (product_count >= 0),
 
-  created_at  timestamptz  not null default now(),
-  updated_at  timestamptz  not null default now(),
+  created_at    timestamptz  not null default now(),
+  updated_at   timestamptz  not null default now(),
 
+  constraint shop_categories_product_count_non_negative check (product_count >= 0),
   constraint shop_categories_profile_slug_unique unique (profile_id, slug)
 );
 ```
 
-Products reference `category_id` with `ON DELETE SET NULL` — deleting a category nulls the reference on products, it doesn't delete them.
+**Indexes:**
+
+| Index | Purpose |
+|------|---------|
+| `(profile_id, sort_order)` | Category list order |
+| `(product_count)` | Efficient count updates |
+
+**Triggers:**
+
+- `trg_shop_products_product_count` — maintains `product_count` on product insert/delete/soft-delete/restore
+
+```sql
+create trigger trg_shop_products_product_count
+before insert or delete or update of category_id, is_deleted on public.shop_products
+for each row execute procedure public.trg_shop_products_product_count();
+```
+
+**Product count behavior:**
+
+- INSERT: increments new category's count
+- DELETE: decrements old category's count  
+- UPDATE `category_id`: decrements old, increments new
+- UPDATE `is_deleted` (true): decrements count
+- UPDATE `is_deleted` (false): increments count
 
 ---
 
@@ -508,6 +534,7 @@ Key indexes beyond the primary keys:
 | Table | Index | Purpose |
 |---|---|---|
 | `user_addresses` | `(profile_id) WHERE is_default = true` (unique) | One default per profile |
+| `shop_categories` | `(product_count)` | Efficient count updates |
 | `shop_products` | `(profile_id, is_active, sort_order) WHERE is_deleted = false` | Paginated product grid |
 | `shop_products` | `(profile_id, is_featured) WHERE is_featured = true ...` | Profile card featured strip |
 | `shop_products` | `(profile_id, sales_count desc) WHERE is_active ...` | Top-sellers list |

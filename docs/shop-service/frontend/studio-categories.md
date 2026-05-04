@@ -38,6 +38,7 @@ export async function upsertShopCategory(args: {
   p_category_id?: string;
   p_name: string;
   p_slug?: string;
+  p_description?: string;
   p_sort_order?: number;
   p_is_visible?: boolean;
 }) {
@@ -117,7 +118,7 @@ export function useReorderCategories() {
 
 ## Add category dialog
 
-Name-only form following the create product dialog pattern:
+Name and optional description form following the create product dialog pattern:
 
 ```tsx
 // app/src/components/studio/category-dialog.tsx
@@ -127,6 +128,7 @@ import { z } from 'zod';
 
 const categorySchema = z.object({
   name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
 });
 
 type CategoryFormValues = z.infer<typeof categorySchema>;
@@ -140,13 +142,16 @@ interface AddCategoryDialogProps {
 export function AddCategoryDialog({ open, onOpenChange, onSuccess }: AddCategoryDialogProps) {
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
-    defaultValues: { name: '' },
+    defaultValues: { name: '', description: '' },
   });
 
   const upsertMutation = useUpsertCategory();
 
   const onSubmit = form.handleSubmit(async (values) => {
-    await upsertMutation.mutateAsync({ p_name: values.name });
+    await upsertMutation.mutateAsync({
+      p_name: values.name,
+      p_description: values.description,
+    });
     form.reset();
     onOpenChange(false);
     onSuccess?.();
@@ -172,6 +177,15 @@ export function AddCategoryDialog({ open, onOpenChange, onSuccess }: AddCategory
                 {form.formState.errors.name.message}
               </p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description (optional)</Label>
+            <Textarea
+              id="description"
+              placeholder="Brief description of this category"
+              {...form.register('description')}
+            />
           </div>
 
           <div className="flex justify-end gap-2">
@@ -207,13 +221,13 @@ interface EditCategoryDialogProps {
 export function EditCategoryDialog({ open, onOpenChange, category, onSuccess }: EditCategoryDialogProps) {
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
-    defaultValues: { name: '' },
+    defaultValues: { name: '', description: '' },
   });
 
   // Reset form when category changes
   useEffect(() => {
     if (category) {
-      form.reset({ name: category.name });
+      form.reset({ name: category.name, description: category.description || '' });
     }
   }, [category, form]);
 
@@ -223,6 +237,7 @@ export function EditCategoryDialog({ open, onOpenChange, category, onSuccess }: 
     await upsertMutation.mutateAsync({
       p_category_id: category!.id,
       p_name: values.name,
+      p_description: values.description,
     });
     form.reset();
     onOpenChange(false);
@@ -243,6 +258,15 @@ export function EditCategoryDialog({ open, onOpenChange, category, onSuccess }: 
               id="name"
               placeholder="e.g. Coffee Beans"
               {...form.register('name')}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description (optional)</Label>
+            <Textarea
+              id="description"
+              placeholder="Brief description of this category"
+              {...form.register('description')}
             />
           </div>
 
@@ -275,6 +299,7 @@ import { useCategories, useUpsertCategory, useDeleteCategory } from '@/hooks/use
 import { ToggleAlertDialog } from '@/components/ui/toggle-alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { PlusIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
 
 export function CategoryList() {
@@ -338,7 +363,11 @@ export function CategoryList() {
                     {category.is_visible ? 'Visible' : 'Hidden'}
                   </Badge>
                 </TableCell>
-                <TableCell>{/* Product count */}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary">
+                    {category.product_count} product{category.product_count !== 1 ? 's' : ''}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <Button
@@ -477,7 +506,9 @@ import { CSS } from '@dnd-kit/utilities';
 interface Category {
   id: string;
   name: string;
+  description?: string;
   is_visible: boolean;
+  product_count: number;
 }
 
 interface CategoryDraggableListProps {
