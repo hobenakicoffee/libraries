@@ -2701,6 +2701,7 @@ export type Database = {
       upsert_shop_category: {
         Args: {
           p_category_id?: string;
+          p_description?: string;
           p_is_visible?: boolean;
           p_name?: string;
           p_slug?: string;
