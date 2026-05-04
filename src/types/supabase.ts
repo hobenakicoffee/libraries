@@ -1193,6 +1193,7 @@ export type Database = {
       shop_categories: {
         Row: {
           created_at: string;
+          description: string | null;
           id: string;
           is_visible: boolean;
           name: string;
@@ -1204,6 +1205,7 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
+          description?: string | null;
           id?: string;
           is_visible?: boolean;
           name: string;
@@ -1215,6 +1217,7 @@ export type Database = {
         };
         Update: {
           created_at?: string;
+          description?: string | null;
           id?: string;
           is_visible?: boolean;
           name?: string;
