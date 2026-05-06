@@ -49,6 +49,8 @@ All tables are in the `public` schema with RLS enabled. Clients access data excl
 | `shop_product_variants` | Multi-axis variant combinations | `shop_products` |
 | `shop_product_files` | Files attached to digital products | `shop_products` |
 | `shop_policies` | Creator-customised policy text | `profiles` |
+| `shop_category_drafts` | Pending/rejected edits awaiting manager review | `shop_categories`, `profiles` |
+| `shop_product_drafts` | Pending/rejected edits awaiting manager review | `shop_products`, `profiles` |
 | `shop_orders` | One row per checkout session | `profiles` (×2), `transactions` |
 | `shop_order_items` | Line items within an order | `shop_orders`, `shop_products`, `shop_product_variants` |
 | `shop_download_tokens` | Secure download links for digital files | `shop_order_items`, `shop_product_files`, `profiles` |
@@ -175,6 +177,8 @@ create table public.shop_settings (
 
 Creator-scoped categories. Slugs are unique per shop, not globally. Products reference via `category_id` with `ON DELETE SET NULL`.
 
+`is_visible` starts `false` and is only set to `true` by `approve_shop_category`. Owners cannot flip it directly. Pending/rejected state and feedback live in `shop_category_drafts`.
+
 ```sql
 create table public.shop_categories (
   id             uuid        primary key default gen_random_uuid(),
@@ -182,13 +186,13 @@ create table public.shop_categories (
 
   name          varchar(100) not null,
   slug          varchar(100) not null,
-  description   text,                       -- optional category description
+  description   text,
   sort_order    integer     not null default 0,
-  is_visible    boolean     not null default true,
+  is_visible    boolean     not null default false,  -- manager-controlled only
   product_count integer     not null default 0 check (product_count >= 0),
 
   created_at    timestamptz  not null default now(),
-  updated_at   timestamptz  not null default now(),
+  updated_at    timestamptz  not null default now(),
 
   constraint shop_categories_product_count_non_negative check (product_count >= 0),
   constraint shop_categories_profile_slug_unique unique (profile_id, slug)
@@ -264,7 +268,7 @@ create table public.shop_products (
   stock_count                integer  check (stock_count >= 0),   -- null = unlimited
   low_stock_threshold        integer  not null default 5,
 
-  is_active    boolean  not null default true,
+  is_active    boolean  not null default false,  -- manager-controlled only
   is_featured  boolean  not null default false,
   is_deleted   boolean  not null default false,
   sort_order   integer  not null default 0,
@@ -287,10 +291,12 @@ create table public.shop_products (
 
 **Important notes:**
 
+- `is_active` starts `false` and is only set to `true` by `approve_shop_product` — owners cannot toggle it directly
 - When variants exist, `product.stock_count` is ignored — stock is tracked per variant
 - `sales_count` is incremented on fulfillment (digital) or delivery (physical)
 - `is_deleted = true` hides from public pages but is visible in Studio
 - Direct DELETE is blocked by RLS; always go through `delete_shop_product`
+- Pending/rejected state and rejection feedback live in `shop_product_drafts`
 
 **RLS:**
 - `SELECT` — active + non-deleted visible to all; owner sees everything
@@ -378,6 +384,95 @@ create table public.shop_policies (
 **Policy types:** `return_refund | digital_products | shipping | privacy | terms_of_service`
 
 When no row exists for a given type, the frontend falls back to its static default template.
+
+---
+
+## `shop_category_drafts`
+
+Shadow-draft table for the category manager approval workflow. One row per category (`UNIQUE category_id`). Only exists while a category has pending or rejected changes.
+
+```sql
+create table public.shop_category_drafts (
+  id               uuid   primary key default gen_random_uuid(),
+  category_id      uuid   not null unique references public.shop_categories(id) on delete cascade,
+  profile_id       uuid   not null references public.profiles(id) on delete cascade,
+
+  -- Mirrors all editable columns of shop_categories
+  name             varchar(100) not null,
+  description      text,
+  slug             varchar(100) not null,
+  sort_order       integer not null default 0,
+
+  approval_status  shop_approval_status_enum not null default 'pending',
+  rejection_reason text,
+
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+```
+
+**States:**
+
+| `approval_status` | Meaning |
+|---|---|
+| `pending` | Submitted by owner, awaiting manager action |
+| `rejected` | Manager rejected; `rejection_reason` set; owner can revise |
+
+`approved` is never stored — on approval the draft is applied to the live row and deleted.
+
+**RLS:** Owners can SELECT their own drafts. All writes go through security-definer RPCs only (no direct owner DML).
+
+---
+
+## `shop_product_drafts`
+
+Same pattern as `shop_category_drafts` but for products. Mirrors all editable product columns. `product_type` is intentionally omitted — it's immutable after creation.
+
+```sql
+create table public.shop_product_drafts (
+  id                          uuid   primary key default gen_random_uuid(),
+  product_id                  uuid   not null unique references public.shop_products(id) on delete cascade,
+  profile_id                  uuid   not null references public.profiles(id) on delete cascade,
+
+  -- Mirrors all editable columns of shop_products (product_type excluded — immutable)
+  category_id                 uuid   references public.shop_categories(id) on delete set null,
+  title                       varchar(200) not null,
+  slug                        varchar(200) not null,
+  description                 text,
+  cover_image_url             text,
+  images                      text[] not null default '{}',
+  sku                         varchar(100),
+  price                       numeric(10,2) not null check (price >= 0),
+  compare_at_price            numeric(10,2),
+  option_definitions          jsonb  not null default '[]',
+  weight_grams                integer,
+  shipping_fee_inside_dhaka   numeric(10,2) not null default 0,
+  shipping_fee_outside_dhaka  numeric(10,2) not null default 0,
+  processing_min_days         integer,
+  processing_max_days         integer,
+  requires_shipping           boolean not null default false,
+  cod_enabled                 boolean not null default false,
+  max_downloads               integer not null default 5,
+  download_expires_hours      integer not null default 72,
+  stock_count                 integer,
+  low_stock_threshold         integer not null default 5,
+  is_featured                 boolean not null default false,
+  sort_order                  integer not null default 0,
+  tags                        text[]  not null default '{}',
+
+  approval_status             shop_approval_status_enum not null default 'pending',
+  rejection_reason            text,
+
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+```
+
+**RLS:** Owners can SELECT their own drafts. All writes go through security-definer RPCs only.
+
+::: tip One draft per item
+Both draft tables enforce `UNIQUE (category_id)` / `UNIQUE (product_id)`. `upsert_shop_category` and `upsert_shop_product` use `ON CONFLICT … DO UPDATE` to overwrite the previous draft, so there is always at most one in-flight draft per item.
+:::
 
 ---
 
@@ -523,6 +618,14 @@ create type public.shop_policy_type_enum as enum (
   'return_refund', 'digital_products', 'shipping',
   'privacy', 'terms_of_service'
 );
+
+-- Three-state approval lifecycle for draft tables.
+-- 'approved' is never persisted — draft is deleted on approval.
+create type public.shop_approval_status_enum as enum (
+  'pending',   -- submitted by owner, awaiting manager action
+  'approved',  -- (transitional only — draft deleted immediately after)
+  'rejected'   -- manager rejected; rejection_reason shown in Studio
+);
 ```
 
 ---
@@ -538,6 +641,8 @@ Key indexes beyond the primary keys:
 | `shop_products` | `(profile_id, is_active, sort_order) WHERE is_deleted = false` | Paginated product grid |
 | `shop_products` | `(profile_id, is_featured) WHERE is_featured = true ...` | Profile card featured strip |
 | `shop_products` | `(profile_id, sales_count desc) WHERE is_active ...` | Top-sellers list |
+| `shop_category_drafts` | `(created_at) WHERE approval_status = 'pending'` | Manager approval queue |
+| `shop_product_drafts` | `(created_at) WHERE approval_status = 'pending'` | Manager approval queue |
 | `shop_orders` | `(seller_profile_id, created_at desc)` | Seller order list |
 | `shop_orders` | `(seller_profile_id, created_at) WHERE payment_method = 'cod' AND cod_settled_at IS NULL` | COD aging check |
 | `shop_order_items` | `(order_id, status) WHERE status = 'delivered' AND cod_settled_at IS NULL` | Cash-pending tab |

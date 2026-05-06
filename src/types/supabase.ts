@@ -1237,6 +1237,63 @@ export type Database = {
           },
         ];
       };
+      shop_category_drafts: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["shop_approval_status_enum"];
+          category_id: string;
+          created_at: string;
+          description: string | null;
+          id: string;
+          name: string;
+          profile_id: string;
+          rejection_reason: string | null;
+          slug: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["shop_approval_status_enum"];
+          category_id: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+          profile_id: string;
+          rejection_reason?: string | null;
+          slug: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          approval_status?: Database["public"]["Enums"]["shop_approval_status_enum"];
+          category_id?: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          profile_id?: string;
+          rejection_reason?: string | null;
+          slug?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_category_drafts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: true;
+            referencedRelation: "shop_categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_category_drafts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       shop_download_tokens: {
         Row: {
           buyer_profile_id: string;
@@ -1508,6 +1565,130 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "shop_policies_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_product_drafts: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["shop_approval_status_enum"];
+          category_id: string | null;
+          cod_enabled: boolean;
+          compare_at_price: number | null;
+          cover_image_url: string | null;
+          created_at: string;
+          description: string | null;
+          download_expires_hours: number;
+          id: string;
+          images: string[];
+          is_featured: boolean;
+          low_stock_threshold: number;
+          max_downloads: number;
+          option_definitions: Json;
+          price: number;
+          processing_max_days: number | null;
+          processing_min_days: number | null;
+          product_id: string;
+          profile_id: string;
+          rejection_reason: string | null;
+          requires_shipping: boolean;
+          shipping_fee_inside_dhaka: number;
+          shipping_fee_outside_dhaka: number;
+          sku: string | null;
+          slug: string;
+          sort_order: number;
+          stock_count: number | null;
+          tags: string[];
+          title: string;
+          updated_at: string;
+          weight_grams: number | null;
+        };
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["shop_approval_status_enum"];
+          category_id?: string | null;
+          cod_enabled?: boolean;
+          compare_at_price?: number | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          download_expires_hours?: number;
+          id?: string;
+          images?: string[];
+          is_featured?: boolean;
+          low_stock_threshold?: number;
+          max_downloads?: number;
+          option_definitions?: Json;
+          price: number;
+          processing_max_days?: number | null;
+          processing_min_days?: number | null;
+          product_id: string;
+          profile_id: string;
+          rejection_reason?: string | null;
+          requires_shipping?: boolean;
+          shipping_fee_inside_dhaka?: number;
+          shipping_fee_outside_dhaka?: number;
+          sku?: string | null;
+          slug: string;
+          sort_order?: number;
+          stock_count?: number | null;
+          tags?: string[];
+          title: string;
+          updated_at?: string;
+          weight_grams?: number | null;
+        };
+        Update: {
+          approval_status?: Database["public"]["Enums"]["shop_approval_status_enum"];
+          category_id?: string | null;
+          cod_enabled?: boolean;
+          compare_at_price?: number | null;
+          cover_image_url?: string | null;
+          created_at?: string;
+          description?: string | null;
+          download_expires_hours?: number;
+          id?: string;
+          images?: string[];
+          is_featured?: boolean;
+          low_stock_threshold?: number;
+          max_downloads?: number;
+          option_definitions?: Json;
+          price?: number;
+          processing_max_days?: number | null;
+          processing_min_days?: number | null;
+          product_id?: string;
+          profile_id?: string;
+          rejection_reason?: string | null;
+          requires_shipping?: boolean;
+          shipping_fee_inside_dhaka?: number;
+          shipping_fee_outside_dhaka?: number;
+          sku?: string | null;
+          slug?: string;
+          sort_order?: number;
+          stock_count?: number | null;
+          tags?: string[];
+          title?: string;
+          updated_at?: string;
+          weight_grams?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_product_drafts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_product_drafts_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: true;
+            referencedRelation: "shop_products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_product_drafts_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
@@ -2193,6 +2374,8 @@ export type Database = {
         };
         Returns: Json;
       };
+      approve_shop_category: { Args: { p_category_id: string }; Returns: Json };
+      approve_shop_product: { Args: { p_product_id: string }; Returns: Json };
       authorize_manager: {
         Args: {
           requested_permission: Database["public"]["Enums"]["manager_permission"];
@@ -2656,6 +2839,14 @@ export type Database = {
         Args: { p_post_id: string };
         Returns: undefined;
       };
+      reject_shop_category: {
+        Args: { p_category_id: string; p_rejection_reason: string };
+        Returns: Json;
+      };
+      reject_shop_product: {
+        Args: { p_product_id: string; p_rejection_reason: string };
+        Returns: Json;
+      };
       reorder_shop_categories: {
         Args: { p_category_ids: string[] };
         Returns: Json;
@@ -2702,7 +2893,6 @@ export type Database = {
         Args: {
           p_category_id?: string;
           p_description?: string;
-          p_is_visible?: boolean;
           p_name?: string;
           p_slug?: string;
           p_sort_order?: number;
@@ -2726,7 +2916,6 @@ export type Database = {
           p_description?: string;
           p_download_expires_hours?: number;
           p_images?: string[];
-          p_is_active?: boolean;
           p_is_featured?: boolean;
           p_low_stock_threshold?: number;
           p_max_downloads?: number;
@@ -2900,6 +3089,7 @@ export type Database = {
         | "implemented"
         | "rejected"
         | "duplicate";
+      shop_approval_status_enum: "pending" | "approved" | "rejected";
       shop_order_item_status_enum:
         | "pending"
         | "paid"
@@ -3179,6 +3369,7 @@ export const Constants = {
         "rejected",
         "duplicate",
       ],
+      shop_approval_status_enum: ["pending", "approved", "rejected"],
       shop_order_item_status_enum: [
         "pending",
         "paid",

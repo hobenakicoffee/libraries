@@ -53,7 +53,89 @@ export function ProductList() {
 }
 ```
 
-Soft-deleted products show a "Deleted" badge and no edit controls. Active/inactive toggle calls `upsert_shop_product({ p_product_id: id, p_is_active: newValue })`.
+Soft-deleted products show a "Deleted" badge and no edit controls.
+
+> **Approval workflow:** Products do not have an owner-side active/inactive toggle. `is_active` is exclusively controlled by managers via `approve_shop_product`. Every create or edit triggers a manager review via the draft pattern:
+> - **New product** → `is_active = false`, pending draft created. Manager approves to make it live.
+> - **Edit of a live product** → live row stays online untouched; only `shop_product_drafts` is written. Manager approves to apply the changes.
+> - **Edit of a pending/rejected product** → `shop_products` updated directly + draft refreshed.
+>
+> Display the product's approval state by joining `shop_product_drafts` (query key `['shop', 'product-drafts']`). If a draft row exists with `approval_status = 'pending'`, show a "Pending review" badge. If `approval_status = 'rejected'`, show a "Rejected" badge and surface `rejection_reason` in the edit form so the creator knows what to fix.
+
+---
+
+## Draft service & hook
+
+Fetch the owner's product drafts alongside the product list to display approval state:
+
+```typescript
+// app/src/services/product.service.ts (additions)
+import type { ApprovalStatus } from '@/types/shop';
+
+export interface ShopProductDraft {
+  id: string;
+  product_id: string;
+  profile_id: string;
+  approval_status: ApprovalStatus;
+  rejection_reason: string | null;
+  // ... mirrors all editable product columns
+  updated_at: string;
+}
+
+export async function getProductDrafts(): Promise<ShopProductDraft[]> {
+  const { data, error } = await supabase.from('shop_product_drafts').select('*');
+  if (error) throw error;
+  return data;
+}
+```
+
+```typescript
+// app/src/hooks/use-products.ts (additions)
+// Returns a map of product_id → draft for O(1) lookup in the product list
+export function useProductDrafts() {
+  return useQuery({
+    queryKey: ['shop', 'product-drafts'],
+    queryFn: async () => {
+      const drafts = await getProductDrafts();
+      return Object.fromEntries(drafts.map((d) => [d.product_id, d]));
+    },
+  });
+}
+```
+
+Invalidate `['shop', 'product-drafts']` alongside `['shop', 'products']` on every upsert mutation `onSuccess`.
+
+### Product approval badge
+
+```tsx
+// app/src/components/studio/product-approval-badge.tsx
+interface ProductApprovalBadgeProps {
+  isActive: boolean;
+  draft: ShopProductDraft | undefined;
+}
+
+export function ProductApprovalBadge({ isActive, draft }: ProductApprovalBadgeProps) {
+  if (draft?.approval_status === 'rejected') {
+    return (
+      <Badge variant="destructive" title={draft.rejection_reason ?? undefined}>
+        Rejected
+      </Badge>
+    );
+  }
+
+  if (draft?.approval_status === 'pending') {
+    return <Badge variant="secondary">Pending review</Badge>;
+  }
+
+  if (isActive) {
+    return <Badge className="bg-green-500 hover:bg-green-600">Live</Badge>;
+  }
+
+  return <Badge variant="outline">Inactive</Badge>;
+}
+```
+
+Show the rejection reason in the product edit form the same way as categories — a `ProductRejectionBanner` component above the form fields when `draft?.approval_status === 'rejected'`. Pre-fill the form from the draft fields (not the live row) so the creator edits from their last submission.
 
 ---
 

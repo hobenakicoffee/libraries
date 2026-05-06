@@ -1,6 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import type { ShopProductType as ShopProductTypeType } from "./shop-service";
-import { MAX_PRODUCT_PRICE, ShopProductTypes } from "./shop-service";
+import type {
+  ShopApprovalStatus as ShopApprovalStatusType,
+  ShopProductType as ShopProductTypeType,
+} from "./shop-service";
+import {
+  MAX_PRODUCT_PRICE,
+  ShopApprovalStatuses,
+  ShopProductTypes,
+} from "./shop-service";
 
 describe("MAX_PRODUCT_PRICE", () => {
   test("should be a positive number", () => {
@@ -44,5 +51,46 @@ describe("ShopProductType type", () => {
   test("should accept 'physical' as a valid type", () => {
     const validType: ShopProductTypeType = "physical";
     expect(validType).toBe("physical");
+  });
+});
+
+describe("ShopApprovalStatuses", () => {
+  test("should contain all expected approval status keys", () => {
+    const expectedKeys = ["pending", "approved", "rejected"];
+    expect(Object.keys(ShopApprovalStatuses)).toEqual(expectedKeys);
+  });
+
+  test("should have correct values for each approval status", () => {
+    expect(ShopApprovalStatuses.pending).toBe("pending");
+    expect(ShopApprovalStatuses.approved).toBe("approved");
+    expect(ShopApprovalStatuses.rejected).toBe("rejected");
+  });
+
+  test("should have 3 approval statuses", () => {
+    expect(Object.keys(ShopApprovalStatuses).length).toBe(3);
+  });
+
+  test("all values should be lowercase strings", () => {
+    for (const status of Object.values(ShopApprovalStatuses)) {
+      expect(typeof status).toBe("string");
+      expect(status).toMatch(/^[a-z]+$/);
+    }
+  });
+});
+
+describe("ShopApprovalStatus type", () => {
+  test("should accept 'pending' as a valid status", () => {
+    const validStatus: ShopApprovalStatusType = "pending";
+    expect(validStatus).toBe("pending");
+  });
+
+  test("should accept 'approved' as a valid status", () => {
+    const validStatus: ShopApprovalStatusType = "approved";
+    expect(validStatus).toBe("approved");
+  });
+
+  test("should accept 'rejected' as a valid status", () => {
+    const validStatus: ShopApprovalStatusType = "rejected";
+    expect(validStatus).toBe("rejected");
   });
 });

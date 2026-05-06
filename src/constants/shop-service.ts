@@ -7,3 +7,12 @@ export const ShopProductTypes = {
 
 export type ShopProductType =
   (typeof ShopProductTypes)[keyof typeof ShopProductTypes];
+
+export const ShopApprovalStatuses = {
+  pending: "pending",
+  approved: "approved",
+  rejected: "rejected",
+} as const;
+
+export type ShopApprovalStatus =
+  (typeof ShopApprovalStatuses)[keyof typeof ShopApprovalStatuses];

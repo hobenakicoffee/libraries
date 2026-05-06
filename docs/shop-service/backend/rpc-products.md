@@ -88,6 +88,22 @@ Hard-deletes the address. Safe because `shop_orders.shipping_address` is a snaps
 
 ---
 
+## Approval workflow overview
+
+All products go through a manager review before (or after editing) they become publicly active. The pending state lives in `shop_product_drafts`, not on the live `shop_products` row.
+
+| Situation | What `upsert_shop_product` does | Live product |
+|---|---|---|
+| Brand-new product | Writes `shop_products` (`is_active=false`) + inserts pending draft | Inactive until approved |
+| Edit of a **live** product | Writes only to `shop_product_drafts` (ON CONFLICT overwrites) | Stays online untouched |
+| Edit of a **pending/rejected** product | Updates `shop_products` directly + refreshes draft | Still inactive |
+
+Manager calls `approve_shop_product` → draft applied to live row, `is_active=true`, draft deleted.
+Manager calls `reject_shop_product` → draft `approval_status='rejected'` + `rejection_reason` set, live row untouched.
+Owner re-edits after rejection → draft overwritten, `approval_status` reset to `'pending'`.
+
+---
+
 ## Product RPCs
 
 ### `upsert_shop_product`
@@ -117,7 +133,7 @@ public.upsert_shop_product(
   p_download_expires_hours     integer default null,
   p_stock_count                integer default null,
   p_low_stock_threshold        integer default null,
-  p_is_active                  boolean default null,
+  -- p_is_active intentionally absent — activation is manager-controlled only
   p_is_featured                boolean default null,
   p_sort_order                 integer default null,
   p_tags                       text[]  default null
@@ -126,7 +142,9 @@ public.upsert_shop_product(
 
 **Create** (omit `p_product_id`): `title`, `product_type`, and `price` are required.
 
-**Edit** (pass `p_product_id`): all fields optional — only non-null values update the row.
+**Edit** (pass `p_product_id`): all fields optional — only non-null values update the row or draft.
+
+> `p_is_active` has been **removed**. Activation is exclusively controlled by `approve_shop_product`. Passing it will cause an error.
 
 #### `option_definitions` validation
 
@@ -183,6 +201,51 @@ public.reorder_shop_products(p_product_ids uuid[]) → jsonb
 ```
 
 Bulk-updates `sort_order` by array position. Same pattern as `reorder_shop_categories`.
+
+---
+
+### `approve_shop_product` *(manager only)*
+
+```sql
+public.approve_shop_product(p_product_id uuid) → jsonb
+```
+
+Requires `content.approve` manager permission.
+
+Loads the pending draft from `shop_product_drafts`, applies all its columns to the live `shop_products` row, sets `is_active = true`, then deletes the draft.
+
+**Idempotent edge case:** if no draft exists but the product does, it simply sets `is_active = true` (handles double-approval gracefully).
+
+**Response:**
+```json
+{ "success": true }
+```
+
+**Errors:** `UNAUTHORIZED`, `NOT_FOUND`
+
+---
+
+### `reject_shop_product` *(manager only)*
+
+```sql
+public.reject_shop_product(
+  p_product_id       uuid,
+  p_rejection_reason text
+) → jsonb
+```
+
+Requires `content.approve` manager permission.
+
+Sets `approval_status = 'rejected'` and `rejection_reason` on the draft row. **The live `shop_products` row is never touched** — if the product was already live, it stays online. The owner sees the rejection reason in Studio and can revise and resubmit.
+
+Rejection reason is **required** and must be non-empty.
+
+**Response:**
+```json
+{ "success": true }
+```
+
+**Errors:** `UNAUTHORIZED`, `REJECTION_REASON_REQUIRED`, `DRAFT_NOT_FOUND`
 
 ---
 
