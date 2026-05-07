@@ -398,3 +398,59 @@ Public RPC. Returns all `is_enabled = true` policy overrides for a creator's sho
 ```
 
 **Errors:** `PROFILE_NOT_FOUND`
+
+---
+
+## Testing manager RPCs in the SQL editor
+
+Manager RPCs are gated by `authorize_manager('content.approve')`, which reads `auth.jwt() ->> 'manager_role'`. In the Supabase SQL editor queries run as the `postgres` superuser and `auth.jwt()` returns `null`, so a direct call returns `UNAUTHORIZED`.
+
+Use `set_config` to mock the JWT claim for the session:
+
+```sql
+-- Set the manager_role claim (persist for the whole session)
+select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', false);
+
+-- Now call the RPC normally
+select approve_shop_product('<your-product-id>');
+```
+
+Pass `true` as the third argument to scope it to the current transaction instead:
+
+```sql
+select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', true);
+select approve_shop_product('<your-product-id>');
+```
+
+### Full approval flow test
+
+```sql
+-- 1. Confirm the draft exists
+select * from shop_product_drafts where product_id = '<your-product-id>';
+
+-- 2. Set the manager claim
+select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', false);
+
+-- 3. Approve
+select approve_shop_product('<your-product-id>');
+
+-- 4. Verify: draft gone, product now active
+select id, title, is_active from shop_products where id = '<your-product-id>';
+select * from shop_product_drafts where product_id = '<your-product-id>'; -- 0 rows
+```
+
+### Full rejection flow test
+
+```sql
+select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', false);
+select reject_shop_product('<your-product-id>', 'Description is too short — please add more detail.');
+
+-- Verify
+select approval_status, rejection_reason
+from shop_product_drafts
+where product_id = '<your-product-id>';
+```
+
+::: tip Same pattern for categories
+`approve_shop_category` and `reject_shop_category` use the same `authorize_manager` gate. The `set_config` trick works identically for both.
+:::

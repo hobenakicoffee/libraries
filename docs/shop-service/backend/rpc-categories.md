@@ -168,3 +168,59 @@ Rejection reason is **required** and must be non-empty.
 ### Errors
 
 `UNAUTHORIZED`, `REJECTION_REASON_REQUIRED`, `DRAFT_NOT_FOUND`
+
+---
+
+## Testing manager RPCs in the SQL editor
+
+Manager RPCs are gated by `authorize_manager('content.approve')`, which reads `auth.jwt() ->> 'manager_role'`. In the Supabase SQL editor queries run as the `postgres` superuser and `auth.jwt()` returns `null`, so a direct call returns `UNAUTHORIZED`.
+
+Use `set_config` to mock the JWT claim for the session:
+
+```sql
+-- Set the manager_role claim (persist for the whole session)
+select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', false);
+
+-- Now call the RPC normally
+select approve_shop_category('<your-category-id>');
+```
+
+Pass `true` as the third argument to scope it to the current transaction instead:
+
+```sql
+select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', true);
+select approve_shop_category('<your-category-id>');
+```
+
+### Full approval flow test
+
+```sql
+-- 1. Confirm the draft exists
+select * from shop_category_drafts where category_id = '<your-category-id>';
+
+-- 2. Set the manager claim
+select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', false);
+
+-- 3. Approve
+select approve_shop_category('<your-category-id>');
+
+-- 4. Verify: draft gone, category now visible
+select id, name, is_visible from shop_categories where id = '<your-category-id>';
+select * from shop_category_drafts where category_id = '<your-category-id>'; -- 0 rows
+```
+
+### Full rejection flow test
+
+```sql
+select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', false);
+select reject_shop_category('<your-category-id>', 'Image is too small — please upload at least 800×600.');
+
+-- Verify
+select approval_status, rejection_reason
+from shop_category_drafts
+where category_id = '<your-category-id>';
+```
+
+::: tip Same pattern for products
+`approve_shop_product` and `reject_shop_product` use the same `authorize_manager` gate. The `set_config` trick works identically for both.
+:::
