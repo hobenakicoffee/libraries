@@ -3,6 +3,41 @@
 Framework-agnostic shared constants, utilities, types, and moderation tools for "হবে নাকি Coffee?" projects.
 **Version: 4.1.1**
 
+![GitHub Stars](https://www.shieldcn.dev/github/stars/hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![GitHub Forks](https://www.shieldcn.dev/github/forks/hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![Watchers](https://www.shieldcn.dev/github/watchers/hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![Branches](https://www.shieldcn.dev/github/branches/hobenakicoffee/libraries.svg?variant=ghost&size=sm)
+![Contributors](https://www.shieldcn.dev/github/contributors/hobenakicoffee/libraries.svg?theme=emerald&size=sm)
+![Last commit](https://www.shieldcn.dev/github/last-commit/hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![Commits](https://www.shieldcn.dev/github/commits/hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![Open issues](https://www.shieldcn.dev/github/open-issues/hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![Closed issues](https://www.shieldcn.dev/github/closed-issues/hobenakicoffee/libraries.svg?variant=ghost&size=sm)
+![Open PRs](https://www.shieldcn.dev/github/open-prs/hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![Closed PRs](https://www.shieldcn.dev/github/closed-prs/hobenakicoffee/libraries.svg?variant=ghost&size=sm)
+![Merged PRs](https://www.shieldcn.dev/github/merged-prs/hobenakicoffee/libraries.svg?variant=ghost&size=sm)
+![Release](https://www.shieldcn.dev/github/release/hobenakicoffee/libraries.svg?size=sm)
+![CI](https://www.shieldcn.dev/github/ci/hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![License](https://www.shieldcn.dev/github/license/hobenakicoffee/libraries.svg?variant=ghost&size=sm)
+![npm Version](https://www.shieldcn.dev/npm/@hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![npm Weekly Downloads](https://www.shieldcn.dev/npm/dw/@hobenakicoffee/libraries.svg?size=sm)
+![npm Monthly Downloads](https://www.shieldcn.dev/npm/dm/@hobenakicoffee/libraries.svg?variant=ghost&size=sm)
+![npm Total Downloads](https://www.shieldcn.dev/npm/dt/@hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![npm Dependents](https://www.shieldcn.dev/npm/dependents/@hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![npm Types](https://www.shieldcn.dev/npm/types/@hobenakicoffee/libraries.svg?theme=blue&size=sm)
+![npm Node](https://www.shieldcn.dev/npm/node/@hobenakicoffee/libraries.svg?variant=secondary&size=sm)
+![npm License](https://www.shieldcn.dev/npm/license/@hobenakicoffee/libraries.svg?variant=ghost&size=sm)
+![Package mgr · Bun](https://www.shieldcn.dev/badge/Package_mgr-Bun-000000.svg?logo=bun&variant=branded&size=sm)
+![Language · TypeScript](https://www.shieldcn.dev/badge/Language-TypeScript-3178C6.svg?logo=typescript&variant=branded&size=sm)
+![Bundler · Vite](https://www.shieldcn.dev/badge/Bundler-Vite-646CFF.svg?logo=vite&variant=branded&size=sm)
+![OpenAI](https://www.shieldcn.dev/badge/Stack-OpenAI-412991.svg?logo=openai&variant=branded&size=sm)
+![React](https://www.shieldcn.dev/badge/Stack-React-61DAFB.svg?logo=react&variant=branded&size=sm)
+![Tailwind CSS](https://www.shieldcn.dev/badge/Stack-Tailwind_CSS-06B6D4.svg?logo=tailwindcss&variant=branded&size=sm)
+![Zod](https://www.shieldcn.dev/badge/Stack-Zod-3E67B1.svg?logo=zod&variant=branded&size=sm)
+![Biome](https://www.shieldcn.dev/badge/Stack-Biome-60A5FA.svg?logo=biome&variant=branded&size=sm)
+![VitePress](https://www.shieldcn.dev/badge/Stack-VitePress-5E72E4.svg?logo=vitepress&variant=branded&size=sm)
+![ESM only](https://www.shieldcn.dev/badge/ESM-only-16a34a.svg?variant=secondary&size=sm)
+![Agent-friendly AGENTS.md](https://www.shieldcn.dev/badge/Agent--friendly-AGENTS.md-D97757.svg?variant=secondary&size=sm)
+
 ## Installation
 
 ```bash
