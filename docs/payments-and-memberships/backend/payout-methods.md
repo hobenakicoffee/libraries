@@ -108,12 +108,15 @@ where id = $2 and profile_id = $1;
 
 ## Row Level Security
 
-| Operation | Policy |
-|---|---|
-| `SELECT` | Owner only (`profile_id = auth.uid()`) |
-| `INSERT` | Owner only |
-| `UPDATE` | Owner only |
-| `DELETE` | Owner only |
+| Operation | Policy | Who |
+|---|---|---|
+| `SELECT` | `Users can view their own payout methods` | Owner only |
+| `SELECT` | `Managers can view all payout methods` | `payouts.approve` permission |
+| `INSERT` | `Users can insert their own payout methods` | Owner only |
+| `UPDATE` | `Users can update their own payout methods` | Owner only |
+| `DELETE` | `Users can delete their own payout methods` | Owner only |
+
+Finance managers can view all payout methods to verify account legitimacy when reviewing a withdrawal request. They have no insert, update, or delete access.
 
 ---
 

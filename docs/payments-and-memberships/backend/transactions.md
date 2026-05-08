@@ -78,6 +78,8 @@ flowchart LR
 
 Each user only ever sees their own row — RLS ensures `user_profile_id = auth.uid()`. Neither party can see the other's ledger row.
 
+Managers with `transactions.view` (finance managers, support managers, super admins) can read all rows across all users for audit and dispute resolution purposes. No manager role can write to this table — it is insert-only for payment RPCs running as service role.
+
 ---
 
 ## Amount Consistency Constraint

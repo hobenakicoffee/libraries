@@ -54,12 +54,13 @@ When a withdrawal is rejected or fails:
 
 ## Row Level Security
 
-| Operation | Policy | Condition |
+| Operation | Policy | Who |
 |---|---|---|
-| `SELECT` | Users view own wallet | `profile_id = auth.uid()` |
-| `INSERT` | Users create own wallet | `profile_id = auth.uid()` |
-| `UPDATE` | System updates balance | `profile_id = auth.uid()` (service role bypasses RLS for payment operations) |
-| `DELETE` | Not allowed | — |
+| `SELECT` | `Users can view their own wallet` | Owner (`profile_id = auth.uid()`) |
+| `SELECT` | `Managers can view all wallets` | `transactions.view` permission |
+| `INSERT` | `Users can create their own wallet` | Owner only |
+| `UPDATE` | `System can update wallet balance` | Owner (service role bypasses RLS for payments) |
+| `DELETE` | — | Not allowed |
 
 ::: warning
 Client code should never directly `UPDATE` the wallet `balance`. All balance mutations happen inside payment RPCs running as service role. The RLS `UPDATE` policy exists only as a fallback guard.

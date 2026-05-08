@@ -180,12 +180,18 @@ All tables that have an `updated_at` column use the shared `handle_updated_at()`
 | `Profile inserts own posts` | INSERT | `authenticated` | `profile_id = auth.uid()` |
 | `Profile updates own posts` | UPDATE | `authenticated` | `profile_id = auth.uid()` |
 | `Profile deletes own posts` | DELETE | `authenticated` | `profile_id = auth.uid()` |
+| `Managers can view all newsletter posts` | SELECT | `authenticated` | `authorize_manager('content.approve')` |
+| `Managers can update all newsletter posts` | UPDATE | `authenticated` | `authorize_manager('content.moderate')` |
+| `Managers can delete all newsletter posts` | DELETE | `authenticated` | `authorize_manager('content.delete')` |
+
+> For status transitions use `approve_newsletter_post` / `reject_newsletter_post` RPCs — they handle activity notifications and trigger `published_at` auto-set. Direct UPDATE is available for metadata overrides and re-classification.
 
 ### `newsletter_post_versions`
 
 | Policy | Operation | Roles | Rule |
 |---|---|---|---|
 | `Authors manage own post versions` | ALL | `authenticated` | `post_id` must belong to `auth.uid()` (subquery) |
+| `Managers can view all newsletter post versions` | SELECT | `authenticated` | `authorize_manager('content.approve')` |
 
 ### `newsletter_settings`
 

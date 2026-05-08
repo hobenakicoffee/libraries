@@ -63,6 +63,10 @@ export default withMermaid(
                 text: "Payments & Memberships",
                 link: "/payments-and-memberships/frontend/",
               },
+              {
+                text: "Managers & RBAC",
+                link: "/managers-and-rbac/backend/",
+              },
             ],
           },
         ],
@@ -399,6 +403,36 @@ export default withMermaid(
                   {
                     text: "RPC Reference",
                     link: "/newsletter-service/backend/rpcs",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        "/managers-and-rbac/": [
+          ...common,
+          {
+            text: "Managers & RBAC",
+            items: [
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [
+                  {
+                    text: "Overview",
+                    link: "/managers-and-rbac/backend/",
+                  },
+                  {
+                    text: "Roles & Permissions",
+                    link: "/managers-and-rbac/backend/roles-and-permissions",
+                  },
+                  {
+                    text: "RLS Policies",
+                    link: "/managers-and-rbac/backend/rls-policies",
+                  },
+                  {
+                    text: "Manager RPCs",
+                    link: "/managers-and-rbac/backend/rpcs",
                   },
                 ],
               },

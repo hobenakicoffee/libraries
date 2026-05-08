@@ -642,6 +642,33 @@ create type public.shop_approval_status_enum as enum (
 
 ---
 
+## Manager RLS Policies
+
+Content managers (`content.approve`, `content.moderate`, `content.delete`) and finance managers (`transactions.view`) have read and moderation access across shop tables.
+
+| Table | Operation | Permission |
+|---|---|---|
+| `shop_categories` | SELECT | `content.approve` |
+| `shop_categories` | UPDATE | `content.moderate` |
+| `shop_categories` | DELETE | `content.delete` |
+| `shop_products` | SELECT | `content.approve` |
+| `shop_products` | UPDATE | `content.moderate` |
+| `shop_products` | DELETE | `content.delete` |
+| `shop_category_drafts` | SELECT | `content.approve` |
+| `shop_category_drafts` | UPDATE | `content.moderate` |
+| `shop_category_drafts` | DELETE | `content.delete` |
+| `shop_product_drafts` | SELECT | `content.approve` |
+| `shop_product_drafts` | UPDATE | `content.moderate` |
+| `shop_product_drafts` | DELETE | `content.delete` |
+| `shop_orders` | SELECT | `transactions.view` |
+| `shop_order_items` | SELECT | `transactions.view` |
+
+For draft approval/rejection use the dedicated RPCs (`approve_shop_category`, `reject_shop_category`, `approve_shop_product`, `reject_shop_product`) — they handle the draft-deletion side effects and activity notifications. Direct UPDATE is available for metadata overrides.
+
+Note on product deletes: the `"Block direct product deletes"` policy (`using (false)`) blocks all regular users. The manager `DELETE` policy is a separate permissive policy that overrides this for managers with `content.delete`.
+
+---
+
 ## Indexes
 
 Key indexes beyond the primary keys:

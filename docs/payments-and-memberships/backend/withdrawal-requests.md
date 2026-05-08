@@ -128,12 +128,66 @@ select * from request_withdrawal(500.00, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
 
 ## Row Level Security
 
-| Operation | Policy |
+| Operation | Policy | Who |
+|---|---|---|
+| `SELECT` | `Users can view their own withdrawal requests` | Owner (`profile_id = auth.uid()`) |
+| `SELECT` | `Managers can view all withdrawal requests` | `payouts.approve` OR `payouts.process` |
+| `INSERT` | `Users can create their own withdrawal requests` | Owner only — use `request_withdrawal` RPC |
+| `UPDATE` | `System can update withdrawal requests` | Owner (effectively service-role only) |
+| `UPDATE` | `Managers can update withdrawal requests` | `payouts.approve` OR `payouts.process` |
+| `DELETE` | — | Not allowed |
+
+---
+
+## `process_withdrawal` RPC (manager only)
+
+Finance managers advance withdrawal requests through the lifecycle using this RPC. Direct table UPDATE is allowed by RLS but the RPC should always be preferred — it sets `processed_at`/`completed_at` correctly and enforces permission granularity.
+
+### Signature
+
+```sql
+public.process_withdrawal(
+  p_withdrawal_id uuid,
+  p_new_status    public.withdrawal_status,
+  p_admin_note    text default null
+)
+returns jsonb
+```
+
+### Permission gates
+
+| New status | Permission required |
 |---|---|
-| `SELECT` | Owner only (`profile_id = auth.uid()`) |
-| `INSERT` | Owner only (but use `request_withdrawal` RPC, not direct insert) |
-| `UPDATE` | Restricted to service role for admin operations |
-| `DELETE` | Not allowed |
+| `'approved'` | `payouts.approve` |
+| `'processing'`, `'paid'`, `'rejected'`, `'failed'` | `payouts.process` |
+
+### Timestamps set automatically
+
+| New status | `processed_at` | `completed_at` |
+|---|---|---|
+| `approved`, `processing`, `rejected` | `now()` | unchanged |
+| `paid`, `failed` | unchanged | `now()` |
+
+### Return values
+
+```json
+{ "success": true, "new_status": "approved" }
+{ "success": false, "error": "UNAUTHORIZED" }
+{ "success": false, "error": "NOT_FOUND" }
+{ "success": false, "error": "INVALID_STATUS" }
+```
+
+### Example
+
+```sql
+select public.process_withdrawal(
+  'withdrawal-uuid',
+  'approved',
+  'Account verified — approved for processing'
+);
+```
+
+See [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#process_withdrawal) for full details.
 
 ---
 
