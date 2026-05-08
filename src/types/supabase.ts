@@ -286,7 +286,7 @@ export type Database = {
           {
             foreignKeyName: "manager_user_roles_user_id_fkey";
             columns: ["user_id"];
-            isOneToOne: false;
+            isOneToOne: true;
             referencedRelation: "managers";
             referencedColumns: ["id"];
           },
@@ -694,6 +694,7 @@ export type Database = {
           published_at: string | null;
           purchase_count: number;
           reading_time_minutes: number | null;
+          reject_reason: string | null;
           revenue_total: number;
           slug: string | null;
           status: Database["public"]["Enums"]["post_status_enum"];
@@ -719,6 +720,7 @@ export type Database = {
           published_at?: string | null;
           purchase_count?: number;
           reading_time_minutes?: number | null;
+          reject_reason?: string | null;
           revenue_total?: number;
           slug?: string | null;
           status?: Database["public"]["Enums"]["post_status_enum"];
@@ -744,6 +746,7 @@ export type Database = {
           published_at?: string | null;
           purchase_count?: number;
           reading_time_minutes?: number | null;
+          reject_reason?: string | null;
           revenue_total?: number;
           slug?: string | null;
           status?: Database["public"]["Enums"]["post_status_enum"];
