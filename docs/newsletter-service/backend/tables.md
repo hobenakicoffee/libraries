@@ -72,6 +72,7 @@ erDiagram
         varchar excerpt
         text[] tags
         post_status_enum status
+        reject_reason text
         boolean is_members_only
         boolean is_pay_per_post
         numeric price
@@ -151,6 +152,7 @@ erDiagram
 | `tags` | `text[]` | GIN-indexed for fast tag queries |
 | `reading_time_minutes` | `integer` | Set by client before saving |
 | `status` | `post_status_enum` | Default `'draft'` |
+| `reject_reason` | `text` | The reason behind the post being rejected from the managers |
 | `is_members_only` | `boolean` | Default `false` |
 | `is_pay_per_post` | `boolean` | Default `false` |
 | `price` | `numeric(10,2)` | Required + `> 0` when `is_pay_per_post = true`; CHECK enforced |
