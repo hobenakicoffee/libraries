@@ -2377,6 +2377,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      approve_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
       approve_shop_category: { Args: { p_category_id: string }; Returns: Json };
       approve_shop_product: { Args: { p_product_id: string }; Returns: Json };
       authorize_manager: {
@@ -2551,6 +2552,7 @@ export type Database = {
           price: number;
           published_at: string;
           purchase_count: number;
+          reject_reason: string;
           revenue_total: number;
           slug: string;
           subtitle: string;
@@ -2841,6 +2843,10 @@ export type Database = {
       record_newsletter_post_view: {
         Args: { p_post_id: string };
         Returns: undefined;
+      };
+      reject_newsletter_post: {
+        Args: { p_post_id: string; p_rejection_reason: string };
+        Returns: Json;
       };
       reject_shop_category: {
         Args: { p_category_id: string; p_rejection_reason: string };
