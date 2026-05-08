@@ -8,6 +8,16 @@ export type TransactionMetadata = {
   count?: number;
 };
 
+export type ActivityType =
+  | "category_approved"
+  | "category_rejected"
+  | "product_approved"
+  | "product_rejected"
+  | "post_gifted"
+  | "post_gift_sent"
+  | "post_approved"
+  | "post_rejected";
+
 export type ActivityMetadata = {
   type?: string;
   amount?: number;
@@ -37,7 +47,15 @@ export type ActivityMetadata = {
   plan_name?: string;
   service_type?: string;
   billing_cycle?: string;
+  activity_type?: ActivityType;
   period_end?: string;
+  rejection_reason?: string;
+  category_id?: string;
+  category_name?: string;
+  grant_id?: string;
+  gift_message?: string;
+  product_id?: string;
+  product_title?: string;
   action?: "follow" | "unfollow";
 };
 
