@@ -55,6 +55,7 @@ public.reference_type_enum    — shared enum (used in transaction rows)
 public.payment_status_enum    — shared enum
 public.transaction_direction_enum
 public.provider_enum
+public.user_services          — triggers auto-provision of shop_settings on service enable
 ```
 
 The `alter table wallets add column cod_debt` statement runs as part of the shop migration. Make sure `wallets.sql` runs first.

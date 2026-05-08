@@ -19,6 +19,8 @@ All functions use `SECURITY DEFINER` and `SET search_path = ''`. The empty searc
 | `get_reader_feed(p_filter, p_limit, p_cursor, ...)` | Any | `TABLE(...)` | Paginated reader feed |
 | `purchase_newsletter_post(...)` | **Service role only** | `jsonb` | Post purchase after payment confirmed |
 | `purchase_newsletter_membership(...)` | **Service role only** | `jsonb` | Membership purchase after payment confirmed |
+| `approve_newsletter_post(p_post_id)` | **Manager only** | `jsonb` | Publish a post in review + notify author |
+| `reject_newsletter_post(p_post_id, p_rejection_reason)` | **Manager only** | `jsonb` | Reject a post in review + notify author |
 
 ---
 
@@ -445,6 +447,91 @@ The plan price is authoritative — the caller passes no `p_amount`. The fee is 
   "creator_balance_after": 25000
 }
 ```
+
+---
+
+## `approve_newsletter_post` *(manager only)*
+
+```sql
+FUNCTION public.approve_newsletter_post(p_post_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER
+```
+
+Requires `content.approve` manager permission.
+
+Transitions a post from `status = 'review'` to `status = 'published'`. The `trg_newsletter_post_lifecycle` trigger auto-sets `published_at` on the status transition. Any stale `reject_reason` is cleared. A private activity notification is inserted for the author.
+
+**Guards:**
+- `NOT_IN_REVIEW` — post is not currently in `'review'` state (prevents double-approval, acting on drafts/published posts)
+- `NOT_FOUND` — post does not exist
+
+**Activity written:**
+
+```json
+{
+  "role": "system",
+  "service_type": "newsletter",
+  "visibility": "private",
+  "metadata": {
+    "activity_type": "post_approved",
+    "post_id": "<uuid>",
+    "post_title": "<title>"
+  }
+}
+```
+
+**Response:**
+```json
+{ "success": true }
+```
+
+**Errors:** `UNAUTHORIZED`, `NOT_FOUND`, `NOT_IN_REVIEW`
+
+---
+
+## `reject_newsletter_post` *(manager only)*
+
+```sql
+FUNCTION public.reject_newsletter_post(
+  p_post_id          uuid,
+  p_rejection_reason text
+)
+RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER
+```
+
+Requires `content.approve` manager permission.
+
+Transitions a post from `status = 'review'` back to `status = 'draft'` and sets `reject_reason`. The author can revise and resubmit by updating the post and setting `status = 'review'` again. A private activity notification is inserted for the author.
+
+Rejection reason is **required** and must be non-empty. It is exposed to the author via `get_posts_page` (`reject_reason` column).
+
+**Guards:**
+- `NOT_IN_REVIEW` — post is not currently in `'review'` state
+
+**Activity written:**
+
+```json
+{
+  "role": "system",
+  "service_type": "newsletter",
+  "visibility": "private",
+  "metadata": {
+    "activity_type": "post_rejected",
+    "post_id": "<uuid>",
+    "post_title": "<title>",
+    "rejection_reason": "<reason>"
+  }
+}
+```
+
+**Response:**
+```json
+{ "success": true }
+```
+
+**Errors:** `UNAUTHORIZED`, `REJECTION_REASON_REQUIRED`, `NOT_FOUND`, `NOT_IN_REVIEW`
 
 ---
 

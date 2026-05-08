@@ -123,8 +123,8 @@ UPDATE public.newsletter_posts SET like_count = GREATEST(like_count - 1, 0) WHER
 
 ### `on_newsletter_service_enabled`
 
-**Table:** `user_services`  
-**Fires:** `AFTER INSERT OR UPDATE OF is_enabled, service`  
+**Table:** `user_services`
+**Fires:** `AFTER INSERT OR UPDATE OF is_enabled, service`
 **Function:** `handle_newsletter_service_enabled()`
 
 Auto-provisions a monthly membership plan when a creator first enables the newsletter service. Full behaviour:
@@ -141,6 +141,19 @@ flowchart TD
     F -- Yes --> G[Update plan to ৳299\nUpsert newsletter_settings]
     F -- No --> H([Skip — keep user pricing])
 ```
+
+---
+
+### Manager approval RPCs — activity notifications
+
+`approve_newsletter_post` and `reject_newsletter_post` are not triggers but they interact with `trg_newsletter_post_lifecycle` (which auto-sets `published_at` on the `'review' → 'published'` transition) and write to the `activities` table. See [RPCs Reference → approve_newsletter_post](./rpcs.md#approve_newsletter_post-manager-only) for full details.
+
+| RPC | Status transition | Activity `activity_type` |
+|---|---|---|
+| `approve_newsletter_post` | `review → published` | `post_approved` |
+| `reject_newsletter_post` | `review → draft` | `post_rejected` |
+
+Both insert a `role='system'`, `service_type='newsletter'`, `visibility='private'` activity row for the post author.
 
 ---
 

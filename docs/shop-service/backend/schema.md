@@ -166,6 +166,18 @@ create table public.shop_settings (
 
 **`deactivation_reason`** is set automatically by the cron job and cleared when the seller reactivates. The frontend uses it to render the Studio banner with actionable copy.
 
+**Auto-provision trigger:** when the `'shop'` service is first enabled on `user_services`, the `on_shop_service_enabled` trigger automatically inserts a default `shop_settings` row so the owner doesn't need to call `upsert_shop_settings` before configuring their shop.
+
+```sql
+-- Fires AFTER INSERT OR UPDATE OF is_enabled, service ON user_services
+-- handle_shop_service_enabled():
+INSERT INTO public.shop_settings (profile_id, shop_name, is_active, theme_config)
+VALUES (new.profile_id, 'My Shop', false, '{}')
+ON CONFLICT (profile_id) DO NOTHING;
+```
+
+Existing settings are never overwritten (`ON CONFLICT DO NOTHING`). Re-enabling the service after it was disabled is therefore safe.
+
 **RLS:**
 - `SELECT` — active shops visible to all, plus owner always sees their own
 - `INSERT/UPDATE` — owner only (`profile_id = auth.uid()`)

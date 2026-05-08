@@ -98,8 +98,8 @@ All products go through a manager review before (or after editing) they become p
 | Edit of a **live** product | Writes only to `shop_product_drafts` (ON CONFLICT overwrites) | Stays online untouched |
 | Edit of a **pending/rejected** product | Updates `shop_products` directly + refreshes draft | Still inactive |
 
-Manager calls `approve_shop_product` → draft applied to live row, `is_active=true`, draft deleted.
-Manager calls `reject_shop_product` → draft `approval_status='rejected'` + `rejection_reason` set, live row untouched.
+Manager calls `approve_shop_product` → draft applied to live row, `is_active=true`, draft deleted, **private activity notification sent to owner** (`activity_type: 'product_approved'`).
+Manager calls `reject_shop_product` → draft `approval_status='rejected'` + `rejection_reason` set, live row untouched, **private activity notification sent to owner** (`activity_type: 'product_rejected'`).
 Owner re-edits after rejection → draft overwritten, `approval_status` reset to `'pending'`.
 
 ---
@@ -212,9 +212,24 @@ public.approve_shop_product(p_product_id uuid) → jsonb
 
 Requires `content.approve` manager permission.
 
-Loads the pending draft from `shop_product_drafts`, applies all its columns to the live `shop_products` row, sets `is_active = true`, then deletes the draft.
+Loads the pending draft from `shop_product_drafts`, applies all its columns to the live `shop_products` row, sets `is_active = true`, deletes the draft, then inserts a private activity notification for the owner.
 
-**Idempotent edge case:** if no draft exists but the product does, it simply sets `is_active = true` (handles double-approval gracefully).
+**Activity written:**
+
+```json
+{
+  "role": "system",
+  "service_type": "shop",
+  "visibility": "private",
+  "metadata": {
+    "activity_type": "product_approved",
+    "product_id": "<uuid>",
+    "product_title": "<title>"
+  }
+}
+```
+
+**Idempotent edge case:** if no draft exists but the product does, it simply sets `is_active = true` (handles double-approval gracefully). No activity is written in this path.
 
 **Response:**
 ```json
@@ -236,9 +251,25 @@ public.reject_shop_product(
 
 Requires `content.approve` manager permission.
 
-Sets `approval_status = 'rejected'` and `rejection_reason` on the draft row. **The live `shop_products` row is never touched** — if the product was already live, it stays online. The owner sees the rejection reason in Studio and can revise and resubmit.
+Sets `approval_status = 'rejected'` and `rejection_reason` on the draft row. **The live `shop_products` row is never touched** — if the product was already live, it stays online. The owner sees the rejection reason in Studio and can revise and resubmit. A private activity notification is sent to the owner.
 
 Rejection reason is **required** and must be non-empty.
+
+**Activity written:**
+
+```json
+{
+  "role": "system",
+  "service_type": "shop",
+  "visibility": "private",
+  "metadata": {
+    "activity_type": "product_rejected",
+    "product_id": "<uuid>",
+    "product_title": "<title>",
+    "rejection_reason": "<reason>"
+  }
+}
+```
 
 **Response:**
 ```json

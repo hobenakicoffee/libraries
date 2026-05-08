@@ -41,8 +41,8 @@ All categories go through a manager review before (or after editing) they become
 | Edit of a **live** category | Writes only to `shop_category_drafts` (ON CONFLICT overwrites) | Stays online untouched |
 | Edit of a **pending/rejected** category | Updates `shop_categories` directly + refreshes draft | Still invisible |
 
-Manager calls `approve_shop_category` → draft applied to live row, `is_visible=true`, draft deleted.
-Manager calls `reject_shop_category` → draft `approval_status='rejected'` + `rejection_reason` set, live row untouched.
+Manager calls `approve_shop_category` → draft applied to live row, `is_visible=true`, draft deleted, **private activity notification sent to owner** (`activity_type: 'category_approved'`).
+Manager calls `reject_shop_category` → draft `approval_status='rejected'` + `rejection_reason` set, live row untouched, **private activity notification sent to owner** (`activity_type: 'category_rejected'`).
 Owner re-edits after rejection → draft overwritten, `approval_status` reset to `'pending'`.
 
 ---
@@ -128,9 +128,24 @@ public.approve_shop_category(p_category_id uuid) → jsonb
 
 Requires `content.approve` manager permission.
 
-Loads the pending draft from `shop_category_drafts`, applies its columns to the live `shop_categories` row, sets `is_visible = true`, then deletes the draft.
+Loads the pending draft from `shop_category_drafts`, applies its columns to the live `shop_categories` row, sets `is_visible = true`, deletes the draft, then inserts a private activity notification for the owner.
 
-**Idempotent edge case:** if no draft exists but the category does, it simply sets `is_visible = true` (handles double-approval gracefully).
+**Activity written:**
+
+```json
+{
+  "role": "system",
+  "service_type": "shop",
+  "visibility": "private",
+  "metadata": {
+    "activity_type": "category_approved",
+    "category_id": "<uuid>",
+    "category_name": "<name>"
+  }
+}
+```
+
+**Idempotent edge case:** if no draft exists but the category does, it simply sets `is_visible = true` (handles double-approval gracefully). No activity is written in this path.
 
 ### Response
 
@@ -155,9 +170,25 @@ public.reject_shop_category(
 
 Requires `content.approve` manager permission.
 
-Sets `approval_status = 'rejected'` and `rejection_reason` on the draft row. **The live `shop_categories` row is never touched** — if the category was already live, it stays online. The owner sees the rejection reason in Studio and can revise and resubmit.
+Sets `approval_status = 'rejected'` and `rejection_reason` on the draft row. **The live `shop_categories` row is never touched** — if the category was already live, it stays online. The owner sees the rejection reason in Studio and can revise and resubmit. A private activity notification is sent to the owner.
 
 Rejection reason is **required** and must be non-empty.
+
+**Activity written:**
+
+```json
+{
+  "role": "system",
+  "service_type": "shop",
+  "visibility": "private",
+  "metadata": {
+    "activity_type": "category_rejected",
+    "category_id": "<uuid>",
+    "category_name": "<name>",
+    "rejection_reason": "<reason>"
+  }
+}
+```
 
 ### Response
 
