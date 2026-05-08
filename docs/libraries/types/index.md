@@ -23,6 +23,7 @@ import type { Database, Tables, TablesInsert, TablesUpdate, Enums } from "@hoben
 | `Enums<E>` | Enum types |
 | `TransactionMetadata` | Transaction metadata type |
 | `ActivityMetadata` | Activity metadata type |
+| `ActivityType` | Activity type union (`'category_approved' | 'category_rejected' | 'product_approved' | 'product_rejected' | 'post_gifted' | 'post_gift_sent' | 'post_approved' | 'post_rejected'`) |
 | `SupportersMetadata` | Supporters metadata type |
 
 ## Related

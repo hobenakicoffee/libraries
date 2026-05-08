@@ -122,6 +122,137 @@ Note: `amount` in the creator activity is the **net amount** (after platform fee
 }
 ```
 
+### Shop: Category Approved
+
+```json
+{
+  "activity_type": "category_approved",
+  "service_type": "shop",
+  "category_id": "uuid",
+  "category_name": "Coffee Beans",
+  "requester_name": "Rahim Uddin",
+  "message": "Your category has been approved!"
+}
+```
+
+### Shop: Category Rejected
+
+```json
+{
+  "activity_type": "category_rejected",
+  "service_type": "shop",
+  "category_id": "uuid",
+  "category_name": "Coffee Beans",
+  "requester_name": "Rahim Uddin",
+  "rejection_reason": "Category name violates naming guidelines",
+  "message": "Your category submission was not approved."
+}
+```
+
+### Shop: Product Approved
+
+```json
+{
+  "activity_type": "product_approved",
+  "service_type": "shop",
+  "product_id": "uuid",
+  "product_title": "Ethiopian Yirgacheffe",
+  "price_at_purchase": 450,
+  "requester_name": "Rahim Uddin",
+  "message": "Your product has been published!"
+}
+```
+
+### Shop: Product Rejected
+
+```json
+{
+  "activity_type": "product_rejected",
+  "service_type": "shop",
+  "product_id": "uuid",
+  "product_title": "Ethiopian Yirgacheffe",
+  "price_at_purchase": 450,
+  "requester_name": "Rahim Uddin",
+  "rejection_reason": "Product images do not meet quality standards",
+  "message": "Your product submission was not approved."
+}
+```
+
+### Coffee Gifts: Post Gifted
+
+```json
+{
+  "activity_type": "post_gifted",
+  "service_type": "gift",
+  "type": "gift",
+  "amount": 500,
+  "net_amount": 475,
+  "platform_fee": 25,
+  "supporter_id": "uuid",
+  "supporter_name": "John Doe",
+  "supporter_platform": "twitter",
+  "supporter_anonymous": false,
+  "coffee_count": 3,
+  "post_id": "uuid",
+  "post_slug": "my-blog-post",
+  "post_title": "My Blog Post",
+  "gift_message": "Great article!"
+}
+```
+
+### Coffee Gifts: Post Gift Sent
+
+```json
+{
+  "activity_type": "post_gift_sent",
+  "service_type": "gift",
+  "type": "gift",
+  "amount": 500,
+  "net_amount": 475,
+  "platform_fee": 25,
+  "supporter_id": "uuid",
+  "supporter_name": "John Doe",
+  "supporter_platform": "twitter",
+  "supporter_anonymous": false,
+  "coffee_count": 3,
+  "buyer_name": "John Doe",
+  "buyer_platform": "twitter",
+  "post_id": "uuid",
+  "post_slug": "my-blog-post",
+  "post_title": "My Blog Post",
+  "gift_message": "Great article!"
+}
+```
+
+### Newsletter: Post Approved
+
+```json
+{
+  "activity_type": "post_approved",
+  "service_type": "newsletter",
+  "post_id": "uuid",
+  "post_slug": "weekly-update-42",
+  "post_title": "Weekly Update #42",
+  "requester_name": "Rahim Uddin",
+  "message": "Your post has been published!"
+}
+```
+
+### Newsletter: Post Rejected
+
+```json
+{
+  "activity_type": "post_rejected",
+  "service_type": "newsletter",
+  "post_id": "uuid",
+  "post_slug": "weekly-update-42",
+  "post_title": "Weekly Update #42",
+  "requester_name": "Rahim Uddin",
+  "rejection_reason": "Content violates community guidelines",
+  "message": "Your post was not approved for publication."
+}
+```
+
 ---
 
 ## Row Level Security

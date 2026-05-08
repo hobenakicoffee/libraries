@@ -25,7 +25,77 @@ interface Activity {
   updated_at: string
 }
 
-// Metadata shapes vary by service_type and role
+// Unified ActivityMetadata type - fields vary by activity_type and service_type
+interface ActivityMetadata {
+  // Common fields
+  type?: string
+  activity_type?: ActivityType
+  service_type?: string
+  message?: string
+
+  // Financial fields
+  amount?: number
+  net_amount?: number
+  platform_fee?: number
+  price_at_purchase?: number
+
+  // Supporter fields
+  supporter_id?: string
+  supporter_name?: string
+  supporter_platform?: string
+  supporter_anonymous?: boolean
+  identity_hash?: string
+  coffee_count?: number
+  is_monthly?: boolean
+
+  // Buyer/recipient fields
+  buyer_name?: string
+  buyer_platform?: string
+  commission_type?: string
+
+  // Follower fields
+  follower_name?: string
+  follower_username?: string
+  action?: 'follow' | 'unfollow'
+
+  // Post fields (coffee gifts, newsletter)
+  source?: string
+  post_id?: string
+  post_slug?: string
+  post_title?: string
+  gift_message?: string
+
+  // Membership fields
+  plan_id?: string
+  plan_name?: string
+  billing_cycle?: string
+  period_end?: string
+
+  // Shop: category fields
+  category_id?: string
+  category_name?: string
+
+  // Shop: product fields
+  product_id?: string
+  product_title?: string
+
+  // Moderation fields
+  rejection_reason?: string
+  requester_name?: string
+  grant_id?: string
+}
+
+type ActivityType =
+  | 'category_approved'
+  | 'category_rejected'
+  | 'product_approved'
+  | 'product_rejected'
+  | 'post_gifted'
+  | 'post_gift_sent'
+  | 'post_approved'
+  | 'post_rejected'
+
+// Legacy shape interfaces for backward compatibility
 interface GiftCreatorMetadata {
   type: 'gift'
   amount: number            // net amount (after platform fee)
