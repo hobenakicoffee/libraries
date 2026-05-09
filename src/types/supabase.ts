@@ -2766,6 +2766,15 @@ export type Database = {
         Args: { p_order_item_id: string };
         Returns: Json;
       };
+      moderate_user: {
+        Args: {
+          p_allow_gifting?: boolean;
+          p_allow_subs?: boolean;
+          p_is_page_active?: boolean;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
       perform_coffee_gift: {
         Args: {
           p_amount: number;
@@ -2802,6 +2811,14 @@ export type Database = {
           p_supporter_name: string;
           p_supporter_platform?: Database["public"]["Enums"]["supporter_platform_enum"];
           p_supporter_profile_id: string;
+        };
+        Returns: Json;
+      };
+      process_withdrawal: {
+        Args: {
+          p_admin_note?: string;
+          p_new_status: Database["public"]["Enums"]["withdrawal_status"];
+          p_withdrawal_id: string;
         };
         Returns: Json;
       };
