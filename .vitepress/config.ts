@@ -310,6 +310,10 @@ export default withMermaid(
                   { text: "Overview", link: "/shop-service/backend/" },
                   { text: "Schema", link: "/shop-service/backend/schema" },
                   {
+                    text: "Shop Settings",
+                    link: "/shop-service/shop-settings",
+                  },
+                  {
                     text: "RPC Helpers",
                     link: "/shop-service/backend/rpc-helpers",
                   },

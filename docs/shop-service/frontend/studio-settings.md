@@ -1,5 +1,9 @@
 # Studio — Settings, Shipping & Policies
 
+::: tip See also
+The [Shop Settings](../backend/shop-settings) page has complete documentation on the eligibility system, shipping defaults, theming config, and platform settings that power these Studio panels.
+:::
+
 ```mermaid
 graph TB
     subgraph "/studio/shop/settings/*"

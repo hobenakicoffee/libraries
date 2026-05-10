@@ -32,6 +32,7 @@ The shop service is a multi-product e-commerce layer built entirely on PostgreSQ
 | Page | Contents |
 |---|---|
 | [Database Schema](./schema) | Every table, column, constraint, index, and RLS policy |
+| [Shop Settings](./shop-settings) | Complete guide to `shop_settings`, eligibility, shipping, theming, and policies |
 | [All RPCs (Quick Reference)](./rpc-reference) | Single-page lookup for all 34 RPCs |
 | [Helpers & Eligibility](./rpc-helpers) | `get_platform_setting`, `check_shop_active_eligibility` |
 | [Products, Variants & Files](./rpc-products) | Product CRUD, multi-axis variants, file management |

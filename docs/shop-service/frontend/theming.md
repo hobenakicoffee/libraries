@@ -1,5 +1,9 @@
 # Theming System
 
+::: tip See also
+The [Shop Settings - Theming](../backend/shop-settings#theming) section has the complete theming guide including eligibility, shipping defaults, and policies.
+:::
+
 ```mermaid
 flowchart LR
     subgraph "Build Phase"
@@ -237,20 +241,4 @@ The AI output is treated as a **suggestion** that the editor merges into current
 
 ## Studio theme editor pattern
 
-```
-┌──────────────────────────────────────────────────┐
-│  Theme Editor                                     │
-│                                                  │
-│  [Color pickers] [Font selectors] [Radius]        │
-│  [Generate from prompt ▶]  [Preset buttons]       │
-│                                                  │
-│  [Save]  [Discard]                               │
-└──────────────────────────────────────────────────┘
-          ↕ live preview (iframe)
-┌──────────────────────────────────────────────────┐
-│  /studio/shop/preview?theme=<base64>              │
-│  (Astro page that reads theme from URL param)     │
-└──────────────────────────────────────────────────┘
-```
-
-The preview page is a lightweight Astro page at `/studio/shop/preview` that reads `?theme=<base64-JSON>` from the URL, calls `buildShopCssVars`, and renders a sample shop layout. The theme editor keeps the iframe `src` in sync with the form state via a debounced URL update.
+The theme editor is part of the Studio settings panels. See [Shop Settings - Studio Settings Panels](../backend/shop-settings#studio-settings-panels) for the full guide.

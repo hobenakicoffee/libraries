@@ -297,40 +297,9 @@ For COD items, marking delivered does **not** confirm cash or create a transacti
 
 ## `upsert_shop_settings`
 
-```sql
-public.upsert_shop_settings(
-  p_shop_name        varchar default null,
-  p_shop_description text    default null,
-  p_logo_url         text    default null,
-  p_banner_url       text    default null,
-  p_is_active        boolean default null,
-  p_theme_config     jsonb   default null,
-  p_seo_title        varchar default null,
-  p_seo_description  varchar default null
-) → jsonb
-```
+See [Shop Settings - RPCs](../shop-settings#rpcs) for the full documentation including reactivation gate behavior.
 
-Creates or updates the shop row. All fields optional — only non-null values update.
-
-`theme_config` is **merged**, not replaced: `theme_config = existing || p_theme_config`. This means partial theme updates preserve untouched keys.
-
-### Reactivation gate
-
-When `p_is_active = true`, the RPC runs `check_shop_active_eligibility` and returns `SHOP_INELIGIBLE` if either gate fails:
-
-```json
-{
-  "success": false,
-  "error": "SHOP_INELIGIBLE",
-  "eligibility": {
-    "eligible": false,
-    "reasons": ["cod_aging"],
-    "aged_cod_orders": 2,
-    "settlement_max_days": 30
-  }
-}
-```
-
-When `p_is_active = false`, `deactivation_reason` is set to `'manual'`. When `p_is_active = true` and eligibility passes, `deactivation_reason` is cleared to `null`.
-
-**Errors:** `UNAUTHENTICATED`, `SHOP_INELIGIBLE`
+::: tip Related
+- [Eligibility system](../shop-settings#eligibility-system)
+- [Studio settings panels](../shop-settings#studio-settings-panels)
+:::

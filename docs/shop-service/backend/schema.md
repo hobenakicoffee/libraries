@@ -218,6 +218,10 @@ Existing settings are never overwritten (`ON CONFLICT DO NOTHING`). Re-enabling 
 - `INSERT/UPDATE` — owner only (`profile_id = auth.uid()`)
 - `DELETE` — owner only
 
+::: tip See also
+The [Shop Settings](../shop-settings) page has a complete guide including eligibility, shipping defaults, theming, policies, and Studio UI patterns.
+:::
+
 ---
 
 ## `shop_categories`
@@ -430,7 +434,7 @@ create table public.shop_policies (
 
 **Policy types:** `return_refund | digital_products | shipping | privacy | terms_of_service`
 
-When no row exists for a given type, the frontend falls back to its static default template.
+When no row exists for a given type, the frontend falls back to its static default template. See [Shop Policies](../shop-settings#shop-policies) for the full guide.
 
 ---
 

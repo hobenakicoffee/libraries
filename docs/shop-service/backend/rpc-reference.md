@@ -59,8 +59,8 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 
 | RPC | Auth | Returns |
 |---|---|---|
-| `upsert_shop_settings(...)` | authenticated | `{ success, shop_id }` |
-| `set_shop_active_by_manager(p_profile_id, p_is_active)` | authenticated (manager) | `{ success }` |
+| [`upsert_shop_settings(...)`](./shop-settings#upsert_shop_settings) | authenticated | `{ success, shop_id }` |
+| [`set_shop_active_by_manager(p_profile_id, p_is_active)`](./shop-settings#set_shop_active_by_manager) | authenticated (manager) | `{ success }` |
 
 ---
 
