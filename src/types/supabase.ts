@@ -1910,47 +1910,80 @@ export type Database = {
       shop_settings: {
         Row: {
           banner_url: string | null;
+          cod_enabled: boolean;
           created_at: string;
           deactivation_reason: string | null;
           id: string;
           is_active: boolean;
           logo_url: string | null;
+          processing_max_days: number | null;
+          processing_min_days: number | null;
           profile_id: string;
+          requires_shipping: boolean;
           seo_description: string | null;
           seo_title: string | null;
+          shipping_fee_inside_dhaka: number | null;
+          shipping_fee_outside_dhaka: number | null;
+          shipping_from_address: Json | null;
           shop_description: string | null;
           shop_name: string;
           theme_config: Json;
+          total_earnings: number;
+          total_products: number;
+          total_sales: number;
+          total_views: number;
           updated_at: string;
         };
         Insert: {
           banner_url?: string | null;
+          cod_enabled?: boolean;
           created_at?: string;
           deactivation_reason?: string | null;
           id?: string;
           is_active?: boolean;
           logo_url?: string | null;
+          processing_max_days?: number | null;
+          processing_min_days?: number | null;
           profile_id: string;
+          requires_shipping?: boolean;
           seo_description?: string | null;
           seo_title?: string | null;
+          shipping_fee_inside_dhaka?: number | null;
+          shipping_fee_outside_dhaka?: number | null;
+          shipping_from_address?: Json | null;
           shop_description?: string | null;
           shop_name: string;
           theme_config?: Json;
+          total_earnings?: number;
+          total_products?: number;
+          total_sales?: number;
+          total_views?: number;
           updated_at?: string;
         };
         Update: {
           banner_url?: string | null;
+          cod_enabled?: boolean;
           created_at?: string;
           deactivation_reason?: string | null;
           id?: string;
           is_active?: boolean;
           logo_url?: string | null;
+          processing_max_days?: number | null;
+          processing_min_days?: number | null;
           profile_id?: string;
+          requires_shipping?: boolean;
           seo_description?: string | null;
           seo_title?: string | null;
+          shipping_fee_inside_dhaka?: number | null;
+          shipping_fee_outside_dhaka?: number | null;
+          shipping_from_address?: Json | null;
           shop_description?: string | null;
           shop_name?: string;
           theme_config?: Json;
+          total_earnings?: number;
+          total_products?: number;
+          total_sales?: number;
+          total_views?: number;
           updated_at?: string;
         };
         Relationships: [
@@ -2619,6 +2652,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      get_shop_stats: { Args: never; Returns: Json };
       get_supporter_coffee_gifts_stats: {
         Args: {
           p_from_date: string;
@@ -2861,6 +2895,7 @@ export type Database = {
         Args: { p_post_id: string };
         Returns: undefined;
       };
+      record_shop_view: { Args: { p_username: string }; Returns: undefined };
       reject_newsletter_post: {
         Args: { p_post_id: string; p_rejection_reason: string };
         Returns: Json;
@@ -2894,6 +2929,10 @@ export type Database = {
           id: number;
           sender_id: string;
         }[];
+      };
+      set_shop_active_by_manager: {
+        Args: { p_is_active: boolean; p_profile_id: string };
+        Returns: Json;
       };
       toggle_follow: { Args: { target_user_id: string }; Returns: boolean };
       toggle_newsletter_post_like: {
@@ -2981,10 +3020,17 @@ export type Database = {
       upsert_shop_settings: {
         Args: {
           p_banner_url?: string;
+          p_cod_enabled?: boolean;
           p_is_active?: boolean;
           p_logo_url?: string;
+          p_processing_max_days?: number;
+          p_processing_min_days?: number;
+          p_requires_shipping?: boolean;
           p_seo_description?: string;
           p_seo_title?: string;
+          p_shipping_fee_inside_dhaka?: number;
+          p_shipping_fee_outside_dhaka?: number;
+          p_shipping_from_address?: Json;
           p_shop_description?: string;
           p_shop_name?: string;
           p_theme_config?: Json;
