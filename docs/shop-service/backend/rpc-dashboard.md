@@ -134,6 +134,24 @@ if (!data.eligibility.eligible) {
 
 ---
 
+## `get_shop_stats`
+
+```sql
+public.get_shop_stats() → jsonb
+```
+
+Returns the four cached stats counters for the Studio stats card strip. Single PK lookup — no aggregation. See [Helpers](./rpc-helpers#get_shop_stats) for the full reference.
+
+```typescript
+const { data } = useQuery({
+  queryKey: ['shop', 'stats'],
+  queryFn: getShopStats,
+  staleTime: 30_000, // refresh every 30s; counters are near-realtime
+});
+```
+
+---
+
 ## `auto_deactivate_ineligible_shops`
 
 ```sql

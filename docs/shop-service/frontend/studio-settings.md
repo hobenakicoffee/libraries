@@ -26,12 +26,12 @@ graph TB
     Q --> R[Deactivation Banner]
 ```
 
-Three settings panels under `/studio/shop/settings/*`:
+Settings panels under `/studio/shop/settings/*`:
 
 | Sub-route | Panel | RPC |
 |---|---|---|
-| `basic` | Shop name, description, logo, banner, SEO | `upsert_shop_settings` |
-| `shipping` | Per-product inside/outside Dhaka fees + processing days | `upsert_shop_product` (bulk) |
+| `basic` | Shop name, description, logo, banner, SEO, active toggle | `upsert_shop_settings` |
+| `shipping` | Shop-level shipping defaults + per-product overrides | `upsert_shop_settings`, `upsert_shop_product` |
 | `policies` | Per-type markdown overrides | `upsert_shop_policy`, `delete_shop_policy` |
 | `theme` | Color, typography, layout — see [Theming](./theming) | `upsert_shop_settings` |
 
@@ -112,7 +112,60 @@ When `p_is_active = false`, the RPC sets `deactivation_reason = 'manual'`. When 
 
 ## Shipping settings
 
-The shipping settings tab is a **bulk editor** over all physical products' shipping rates and processing times. It exists alongside the per-product shipping fields in the product editor — use this when updating rates across the whole catalogue at once.
+The shipping tab has two sections:
+
+1. **Shop defaults** — stored on `shop_settings`, inherited by new products automatically.
+2. **Per-product overrides** — bulk editor over existing physical products.
+
+### Shop-level shipping defaults
+
+```tsx
+// app/src/pages/studio/shop/settings/ShopShippingDefaults.tsx
+const schema = z.object({
+  p_shipping_fee_inside_dhaka:  z.coerce.number().min(0).optional(),
+  p_shipping_fee_outside_dhaka: z.coerce.number().min(0).optional(),
+  p_processing_min_days:        z.coerce.number().int().min(0).optional(),
+  p_processing_max_days:        z.coerce.number().int().min(0).optional(),
+  p_requires_shipping:          z.boolean().optional(),
+  p_cod_enabled:                z.boolean().optional(),
+  p_shipping_from_address:      z.object({
+    division: z.string().min(1),
+    district: z.string().min(1),
+    thana:    z.string().min(1),
+    address:  z.string().min(1),
+  }).optional(),
+}).refine(
+  (v) =>
+    v.p_processing_min_days == null ||
+    v.p_processing_max_days == null ||
+    v.p_processing_min_days <= v.p_processing_max_days,
+  { message: 'Min days must be ≤ max days', path: ['p_processing_max_days'] }
+);
+
+const mutation = useMutation({
+  mutationFn: (values: z.infer<typeof schema>) => upsertShopSettings(values),
+  onSuccess: () => {
+    toast.success('Shipping defaults saved');
+    qc.invalidateQueries({ queryKey: ['shop', 'settings'] });
+  },
+});
+```
+
+These values pre-populate shipping fields when a seller creates a new product without explicitly setting them. The fallback chain is:
+
+```
+product param → shop_settings value → platform_settings default → hardcoded sentinel
+```
+
+So a seller who configures shop defaults never has to re-enter rates product by product.
+
+::: tip COD enabled
+The `p_cod_enabled` flag on shop settings is separate from `cod_enabled` on individual products. Shop-level `cod_enabled = true` means "new products should default to accepting COD". Existing products are not retroactively changed.
+:::
+
+### Per-product overrides
+
+The per-product table is a **bulk editor** over all physical products' shipping rates and processing times. It exists alongside the per-product shipping fields in the product editor — use this when updating rates across the whole catalogue at once.
 
 ```tsx
 // app/src/pages/studio/shop/settings/ShippingSettings.tsx

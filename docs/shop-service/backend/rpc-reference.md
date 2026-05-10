@@ -28,7 +28,7 @@ flowchart TB
     end
 ```
 
-34 RPCs total. All are `SECURITY DEFINER` with `SET search_path = ''`. All return `jsonb` (except `get_platform_setting` which returns `numeric` and `get_user_addresses` which returns a table).
+37 RPCs total. All are `SECURITY DEFINER` with `SET search_path = ''`. All return `jsonb` (except `get_platform_setting` which returns `numeric`, `get_user_addresses` which returns a table, and `record_shop_view` which returns `void`).
 
 ## Convention
 
@@ -60,6 +60,7 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 | RPC | Auth | Returns |
 |---|---|---|
 | `upsert_shop_settings(...)` | authenticated | `{ success, shop_id }` |
+| `set_shop_active_by_manager(p_profile_id, p_is_active)` | authenticated (manager) | `{ success }` |
 
 ---
 
@@ -152,6 +153,13 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 
 ---
 
+## Stats
+
+| RPC | Auth | Returns |
+|---|---|---|
+| `get_shop_stats()` | authenticated | `{ success, total_views, total_sales, total_earnings, total_products }` |
+| `record_shop_view(p_username)` | anon | `void` |
+
 ## Dashboard & cron
 
 | RPC | Auth | Returns |
@@ -240,3 +248,9 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | Code | Meaning |
 |---|---|
 | `SHOP_INELIGIBLE` + `eligibility` | Reactivation blocked by wallet floor or COD aging |
+| `INVALID_PROCESSING_WINDOW` | `processing_min_days > processing_max_days` in `upsert_shop_settings` |
+
+### Manager
+| Code | Meaning |
+|---|---|
+| `UNAUTHORIZED` | Manager RPC called without required permission |

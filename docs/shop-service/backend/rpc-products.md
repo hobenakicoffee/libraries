@@ -146,6 +146,27 @@ public.upsert_shop_product(
 
 > `p_is_active` has been **removed**. Activation is exclusively controlled by `approve_shop_product`. Passing it will cause an error.
 
+#### Shipping defaults fallback chain
+
+When creating a new product and any shipping field is `null`, the RPC applies a 3-level fallback:
+
+```
+param passed → shop_settings value → platform_settings default → hardcoded sentinel
+```
+
+| Field | Sentinel |
+|---|---|
+| `shipping_fee_inside_dhaka` | 85 |
+| `shipping_fee_outside_dhaka` | 170 |
+| `processing_min_days` | 1 |
+| `processing_max_days` | 15 |
+| `requires_shipping` | `false` |
+| `cod_enabled` | `false` |
+
+This means if a seller has configured shop-level shipping defaults in `upsert_shop_settings`, new products automatically inherit those values without the frontend needing to pre-fill them.
+
+The same fallback applies on the non-live edit path (product not yet approved). The live edit path (draft only) keeps existing product values as defaults, so no fallback is needed.
+
 #### `option_definitions` validation
 
 When provided, the RPC validates the shape:

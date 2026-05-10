@@ -84,6 +84,10 @@ create table public.platform_settings (
 | `platform_fee_rate` | `0.10` | Fraction of order total taken as platform fee |
 | `cod_wallet_floor` | `-500` | Min `(balance − cod_debt)` before shop is deactivated |
 | `cod_settlement_max_days` | `30` | Days a COD order can age before triggering deactivation |
+| `default_shipping_fee_inside_dhaka` | `85` | Fallback inside-Dhaka shipping fee for new products when shop has no override |
+| `default_shipping_fee_outside_dhaka` | `170` | Fallback outside-Dhaka shipping fee for new products when shop has no override |
+| `default_processing_min_days` | `1` | Fallback minimum processing days for new physical products |
+| `default_processing_max_days` | `15` | Fallback maximum processing days for new physical products |
 
 **RLS:** `SELECT` allowed for `anon` and `authenticated`. No INSERT/UPDATE/DELETE policies — only service role can write.
 
@@ -141,7 +145,7 @@ create unique index idx_user_addresses_one_default
 
 ## `shop_settings`
 
-One row per creator. Controls whether the shop is visible and how it looks.
+One row per creator. Controls whether the shop is visible, how it looks, its shipping defaults, and carries cached stats counters.
 
 ```sql
 create table public.shop_settings (
@@ -159,12 +163,43 @@ create table public.shop_settings (
   seo_title           varchar(60),
   seo_description     varchar(160),
 
+  -- Shop-level shipping defaults (null = fall through to platform_settings)
+  -- New products inherit these values via upsert_shop_product when no explicit value is passed.
+  shipping_fee_inside_dhaka   numeric(10,2),   -- null → platform default 85
+  shipping_fee_outside_dhaka  numeric(10,2),   -- null → platform default 170
+  processing_min_days         integer,         -- null → platform default 1
+  processing_max_days         integer,         -- null → platform default 15
+  requires_shipping           boolean not null default false,
+  cod_enabled                 boolean not null default false,
+  shipping_from_address       jsonb,   -- { "division", "district", "thana", "address" }
+
+  -- Cached stats counters — maintained by triggers/RPCs, never aggregated live.
+  total_views     bigint        not null default 0,
+  total_sales     bigint        not null default 0,
+  total_earnings  numeric(12,2) not null default 0,
+  total_products  bigint        not null default 0,
+
   created_at          timestamptz  not null default now(),
-  updated_at          timestamptz  not null default now()
+  updated_at          timestamptz  not null default now(),
+
+  constraint shop_settings_processing_window_valid
+    check (processing_min_days is null or processing_max_days is null
+           or processing_min_days <= processing_max_days)
 );
 ```
 
 **`deactivation_reason`** is set automatically by the cron job and cleared when the seller reactivates. The frontend uses it to render the Studio banner with actionable copy.
+
+**Shipping defaults** (`shipping_fee_inside_dhaka`, `shipping_fee_outside_dhaka`, `processing_min_days`, `processing_max_days`, `requires_shipping`, `cod_enabled`, `shipping_from_address`) are shop-level defaults inherited by new products. `NULL` on any numeric/integer field means fall through to the platform default. Set via `upsert_shop_settings`.
+
+**Stats counters** (`total_views`, `total_sales`, `total_earnings`, `total_products`) are pre-computed counters maintained automatically — read by `get_shop_stats()` for O(1) Studio card reads:
+
+| Counter | Who maintains it |
+|---|---|
+| `total_views` | `record_shop_view()` — called by Astro SSR on every shop page render |
+| `total_sales` | `handle_shop_payment_success` (digital) + `mark_order_item_delivered` (physical) |
+| `total_earnings` | `trg_shop_orders_stats` trigger when `transaction_reference_id` or `cod_settled_at` is first set |
+| `total_products` | `approve_shop_product` (+1) + `delete_shop_product` (−1 if was active) |
 
 **Auto-provision trigger:** when the `'shop'` service is first enabled on `user_services`, the `on_shop_service_enabled` trigger automatically inserts a default `shop_settings` row so the owner doesn't need to call `upsert_shop_settings` before configuring their shop.
 
@@ -648,6 +683,7 @@ Content managers (`content.approve`, `content.moderate`, `content.delete`) and f
 
 | Table | Operation | Permission |
 |---|---|---|
+| `shop_settings` | UPDATE | `content.moderate` |
 | `shop_categories` | SELECT | `content.approve` |
 | `shop_categories` | UPDATE | `content.moderate` |
 | `shop_categories` | DELETE | `content.delete` |
@@ -664,6 +700,8 @@ Content managers (`content.approve`, `content.moderate`, `content.delete`) and f
 | `shop_order_items` | SELECT | `transactions.view` |
 
 For draft approval/rejection use the dedicated RPCs (`approve_shop_category`, `reject_shop_category`, `approve_shop_product`, `reject_shop_product`) — they handle the draft-deletion side effects and activity notifications. Direct UPDATE is available for metadata overrides.
+
+To toggle a shop's `is_active` state from the admin panel, use `set_shop_active_by_manager()` — it bypasses the seller eligibility check that `upsert_shop_settings` enforces.
 
 Note on product deletes: the `"Block direct product deletes"` policy (`using (false)`) blocks all regular users. The manager `DELETE` policy is a separate permissive policy that overrides this for managers with `content.delete`.
 

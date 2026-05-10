@@ -18,10 +18,19 @@ flowchart TB
         J --> K[platform_fee_rate]
         J --> L[cod_wallet_floor]
         J --> M[cod_settlement_max_days]
+        J --> N[default_shipping_fee_inside_dhaka]
+        J --> O[default_shipping_fee_outside_dhaka]
+        J --> P[default_processing_min/max_days]
+    end
+    
+    subgraph "Stats"
+        Q[record_shop_view] --> R[total_views + 1]
+        S[get_shop_stats] --> T[O(1) PK lookup]
+        U[set_shop_active_by_manager] --> V[bypass eligibility]
     end
 ```
 
-These two functions are used internally by almost every other RPC. You'll rarely call them directly, but understanding them is essential before reading the checkout and COD pages.
+These functions are used internally by other RPCs, or are lightweight utility calls. Understanding `get_platform_setting` and `check_shop_active_eligibility` is essential before reading the checkout and COD pages.
 
 ## `get_platform_setting`
 
@@ -36,6 +45,11 @@ Reads a single row from `platform_settings` and casts the JSONB value to `numeri
 v_rate     := public.get_platform_setting('platform_fee_rate');    -- → 0.10
 v_floor    := public.get_platform_setting('cod_wallet_floor');     -- → -500
 v_max_days := public.get_platform_setting('cod_settlement_max_days')::integer; -- → 30
+-- Shipping defaults (used by upsert_shop_product fallback chain):
+v_fee_in   := public.get_platform_setting('default_shipping_fee_inside_dhaka');  -- → 85
+v_fee_out  := public.get_platform_setting('default_shipping_fee_outside_dhaka'); -- → 170
+v_min_days := public.get_platform_setting('default_processing_min_days')::integer; -- → 1
+v_max_proc := public.get_platform_setting('default_processing_max_days')::integer; -- → 15
 ```
 
 ::: warning Not for client use
@@ -116,3 +130,79 @@ where so.seller_profile_id = p_profile_id
 ```
 
 If the seller has no wallet row yet (brand-new seller), they are treated as `balance = 0, cod_debt = 0` — eligible by default.
+
+---
+
+## `record_shop_view`
+
+```sql
+public.record_shop_view(p_username varchar) → void
+```
+
+Increments `shop_settings.total_views` for the given username. Called by Astro SSR on every shop page render — no auth required (`anon` accessible). Only increments when the shop is active (`is_active = true`).
+
+Mirrors the `record_newsletter_post_view()` pattern.
+
+```typescript
+// In Astro shop page server-side:
+await supabase.rpc('record_shop_view', { p_username: username });
+// Fire-and-forget — don't await or show errors to user
+```
+
+---
+
+## `get_shop_stats`
+
+```sql
+public.get_shop_stats() → jsonb
+```
+
+Returns the four cached stats counters for the Studio stats cards. Single PK lookup on `shop_settings` — no aggregation at call time.
+
+### Response shape
+
+```json
+{
+  "success": true,
+  "total_views": 1240,
+  "total_sales": 87,
+  "total_earnings": 48200.00,
+  "total_products": 6
+}
+```
+
+| Field | Definition |
+|---|---|
+| `total_views` | All-time shop page renders (incremented by `record_shop_view`) |
+| `total_sales` | Total units sold (incremented on digital fulfillment + physical delivery) |
+| `total_earnings` | Total settled `seller_net` across all paid/COD-settled orders |
+| `total_products` | Currently published (active + not-deleted) products |
+
+::: tip Fast by design
+All four values are pre-computed counters on `shop_settings`. This call costs a single index scan and is safe to call on every Studio page load.
+:::
+
+---
+
+## `set_shop_active_by_manager`
+
+```sql
+public.set_shop_active_by_manager(
+  p_profile_id uuid,
+  p_is_active  boolean
+) → jsonb
+```
+
+Manager-only toggle for `shop_settings.is_active`. Requires `content.moderate` permission. Bypasses the seller eligibility check that `upsert_shop_settings` enforces, so managers can force-suspend or reinstate a shop from the admin panel without the seller needing to resolve COD aging or wallet floor issues first.
+
+Sets `deactivation_reason = 'manual'` when deactivating; clears it when reactivating.
+
+**Response:** `{ "success": true }` or `{ "success": false, "error": "UNAUTHORIZED" | "NOT_FOUND" }`
+
+```typescript
+// Admin panel usage:
+await supabase.rpc('set_shop_active_by_manager', {
+  p_profile_id: targetSellerId,
+  p_is_active: false,  // suspend
+});
+```
