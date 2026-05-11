@@ -311,7 +311,7 @@ export default withMermaid(
                   { text: "Schema", link: "/shop-service/backend/schema" },
                   {
                     text: "Shop Settings",
-                    link: "/shop-service/shop-settings",
+                    link: "/shop-service/backend/shop-settings",
                   },
                   {
                     text: "RPC Helpers",

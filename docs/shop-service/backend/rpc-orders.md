@@ -297,9 +297,9 @@ For COD items, marking delivered does **not** confirm cash or create a transacti
 
 ## `upsert_shop_settings`
 
-See [Shop Settings - RPCs](../shop-settings#rpcs) for the full documentation including reactivation gate behavior.
+See [Shop Settings - RPCs](./shop-settings#rpcs) for the full documentation including reactivation gate behavior.
 
 ::: tip Related
-- [Eligibility system](../shop-settings#eligibility-system)
-- [Studio settings panels](../shop-settings#studio-settings-panels)
+- [Eligibility system](./shop-settings#eligibility-system)
+- [Studio settings panels](./shop-settings#studio-settings-panels)
 :::

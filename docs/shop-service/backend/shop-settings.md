@@ -29,8 +29,6 @@ graph TB
 
 The `shop_settings` table is the central configuration hub for each seller's shop. It controls visibility, appearance, shipping defaults, and carries pre-computed stats.
 
----
-
 ## Database Schema
 
 ### `shop_settings` table
@@ -106,8 +104,6 @@ ON CONFLICT (profile_id) DO NOTHING;
 - `SELECT` — active shops visible to all, plus owner always sees their own
 - `INSERT/UPDATE` — owner only (`profile_id = auth.uid()`)
 - `DELETE` — owner only
-
----
 
 ## RPCs
 
@@ -195,9 +191,7 @@ Returns the four cached stats counters for Studio stats cards. Single PK lookup 
 public.get_shop_overview() → jsonb
 ```
 
-Returns full shop data including eligibility for the Studio dashboard. See [Dashboard & Cron](./backend/rpc-dashboard).
-
----
+Returns full shop data including eligibility for the Studio dashboard. See [Dashboard & Cron](./rpc-dashboard).
 
 ## Eligibility System
 
@@ -257,8 +251,6 @@ When ineligible:
 }
 ```
 
----
-
 ## Shipping Defaults
 
 Shop-level defaults are inherited by new products via `upsert_shop_product` when no explicit value is passed. The fallback chain is:
@@ -289,8 +281,6 @@ These are stored in `platform_settings` and read via `get_platform_setting`:
 | `default_shipping_fee_outside_dhaka` | `170` | Fallback outside-Dhaka fee |
 | `default_processing_min_days` | `1` | Fallback minimum processing |
 | `default_processing_max_days` | `15` | Fallback maximum processing |
-
----
 
 ## Theming
 
@@ -360,8 +350,6 @@ export const THEME_PRESETS = {
 
 `generate-shop-theme` Edge Function accepts a text prompt, calls `gpt-4o-mini`, returns a `ShopThemeConfig`. Output is merged into current config as a suggestion.
 
----
-
 ## Shop Policies
 
 `shop_policies` stores only the creator's custom overrides. For any `policy_type` with no row (or `is_enabled = false`), the public policies page falls back to static default templates.
@@ -417,8 +405,6 @@ export const POLICY_DESCRIPTIONS: Record<ShopPolicyType, string> = {
 | `delete_shop_policy(p_policy_type)` | authenticated | Reset to default template |
 | `get_shop_policies(p_username)` | anon | Get public policies for a shop |
 
----
-
 ## Studio Settings Panels
 
 Settings panels under `/studio/shop/settings/*`:
@@ -457,8 +443,6 @@ The `deactivation_reason` field is set automatically by the cron job. Frontend u
 | `cod_aging` | "Your shop is paused. Confirm cash for aged COD orders." |
 | `manual` | "Your shop is paused. Click to resume when ready." |
 
----
-
 ## Platform Settings Reference
 
 The `platform_settings` table stores platform-wide defaults that shops fall through to:
@@ -483,8 +467,6 @@ create table public.platform_settings (
 | `default_processing_max_days` | `15` | Fallback maximum processing days |
 
 **RLS:** `SELECT` allowed for `anon` and `authenticated`. No INSERT/UPDATE/DELETE policies — only service role can write.
-
----
 
 ## Manager Permissions
 

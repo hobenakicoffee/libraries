@@ -1,7 +1,7 @@
 # Helpers & Eligibility RPCs
 
 ::: tip See also
-The [Shop Settings - Eligibility System](../shop-settings#eligibility-system) page has the complete guide to eligibility checks, including the wallet floor and COD aging gates.
+The [Shop Settings - Eligibility System](./shop-settings#eligibility-system) page has the complete guide to eligibility checks, including the wallet floor and COD aging gates.
 :::
 
 ```mermaid
