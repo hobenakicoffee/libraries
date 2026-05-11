@@ -169,6 +169,35 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 
 ---
 
+## Edge Functions
+
+These Deno-based Supabase Edge Functions handle operations that require service-role storage access and cannot run in a plain RPC.
+
+| Function | Method | Auth | Purpose |
+|---|---|---|---|
+| `download-shop-file` | `GET ?token=<token>` | none (token = credential) | Validate download token → 302 redirect to signed Storage URL |
+
+### `download-shop-file`
+
+```
+GET /functions/v1/download-shop-file?token=<64-char-token>
+```
+
+No `Authorization` header required. Validates the token from `shop_download_tokens`, atomically increments `download_count`, and redirects the client to a 60-second signed URL in the private `shop-product-files` bucket.
+
+**Responses:**
+
+| Status | Condition |
+|---|---|
+| `302` | Success — `Location` header is the signed download URL |
+| `400` | `token` query param missing |
+| `403` | `download_count >= max_downloads` |
+| `404` | Token not found |
+| `410` | `expires_at` has passed |
+| `500` | Storage or DB error |
+
+---
+
 ## Error Codes
 
 All errors returned as `{ "success": false, "error": "CODE", ...optional details }`.

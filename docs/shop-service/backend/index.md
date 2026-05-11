@@ -23,6 +23,11 @@ graph TB
         M[shop_download_tokens]
         N[platform_settings]
     end
+
+    subgraph "Supabase Storage"
+        O["shop-images<br/>(public, 5 MB)"]
+        P["shop-product-files<br/>(private, 1 GB)"]
+    end
 ```
 
 The shop service is a multi-product e-commerce layer built entirely on PostgreSQL (Supabase). All business logic lives in RPCs (`SECURITY DEFINER` functions) so clients never touch tables directly — they call functions and receive typed JSONB responses.
@@ -31,9 +36,9 @@ The shop service is a multi-product e-commerce layer built entirely on PostgreSQ
 
 | Page | Contents |
 |---|---|
-| [Database Schema](./schema) | Every table, column, constraint, index, and RLS policy |
+| [Database Schema](./schema) | Every table, column, constraint, index, RLS policy, storage buckets, and edge functions |
 | [Shop Settings](./shop-settings) | Complete guide to `shop_settings`, eligibility, shipping, theming, and policies |
-| [All RPCs (Quick Reference)](./rpc-reference) | Single-page lookup for all 34 RPCs |
+| [All RPCs (Quick Reference)](./rpc-reference) | Single-page lookup for all RPCs and edge functions |
 | [Helpers & Eligibility](./rpc-helpers) | `get_platform_setting`, `check_shop_active_eligibility` |
 | [Products, Variants & Files](./rpc-products) | Product CRUD, multi-axis variants, file management |
 | [Checkout & Payments](./rpc-checkout) | `initiate_shop_checkout`, `handle_shop_payment_success` |
@@ -190,14 +195,18 @@ The rate applied at checkout is snapshotted into `shop_order_items.shipping_cost
 `shop_product_files.storage_path` is **never sent to the client**. The download flow is:
 
 ```
-Client GET /api/shop/download?token=<token>
-  → Edge Function validates token (not expired, downloads remaining)
-  → Increments download_count
-  → Generates short-lived Supabase Storage signed URL
-  → Returns 302 redirect
+Client GET /functions/v1/download-shop-file?token=<64-char-token>
+  → Edge Function validates token (exists, not expired, downloads remaining)
+  → Atomically increments download_count
+  → Generates short-lived signed URL from shop-product-files bucket (60 s)
+  → Returns 302 redirect → file downloads
 ```
 
-Tokens have both a `max_downloads` hard cap and an `expires_at` soft limit.
+Tokens are created by `handle_shop_payment_success` immediately on payment confirmation — one token row per file per digital order item. They have both a `max_downloads` hard cap and an `expires_at` soft time limit (both configured per-product via `max_downloads` and `download_expires_hours`).
+
+The `shop-product-files` storage bucket is **private** — no public read policy exists. Buyers cannot access files directly through Supabase Storage URLs; they must go through the Edge Function.
+
+See [Database Schema → Edge Functions](./schema#edge-functions) for the full error response table.
 
 ### 10. Theming — typed config, not raw CSS
 

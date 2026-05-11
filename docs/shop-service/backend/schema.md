@@ -727,3 +727,74 @@ Key indexes beyond the primary keys:
 | `shop_orders` | `(seller_profile_id, created_at desc)` | Seller order list |
 | `shop_orders` | `(seller_profile_id, created_at) WHERE payment_method = 'cod' AND cod_settled_at IS NULL` | COD aging check |
 | `shop_order_items` | `(order_id, status) WHERE status = 'delivered' AND cod_settled_at IS NULL` | Cash-pending tab |
+
+---
+
+## Storage Buckets
+
+Two Supabase Storage buckets are provisioned by the shop migration.
+
+### `shop-images` (public)
+
+Stores all shop UI images: logo, banner, product cover, product gallery, and variant photos. Referenced by `shop_settings.logo_url`, `shop_settings.banner_url`, `shop_products.cover_image_url`, `shop_products.images[]`, and `shop_product_variants.image_url`.
+
+| Property | Value |
+|---|---|
+| Public | `true` — GET requests require no auth |
+| File size limit | 5 MB |
+| Allowed MIME types | `image/jpeg`, `image/png`, `image/gif`, `image/webp` |
+
+**Path convention:** `{uid}/{filename}`
+
+**RLS policies:**
+- Public read (anon + authenticated)
+- Authenticated users can upload, update, and delete only within their own folder (`storage.foldername(name)[1] = auth.uid()::text`)
+
+---
+
+### `shop-product-files` (private)
+
+Stores digital product download files. **Raw paths are never sent to clients.** Referenced by `shop_product_files.storage_path`. Access goes exclusively through the `download-shop-file` Edge Function which validates a `shop_download_tokens` row and returns a short-lived signed URL redirect.
+
+| Property | Value |
+|---|---|
+| Public | `false` — no unauthenticated reads |
+| File size limit | 1 GB |
+| Allowed MIME types | All (ZIPs, PDFs, EPUBs, videos, etc.) |
+
+**Path convention:** `{uid}/{filename}`
+
+**RLS policies:**
+- Sellers can SELECT, INSERT, UPDATE, DELETE only within their own folder (Studio file browser)
+- No public or buyer read — download access is granted exclusively via signed URLs issued by the Edge Function (service role)
+
+---
+
+## Edge Functions
+
+### `download-shop-file`
+
+**Route:** `GET /functions/v1/download-shop-file?token=<64-char-token>`
+
+Validates a `shop_download_tokens` row and redirects the client to a short-lived signed URL for the file in `shop-product-files`. No auth header required — the token is the credential.
+
+**Flow:**
+1. Look up `token` in `shop_download_tokens` (service role)
+2. Check `expires_at > now()` — 410 if expired
+3. Check `download_count < max_downloads` — 403 if exceeded
+4. Atomically increment `download_count` (UPDATE with `lt` guard against race)
+5. Resolve `storage_path` from `shop_product_files`
+6. `storage.createSignedUrl(storage_path, 60)` — 60-second expiry
+7. Return `302` redirect to the signed URL
+
+**Error responses:**
+
+| HTTP | `error` key | Condition |
+|---|---|---|
+| 400 | `bad_request` | `token` query param missing |
+| 404 | (JSON body) | Token not found |
+| 403 | `forbidden` | Download limit reached |
+| 410 | (JSON body) | Token expired |
+| 500 | `internal_server_error` | Storage or DB error |
+
+Tokens are created by `handle_shop_payment_success` (one per file per digital order item) immediately after SSLCommerz IPN confirmation. The frontend order page reads tokens from `shop_download_tokens` (buyer RLS) and renders a download button per file using this URL.
