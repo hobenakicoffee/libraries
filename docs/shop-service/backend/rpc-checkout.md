@@ -173,13 +173,26 @@ end;
 
 ### Platform fee calculation
 
-```sql
--- Platform fee rate is READ from platform_settings here, not from client
-v_platform_fee_rate := get_platform_setting('platform_fee_rate');  -- 0.10
+Fees are computed **per item** based on `product_type` and whether the seller holds an active platform subscription for that service:
 
-v_platform_fee := round((subtotal + shipping_total) * v_platform_fee_rate, 2);
+```sql
+-- Per item in the cart:
+v_item_fee_rate := public.get_creator_effective_fee_rate(
+  seller_id,
+  CASE product_type
+    WHEN 'digital'  THEN 'shop_digital'   -- default 10%
+    WHEN 'physical' THEN 'shop_physical'  -- default 5%
+  END
+);
+-- Returns 0 if seller has an active creator_platform_subscriptions row for that service.
+
+v_item_fee     := round((unit_price + shipping_cost) * quantity * v_item_fee_rate, 2);
+v_platform_fee += v_item_fee;  -- accumulated across all items
+
 v_seller_net   := (subtotal + shipping_total) - v_platform_fee;
 ```
+
+The per-item rate is snapshotted on `shop_order_items.platform_fee_rate`. For same-type orders (all-digital or all-physical), `shop_orders.platform_fee_rate` is set to that rate. For mixed orders it is `NULL` — the source of truth is always the item-level column.
 
 ### Online vs COD branching
 

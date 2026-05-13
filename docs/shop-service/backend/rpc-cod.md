@@ -66,10 +66,10 @@ The seller confirms they've collected the buyer's cash for one order item. Debit
 
 ```sql
 item_total := (unit_price + shipping_cost) * quantity
-fee        := round(item_total * order.platform_fee_rate, 2)
+fee        := round(item_total * item.platform_fee_rate, 2)
 ```
 
-The `platform_fee_rate` was snapshotted on the order at checkout — it doesn't re-read from `platform_settings`. Historical orders always reflect the rate in effect when they were placed.
+The `platform_fee_rate` is snapshotted **per item** in `shop_order_items.platform_fee_rate` at checkout — it doesn't re-read from `platform_settings`. Historical orders always reflect the rate in effect when they were placed. COD orders are always physical, so the rate will be `platform_fee_rate_shop_physical` (default 5%), or `0` if the seller held an active platform subscription at checkout time.
 
 ### Wallet debit logic
 
@@ -113,7 +113,7 @@ insert into public.transactions (
     "kind":           "shop_cod_platform_fee",
     "order_item_id":  "...",
     "order_number":   "SHOP-20240115-A3F2",
-    "fee_rate":       0.10,
+    "fee_rate":       0.05,
     "item_total":     1820.00,
     "balance_debit":  182.00,
     "cod_debt_added": 0.00

@@ -136,13 +136,13 @@ export async function POST(req: Request) {
     userAgent: req.headers['user-agent'],
   })
 
+  // Platform fee is computed server-side inside perform_coffee_gift — do NOT pass it.
   const { data, error } = await supabaseAdmin.rpc('perform_coffee_gift', {
     p_creator_profile_id:      body.creatorId,
     p_supporter_profile_id:    session?.user?.id ?? null,
     p_supporter_name:          body.supporterName,
     p_identity_hash:           identityHash,
     p_amount:                  body.amount,
-    p_platform_fee:            platformFee,
     p_provider:                body.provider,
     p_reference_type:          body.isMonthly ? 'subscription' : 'one-time',
     p_provider_transaction_id: body.providerTransactionId,

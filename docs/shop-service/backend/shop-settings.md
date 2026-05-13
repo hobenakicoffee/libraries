@@ -458,7 +458,8 @@ create table public.platform_settings (
 
 | Key | Default | Meaning |
 |---|---|---|
-| `platform_fee_rate` | `0.10` | 10% of order total taken as platform fee |
+| `platform_fee_rate_shop_digital` | `0.10` | Fee rate for digital product orders (10%) |
+| `platform_fee_rate_shop_physical` | `0.05` | Fee rate for physical product orders (5%) |
 | `cod_wallet_floor` | `-500` | Minimum `(balance − cod_debt)` before shop auto-deactivates |
 | `cod_settlement_max_days` | `30` | Days a COD order can age before triggering deactivation |
 | `default_shipping_fee_inside_dhaka` | `85` | Fallback inside-Dhaka shipping fee |
@@ -466,7 +467,7 @@ create table public.platform_settings (
 | `default_processing_min_days` | `1` | Fallback minimum processing days |
 | `default_processing_max_days` | `15` | Fallback maximum processing days |
 
-**RLS:** `SELECT` allowed for `anon` and `authenticated`. No INSERT/UPDATE/DELETE policies — only service role can write.
+**RLS:** Fully locked — `REVOKE ALL from anon, authenticated`. Only service role can write. Rates are resolved by `get_creator_effective_fee_rate()` (returns `0` for sellers on a flat-fee platform subscription).
 
 ## Manager Permissions
 

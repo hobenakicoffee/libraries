@@ -42,11 +42,14 @@ These functions are used internally by other RPCs, or are lightweight utility ca
 public.get_platform_setting(p_key varchar) → numeric
 ```
 
-Reads a single row from `platform_settings` and casts the JSONB value to `numeric`. Used internally by checkout (to read `platform_fee_rate`) and eligibility checks (to read `cod_wallet_floor` and `cod_settlement_max_days`).
+Reads a single row from `platform_settings` and casts the JSONB value to `numeric`. Used internally by `get_creator_effective_fee_rate()` (to read per-service fee rates) and eligibility checks (to read `cod_wallet_floor` and `cod_settlement_max_days`).
 
 ```sql
 -- Internal usage examples:
-v_rate     := public.get_platform_setting('platform_fee_rate');    -- → 0.10
+-- Per-service fee rates (read by get_creator_effective_fee_rate):
+v_rate     := public.get_platform_setting('platform_fee_rate_shop_physical'); -- → 0.05
+v_rate     := public.get_platform_setting('platform_fee_rate_shop_digital');  -- → 0.10
+-- Eligibility knobs:
 v_floor    := public.get_platform_setting('cod_wallet_floor');     -- → -500
 v_max_days := public.get_platform_setting('cod_settlement_max_days')::integer; -- → 30
 -- Shipping defaults (used by upsert_shop_product fallback chain):
@@ -57,7 +60,7 @@ v_max_proc := public.get_platform_setting('default_processing_max_days')::intege
 ```
 
 ::: warning Not for client use
-Never call this from the frontend. Platform config values are snapshotted onto order rows at checkout (`platform_fee_rate`) or returned inside `get_shop_overview().eligibility`. The client should display but never trust values it sends to the server.
+Never call this from the frontend. Fee rates are resolved server-side by `get_creator_effective_fee_rate()` and snapshotted onto `shop_order_items.platform_fee_rate` at checkout. Eligibility values are returned inside `get_shop_overview().eligibility`. The client should display but never trust values it sends to the server.
 :::
 
 ---

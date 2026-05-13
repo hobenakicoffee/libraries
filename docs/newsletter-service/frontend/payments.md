@@ -78,13 +78,13 @@ The Edge Function calls `purchase_newsletter_post()` with:
 
 ```ts
 // Inside the Edge Function (not frontend code)
+// Platform fee is computed server-side inside purchase_newsletter_post — do NOT pass it.
 await supabase.rpc('purchase_newsletter_post', {
   p_post_id: postId,
   p_buyer_profile_id: buyerProfileId,
   p_buyer_name: buyerDisplayName,
   p_identity_hash: identityHash,
   p_amount: amount,              // must match newsletter_posts.price
-  p_platform_fee: platformFee,
   p_provider: 'sslcommerz',      // or 'shurjopay', etc.
   p_provider_transaction_id: gatewayTxId,
   p_source: 'web',

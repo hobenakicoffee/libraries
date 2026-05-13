@@ -16,7 +16,6 @@ create or replace function public.perform_coffee_gift(
   p_identity_hash            varchar,
 
   p_amount                   numeric(10,2),
-  p_platform_fee             numeric(10,2),
 
   p_provider                 public.provider_enum,
   p_reference_type           public.reference_type_enum,
@@ -44,7 +43,6 @@ set search_path = ''
 | `p_supporter_name` | `varchar` | Display name used to identify the supporter (shown on creator's feed). |
 | `p_identity_hash` | `varchar` | Deterministic hash for deduplication. See [Identity Hash](#identity-hash). |
 | `p_amount` | `numeric(10,2)` | Total payment amount (gross). Must be `> 0`. |
-| `p_platform_fee` | `numeric(10,2)` | Platform cut deducted from `p_amount`. `net = amount − fee`. |
 | `p_provider` | `provider_enum` | Payment provider used. E.g. `'Bkash'`, `'HobeNakiCoffee'`. |
 | `p_reference_type` | `reference_type_enum` | `'one-time'` or `'subscription'`. |
 | `p_provider_transaction_id` | `varchar` | Provider's own transaction ID for reconciliation. |
@@ -96,7 +94,8 @@ sequenceDiagram
     S->>RPC: call with all parameters
     RPC->>RPC: 0. Validate: amount > 0
     RPC->>RPC: 0. Validate: creator ≠ supporter
-    RPC->>PSP: 1. process_service_payment(...)
+    RPC->>RPC: 1. get_creator_effective_fee_rate(creator, 'gift')
+    RPC->>PSP: 2. process_service_payment(...)
     PSP->>DB: upsert_supporter
     PSP->>DB: handle_successful_payment
     DB-->>DB: debit supporter wallet (if wallet payment)
@@ -104,8 +103,8 @@ sequenceDiagram
     DB-->>DB: insert transactions (debit + credit rows)
     DB-->>DB: insert activities (private + public)
     PSP-->>RPC: payment_result JSONB
-    RPC->>DB: 2. insert into coffee_gifts
-    RPC-->>S: 3. return merged JSONB response
+    RPC->>DB: 3. insert into coffee_gifts
+    RPC-->>S: 4. return merged JSONB response
 ```
 
 ### Step 0 — Validation
@@ -128,7 +127,16 @@ if p_creator_profile_id = p_supporter_profile_id then
 end if;
 ```
 
-### Step 1 — Process Payment
+### Step 1 — Compute Platform Fee
+
+```sql
+v_platform_fee_rate := public.get_creator_effective_fee_rate(p_creator_profile_id, 'gift');
+v_platform_fee      := round(p_amount * v_platform_fee_rate, 2);
+```
+
+Returns `0` if the creator holds an active `creator_platform_subscriptions` row for `'gift'` (flat-fee plan). Otherwise returns the `platform_fee_rate_gift` setting (default 5%). The fee is **never trusted from the caller**.
+
+### Step 2 — Process Payment
 
 Delegates to `process_service_payment` with `p_service_type = 'gift'`. This handles supporter upsert, wallet operations, transaction ledger rows, and activity feed entries. See [Payment Pipeline](./payment-pipeline) for a full breakdown.
 
@@ -145,7 +153,7 @@ The metadata stored in the transaction and activity rows is:
 }
 ```
 
-### Step 2 — Insert Gift Record
+### Step 3 — Insert Gift Record
 
 ```sql
 insert into public.coffee_gifts (
@@ -171,7 +179,7 @@ insert into public.coffee_gifts (
 );
 ```
 
-### Step 3 — Return Response
+### Step 4 — Return Response
 
 The final response merges the payment result JSONB with `{ "success": true, "reference_id": v_reference_id }`.
 
@@ -183,7 +191,6 @@ The final response merges the payment result JSONB with `{ "success": true, "ref
 | `CANNOT_GIFT_SELF` | `p_creator_profile_id = p_supporter_profile_id` |
 | `Insufficient wallet balance` | Supporter is using `HobeNakiCoffee` wallet and has insufficient funds |
 | `Amount must be greater than zero` | Re-validated in `handle_successful_payment` |
-| `Platform fee cannot exceed amount` | `p_platform_fee > p_amount` |
 
 All errors propagate via `raise exception '%', sqlerrm` in the `exception` block, so the caller always receives a clean error message string.
 
@@ -205,6 +212,7 @@ Never generate the identity hash client-side. It must come from your trusted bac
 
 ```typescript
 // TypeScript example using the Supabase service-role client
+// Platform fee is computed server-side — do NOT pass p_platform_fee.
 const { data, error } = await supabaseAdmin.rpc('perform_coffee_gift', {
   p_creator_profile_id: 'uuid-of-creator',
   p_supporter_profile_id: 'uuid-of-supporter',   // null for anonymous
@@ -212,7 +220,6 @@ const { data, error } = await supabaseAdmin.rpc('perform_coffee_gift', {
   p_identity_hash: computedIdentityHash,
 
   p_amount: 150.00,
-  p_platform_fee: 15.00,
 
   p_provider: 'Bkash',
   p_reference_type: 'one-time',
@@ -243,7 +250,6 @@ const { data, error } = await supabaseAdmin.rpc('perform_coffee_gift', {
   p_identity_hash: computedIdentityHash,
 
   p_amount: 50.00,
-  p_platform_fee: 5.00,
 
   p_provider: 'Nagad',
   p_reference_type: 'one-time',

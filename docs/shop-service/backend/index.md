@@ -226,11 +226,14 @@ Seeded at migration time:
 
 | Key | Default | Meaning |
 |---|---|---|
-| `platform_fee_rate` | `0.10` | 10% of order total taken as platform fee |
+| `platform_fee_rate_shop_digital` | `0.10` | Platform fee rate for digital product orders (10%) |
+| `platform_fee_rate_shop_physical` | `0.05` | Platform fee rate for physical product orders (5%) |
 | `cod_wallet_floor` | `-500` | Minimum (balance − cod_debt) before shop auto-deactivates |
 | `cod_settlement_max_days` | `30` | Days a COD order can age before triggering deactivation |
 
-**Service-role write only** — no INSERT/UPDATE/DELETE RLS policies exist for authenticated users.
+Rates are overridden to `0` for sellers holding an active `creator_platform_subscriptions` row for the relevant service type (see [Platform Subscription Plans](./schema#platform-subscription-plans)).
+
+**Service-role write only** — fully locked (`REVOKE ALL from anon, authenticated`). Rates are read server-side by `get_creator_effective_fee_rate()`, never by clients.
 
 ### 13. Transactions integration
 

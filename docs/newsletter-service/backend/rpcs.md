@@ -342,7 +342,6 @@ FUNCTION public.purchase_newsletter_post(
   p_buyer_name               varchar,
   p_identity_hash            varchar,
   p_amount                   numeric(10,2),
-  p_platform_fee             numeric(10,2),
   p_provider                 public.provider_enum,
   p_provider_transaction_id  varchar,
   p_buyer_platform           public.supporter_platform_enum DEFAULT NULL,
@@ -354,6 +353,8 @@ LANGUAGE plpgsql SECURITY DEFINER
 ```
 
 > **Service role only.** Any call from an authenticated user (`auth.uid() IS NOT NULL`) raises `'Not allowed'`.
+>
+> **Platform fee is computed server-side** via `get_creator_effective_fee_rate(creator, 'newsletter_onetime')`. Do not pass a fee — it is never accepted from callers.
 
 ### Validation Steps
 
@@ -411,7 +412,6 @@ FUNCTION public.purchase_newsletter_membership(
   p_identity_hash            varchar,
   p_provider                 public.provider_enum,
   p_provider_transaction_id  varchar,
-  p_platform_fee             numeric(10,2),
   p_buyer_platform           public.supporter_platform_enum DEFAULT NULL,
   p_message                  varchar                        DEFAULT NULL,
   p_source                   varchar                        DEFAULT 'web'
@@ -421,6 +421,8 @@ LANGUAGE plpgsql SECURITY DEFINER
 ```
 
 > **Service role only.** Same guard as `purchase_newsletter_post`.
+>
+> **Platform fee is computed server-side** via `get_creator_effective_fee_rate(creator, 'newsletter_subscription')`. Do not pass a fee — it is never accepted from callers.
 
 ### Membership Period Extension Logic
 
@@ -431,7 +433,7 @@ LANGUAGE plpgsql SECURITY DEFINER
 
 This allows a member to renew early without losing the remaining days of their current period.
 
-The plan price is authoritative — the caller passes no `p_amount`. The fee is validated to be non-negative and less than the plan price.
+The plan price is authoritative — the caller passes no `p_amount` or `p_platform_fee`.
 
 ### Success Response
 

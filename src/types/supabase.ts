@@ -206,6 +206,99 @@ export type Database = {
         };
         Relationships: [];
       };
+      creator_platform_subscriptions: {
+        Row: {
+          created_at: string;
+          id: number;
+          period_end: string;
+          period_start: string;
+          plan_id: number;
+          price_at_purchase: number;
+          profile_id: string;
+          service_type: string;
+          status: string;
+          transaction_reference_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          period_end: string;
+          period_start: string;
+          plan_id: number;
+          price_at_purchase: number;
+          profile_id: string;
+          service_type: string;
+          status?: string;
+          transaction_reference_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          period_end?: string;
+          period_start?: string;
+          plan_id?: number;
+          price_at_purchase?: number;
+          profile_id?: string;
+          service_type?: string;
+          status?: string;
+          transaction_reference_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "creator_platform_subscriptions_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "platform_subscription_plans";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "creator_platform_subscriptions_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "creator_platform_subscriptions_transaction_reference_id_fkey";
+            columns: ["transaction_reference_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["reference_id"];
+          },
+        ];
+      };
+      creator_subscription_notifications: {
+        Row: {
+          id: number;
+          notification_type: string;
+          sent_at: string;
+          subscription_id: number;
+        };
+        Insert: {
+          id?: never;
+          notification_type: string;
+          sent_at?: string;
+          subscription_id: number;
+        };
+        Update: {
+          id?: never;
+          notification_type?: string;
+          sent_at?: string;
+          subscription_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "creator_subscription_notifications_subscription_id_fkey";
+            columns: ["subscription_id"];
+            isOneToOne: false;
+            referencedRelation: "creator_platform_subscriptions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       follows: {
         Row: {
           created_at: string | null;
@@ -905,6 +998,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      platform_subscription_plans: {
+        Row: {
+          created_at: string;
+          description: string | null;
+          id: number;
+          is_active: boolean;
+          name: string;
+          price_per_month: number;
+          service_type: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          description?: string | null;
+          id?: never;
+          is_active?: boolean;
+          name: string;
+          price_per_month: number;
+          service_type: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string | null;
+          id?: never;
+          is_active?: boolean;
+          name?: string;
+          price_per_month?: number;
+          service_type?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       post_access_grants: {
         Row: {
           created_at: string;
@@ -1364,6 +1493,7 @@ export type Database = {
           delivered_at: string | null;
           id: string;
           order_id: string;
+          platform_fee_rate: number;
           product_id: string;
           product_title: string;
           product_type: Database["public"]["Enums"]["shop_product_type_enum"];
@@ -1387,6 +1517,7 @@ export type Database = {
           delivered_at?: string | null;
           id?: string;
           order_id: string;
+          platform_fee_rate?: number;
           product_id: string;
           product_title: string;
           product_type: Database["public"]["Enums"]["shop_product_type_enum"];
@@ -1410,6 +1541,7 @@ export type Database = {
           delivered_at?: string | null;
           id?: string;
           order_id?: string;
+          platform_fee_rate?: number;
           product_id?: string;
           product_title?: string;
           product_type?: Database["public"]["Enums"]["shop_product_type_enum"];
@@ -1461,7 +1593,7 @@ export type Database = {
           order_number: string;
           payment_method: Database["public"]["Enums"]["shop_payment_method_enum"];
           platform_fee: number;
-          platform_fee_rate: number;
+          platform_fee_rate: number | null;
           seller_net: number;
           seller_notes: string | null;
           seller_profile_id: string;
@@ -1482,7 +1614,7 @@ export type Database = {
           order_number: string;
           payment_method?: Database["public"]["Enums"]["shop_payment_method_enum"];
           platform_fee: number;
-          platform_fee_rate: number;
+          platform_fee_rate?: number | null;
           seller_net: number;
           seller_notes?: string | null;
           seller_profile_id: string;
@@ -1503,7 +1635,7 @@ export type Database = {
           order_number?: string;
           payment_method?: Database["public"]["Enums"]["shop_payment_method_enum"];
           platform_fee?: number;
-          platform_fee_rate?: number;
+          platform_fee_rate?: number | null;
           seller_net?: number;
           seller_notes?: string | null;
           seller_profile_id?: string;
@@ -2399,6 +2531,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      activate_creator_platform_subscription: {
+        Args: {
+          p_creator_profile_id: string;
+          p_plan_id: number;
+          p_provider: Database["public"]["Enums"]["provider_enum"];
+          p_provider_transaction_id: string;
+        };
+        Returns: Json;
+      };
       add_shop_product_file: {
         Args: {
           p_file_name: string;
@@ -2408,6 +2549,10 @@ export type Database = {
           p_sort_order?: number;
           p_storage_path: string;
         };
+        Returns: Json;
+      };
+      admin_grant_creator_subscription: {
+        Args: { p_months?: number; p_plan_id: number; p_profile_id: string };
         Returns: Json;
       };
       approve_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
@@ -2422,6 +2567,10 @@ export type Database = {
       auto_deactivate_ineligible_shops: { Args: never; Returns: Json };
       cancel_cod_order_item: {
         Args: { p_order_item_id: string; p_reason: string };
+        Returns: Json;
+      };
+      cancel_creator_platform_subscription: {
+        Args: { p_service_type: string };
         Returns: Json;
       };
       check_newsletter_post_access: {
@@ -2505,6 +2654,10 @@ export type Database = {
           unique_supporters: number;
           unique_supporters_change: number;
         }[];
+      };
+      get_creator_effective_fee_rate: {
+        Args: { p_profile_id: string; p_service_type: string };
+        Returns: number;
       };
       get_followers: { Args: { target_user_id: string }; Returns: string[] };
       get_following: { Args: { target_user_id: string }; Returns: string[] };
@@ -2817,7 +2970,6 @@ export type Database = {
           p_identity_hash: string;
           p_is_monthly?: boolean;
           p_message?: string;
-          p_platform_fee: number;
           p_provider: Database["public"]["Enums"]["provider_enum"];
           p_provider_transaction_id: string;
           p_reference_type: Database["public"]["Enums"]["reference_type_enum"];
@@ -2827,6 +2979,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      process_creator_subscription_expiry: { Args: never; Returns: undefined };
       process_membership_expiry_notifications: {
         Args: never;
         Returns: undefined;
@@ -2864,7 +3017,6 @@ export type Database = {
           p_identity_hash: string;
           p_message?: string;
           p_plan_id: string;
-          p_platform_fee: number;
           p_provider: Database["public"]["Enums"]["provider_enum"];
           p_provider_transaction_id: string;
           p_source?: string;
@@ -2879,7 +3031,6 @@ export type Database = {
           p_buyer_profile_id: string;
           p_identity_hash: string;
           p_message?: string;
-          p_platform_fee: number;
           p_post_id: string;
           p_provider: Database["public"]["Enums"]["provider_enum"];
           p_provider_transaction_id: string;
@@ -3128,7 +3279,7 @@ export type Database = {
         | "refunded"
         | "reviewing";
       payout_provider: "bkash" | "nagad" | "rocket" | "bank";
-      post_status_enum: "draft" | "published" | "archived" | "review";
+      post_status_enum: "draft" | "published" | "review" | "archived";
       post_version_source_enum:
         | "autosave"
         | "ai_polish"
@@ -3404,7 +3555,7 @@ export const Constants = {
         "reviewing",
       ],
       payout_provider: ["bkash", "nagad", "rocket", "bank"],
-      post_status_enum: ["draft", "published", "archived", "review"],
+      post_status_enum: ["draft", "published", "review", "archived"],
       post_version_source_enum: [
         "autosave",
         "ai_polish",

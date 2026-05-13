@@ -81,7 +81,11 @@ create table public.platform_settings (
 
 | `key` | `value` | Purpose |
 |---|---|---|
-| `platform_fee_rate` | `0.10` | Fraction of order total taken as platform fee |
+| `platform_fee_rate_gift` | `0.05` | Platform fee rate for coffee gifts (5%) |
+| `platform_fee_rate_newsletter_onetime` | `0.10` | Platform fee rate for newsletter pay-per-post purchases (10%) |
+| `platform_fee_rate_newsletter_subscription` | `0.15` | Platform fee rate for newsletter membership subscriptions (15%) |
+| `platform_fee_rate_shop_digital` | `0.10` | Platform fee rate for shop digital product orders (10%) |
+| `platform_fee_rate_shop_physical` | `0.05` | Platform fee rate for shop physical product orders (5%) |
 | `cod_wallet_floor` | `-500` | Min `(balance − cod_debt)` before shop is deactivated |
 | `cod_settlement_max_days` | `30` | Days a COD order can age before triggering deactivation |
 | `default_shipping_fee_inside_dhaka` | `85` | Fallback inside-Dhaka shipping fee for new products when shop has no override |
@@ -89,7 +93,7 @@ create table public.platform_settings (
 | `default_processing_min_days` | `1` | Fallback minimum processing days for new physical products |
 | `default_processing_max_days` | `15` | Fallback maximum processing days for new physical products |
 
-**RLS:** `SELECT` allowed for `anon` and `authenticated`. No INSERT/UPDATE/DELETE policies — only service role can write.
+**RLS:** No access for `anon` or `authenticated` — fully locked. Config is read exclusively via `get_platform_setting()` (SECURITY DEFINER, internal-only). Per-service rates are overridden to `0` at the query level by `get_creator_effective_fee_rate()` when a creator holds an active platform subscription.
 
 ---
 
@@ -546,8 +550,10 @@ create table public.shop_orders (
   -- Financials (all snapshotted at checkout)
   subtotal                 numeric(10,2) not null,
   shipping_total           numeric(10,2) not null default 0,
-  platform_fee             numeric(10,2) not null,
-  platform_fee_rate        numeric(5,4)  not null,   -- snapshotted for audit
+  platform_fee             numeric(10,2) not null,   -- sum of per-item fees
+  -- Representative rate for same-type orders. NULL for mixed digital+physical orders
+  -- (per-item rates live on shop_order_items.platform_fee_rate instead).
+  platform_fee_rate        numeric(5,4),
   seller_net               numeric(10,2) not null,
 
   transaction_reference_id uuid references public.transactions(reference_id) on delete set null,
@@ -586,13 +592,18 @@ create table public.shop_order_items (
   variant_id      uuid    references public.shop_product_variants(id) on delete restrict,
 
   -- Immutable snapshots
-  product_title   varchar(200) not null,
-  product_type    shop_product_type_enum not null,
-  variant_label   varchar(255),           -- "Size: M / Color: Red"
-  variant_options jsonb,                  -- snapshot of variant.options
-  unit_price      numeric(10,2) not null, -- base price + price_adjustment
-  shipping_cost   numeric(10,2) not null default 0,
-  quantity        integer not null default 1 check (quantity > 0),
+  product_title     varchar(200) not null,
+  product_type      shop_product_type_enum not null,
+  variant_label     varchar(255),           -- "Size: M / Color: Red"
+  variant_options   jsonb,                  -- snapshot of variant.options
+  unit_price        numeric(10,2) not null, -- base price + price_adjustment
+  shipping_cost     numeric(10,2) not null default 0,
+  quantity          integer not null default 1 check (quantity > 0),
+  -- Per-item fee rate snapshotted at checkout based on product_type and the seller's
+  -- active platform subscription. 0 if seller holds a creator_platform_subscriptions
+  -- row for the relevant service (shop_digital or shop_physical); otherwise the
+  -- platform default (10% digital, 5% physical). Used by confirm_cod_cash_received().
+  platform_fee_rate numeric(5,4) not null default 0,
 
   status          shop_order_item_status_enum not null default 'pending',
 
