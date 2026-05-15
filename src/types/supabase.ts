@@ -3029,15 +3029,26 @@ export type Database = {
         };
         Returns: Json;
       };
-      process_withdrawal: {
-        Args: {
-          p_admin_note?: string;
-          p_failure_reason?: string;
-          p_new_status: Database["public"]["Enums"]["withdrawal_status"];
-          p_withdrawal_id: string;
-        };
-        Returns: Json;
-      };
+      process_withdrawal:
+        | {
+            Args: {
+              p_admin_note?: string;
+              p_failure_reason?: string;
+              p_new_status: Database["public"]["Enums"]["withdrawal_status"];
+              p_withdrawal_id: string;
+            };
+            Returns: Json;
+          }
+        | {
+            Args: {
+              p_admin_note?: string;
+              p_failure_reason?: string;
+              p_fee?: number;
+              p_new_status: Database["public"]["Enums"]["withdrawal_status"];
+              p_withdrawal_id: string;
+            };
+            Returns: Json;
+          };
       purchase_newsletter_membership: {
         Args: {
           p_buyer_name: string;

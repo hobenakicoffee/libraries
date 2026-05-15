@@ -40,8 +40,8 @@ create table public.withdrawal_requests (
 | `wallet_id` | `uuid` | FK → `wallets.id` — the wallet funds came from |
 | `payout_method_id` | `uuid` | FK → `payout_methods.id` (`ON DELETE SET NULL`) |
 | `amount` | `numeric(12,2)` | Gross amount requested (before fee) |
-| `fee` | `numeric(12,2)` | Platform withdrawal fee (currently `0`) |
-| `net_amount` | `numeric(12,2)` | `amount − fee`; what the creator receives |
+| `fee` | `numeric(12,2)` | TDB tax (withholding tax) — set by admin at payout time. Defaults to 10% of amount |
+| `net_amount` | `numeric(12,2)` | `amount − fee`; the creator's payout after TDB tax |
 | `status` | `withdrawal_status` | Current lifecycle status |
 | `requested_at` | `timestamptz` | When the request was submitted |
 | `processed_at` | `timestamptz` | When admin approved or began processing |
@@ -72,6 +72,7 @@ sequenceDiagram
     A->>DB: Update status → 'approved'
     A->>DB: Update status → 'processing' (transfer initiated)
     A->>DB: Update status → 'paid', set completed_at
+    DB->>DB: withdrawal_requests: set fee, recalculate net_amount
     DB->>DB: wallets: locked_balance -= amount
 
     note over A,DB: OR on failure:
@@ -159,7 +160,8 @@ public.process_withdrawal(
   p_withdrawal_id  uuid,
   p_new_status     public.withdrawal_status,
   p_admin_note     text default null,
-  p_failure_reason text default null
+  p_failure_reason text default null,
+  p_fee            numeric(12,2) default null
 )
 returns jsonb
 ```
@@ -187,7 +189,23 @@ returns jsonb
 { "success": false, "error": "INVALID_STATUS" }
 ```
 
+### Fee handling (`paid` only)
+
+When `p_new_status = 'paid'`, if `p_fee` is provided the function updates `fee` and recalculates `net_amount = amount − p_fee` on the `withdrawal_requests` row. If `p_fee` is omitted the existing values are preserved.
+
+The frontend prefills the fee at **10% of `amount`** via the `WITHDRAWAL_TAX_FEE_RATE` constant. Admins can override this in the dialog before confirming.
+
 ### Example
+
+```sql
+select public.process_withdrawal(
+  'withdrawal-uuid',
+  'paid',
+  'Processed via bank transfer',
+  null,
+  50.00  -- TDB tax (10% of 500)
+);
+```
 
 ```sql
 select public.process_withdrawal(
@@ -284,7 +302,7 @@ returns table (
 ## Business Rules
 
 - **Minimum withdrawal:** 500 BDT. Configured as `v_min_withdraw := 500` inside the RPC — update that constant if the minimum changes.
-- **Fee:** Currently `0`. The `fee` column exists for future use.
+- **Fee (TDB tax):** Withholding tax recorded on the `withdrawal_requests` row at payout time. When an admin marks a withdrawal as `paid`, the frontend sends a `p_fee` calculated at **10% of `amount`** (configurable via the `WITHDRAWAL_TAX_FEE_RATE` constant). The `process_withdrawal` RPC then updates `fee` and recalculates `net_amount = amount − fee`. Admins can override the fee in the dialog before confirming; empty yields no change to the stored fee.
 - **`payout_method_id` is `ON DELETE SET NULL`**: deleting a payout method sets the column to null instead of blocking deletion. The immutable copy is preserved in `payout_snapshot`.
 - **`superseded_by`**: set when a failed withdrawal is retried. The original row links to the new request, forming a retry chain. `get_withdrawal_requests_page` excludes superseded rows.
 - **Concurrent safety:** The wallet row is locked with `SELECT ... FOR UPDATE` before balance checks, preventing race conditions if a user submits two requests simultaneously.
