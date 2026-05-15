@@ -2462,12 +2462,13 @@ export type Database = {
           fee: number;
           id: string;
           net_amount: number;
-          payout_method_id: string;
+          payout_method_id: string | null;
           payout_snapshot: Json | null;
           processed_at: string | null;
           profile_id: string;
           requested_at: string;
           status: Database["public"]["Enums"]["withdrawal_status"];
+          superseded_by: string | null;
           wallet_id: string;
         };
         Insert: {
@@ -2478,12 +2479,13 @@ export type Database = {
           fee?: number;
           id?: string;
           net_amount: number;
-          payout_method_id: string;
+          payout_method_id?: string | null;
           payout_snapshot?: Json | null;
           processed_at?: string | null;
           profile_id: string;
           requested_at?: string;
           status?: Database["public"]["Enums"]["withdrawal_status"];
+          superseded_by?: string | null;
           wallet_id: string;
         };
         Update: {
@@ -2494,12 +2496,13 @@ export type Database = {
           fee?: number;
           id?: string;
           net_amount?: number;
-          payout_method_id?: string;
+          payout_method_id?: string | null;
           payout_snapshot?: Json | null;
           processed_at?: string | null;
           profile_id?: string;
           requested_at?: string;
           status?: Database["public"]["Enums"]["withdrawal_status"];
+          superseded_by?: string | null;
           wallet_id?: string;
         };
         Relationships: [
@@ -2515,6 +2518,13 @@ export type Database = {
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "withdrawal_requests_superseded_by_fkey";
+            columns: ["superseded_by"];
+            isOneToOne: false;
+            referencedRelation: "withdrawal_requests";
             referencedColumns: ["id"];
           },
           {
@@ -2896,6 +2906,24 @@ export type Database = {
           recipient_name: string;
         }[];
       };
+      get_withdrawal_requests_page: {
+        Args: { p_cursor_requested_at?: string; p_limit?: number };
+        Returns: {
+          amount: number;
+          completed_at: string;
+          failure_reason: string;
+          fee: number;
+          id: string;
+          net_amount: number;
+          payout_method_id: string;
+          payout_snapshot: Json;
+          processed_at: string;
+          profile_id: string;
+          requested_at: string;
+          status: Database["public"]["Enums"]["withdrawal_status"];
+          wallet_id: string;
+        }[];
+      };
       gift_newsletter_post: {
         Args: {
           p_expires_at?: string;
@@ -3004,6 +3032,7 @@ export type Database = {
       process_withdrawal: {
         Args: {
           p_admin_note?: string;
+          p_failure_reason?: string;
           p_new_status: Database["public"]["Enums"]["withdrawal_status"];
           p_withdrawal_id: string;
         };
@@ -3069,6 +3098,14 @@ export type Database = {
       };
       request_withdrawal: {
         Args: { p_amount: number; p_payout_method_id: string };
+        Returns: string;
+      };
+      retry_withdrawal: {
+        Args: {
+          p_amount?: number;
+          p_payout_method_id?: string;
+          p_withdrawal_id: string;
+        };
         Returns: string;
       };
       send_message: {
