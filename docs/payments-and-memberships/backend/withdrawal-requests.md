@@ -11,7 +11,7 @@ create table public.withdrawal_requests (
   id               uuid                      primary key default gen_random_uuid(),
   profile_id       uuid                      not null references public.profiles(id) on delete cascade,
   wallet_id        uuid                      not null references public.wallets(id) on delete cascade,
-  payout_method_id uuid                      not null references public.payout_methods(id) on delete restrict,
+  payout_method_id uuid                      references public.payout_methods(id) on delete set null,
 
   amount           numeric(12,2)             not null check (amount > 0),
   fee              numeric(12,2)             not null default 0 check (fee >= 0),
@@ -25,7 +25,9 @@ create table public.withdrawal_requests (
 
   admin_note       text,
   failure_reason   text,
-  payout_snapshot  jsonb
+  payout_snapshot  jsonb,
+
+  superseded_by    uuid                      references public.withdrawal_requests(id) on delete set null
 );
 ```
 
@@ -36,7 +38,7 @@ create table public.withdrawal_requests (
 | `id` | `uuid` | Primary key |
 | `profile_id` | `uuid` | FK → `profiles.id` |
 | `wallet_id` | `uuid` | FK → `wallets.id` — the wallet funds came from |
-| `payout_method_id` | `uuid` | FK → `payout_methods.id` (`ON DELETE RESTRICT`) |
+| `payout_method_id` | `uuid` | FK → `payout_methods.id` (`ON DELETE SET NULL`) |
 | `amount` | `numeric(12,2)` | Gross amount requested (before fee) |
 | `fee` | `numeric(12,2)` | Platform withdrawal fee (currently `0`) |
 | `net_amount` | `numeric(12,2)` | `amount − fee`; what the creator receives |
@@ -47,6 +49,7 @@ create table public.withdrawal_requests (
 | `admin_note` | `text` | Admin comment visible to creator |
 | `failure_reason` | `text` | Populated when `status = 'failed'` |
 | `payout_snapshot` | `jsonb` | Copy of `payout_methods.details` at request time |
+| `superseded_by` | `uuid` | FK → `withdrawal_requests.id` — set when retried, points to the new request |
 
 ---
 
@@ -70,12 +73,18 @@ sequenceDiagram
     A->>DB: Update status → 'processing' (transfer initiated)
     A->>DB: Update status → 'paid', set completed_at
     DB->>DB: wallets: locked_balance -= amount
-    DB->>DB: Insert transactions (reference_type='withdraw_complete')
 
-    note over A,DB: OR on rejection/failure:
-    A->>DB: Update status → 'rejected' / 'failed'
+    note over A,DB: OR on failure:
+    A->>DB: Update status → 'failed'
     DB->>DB: wallets: locked_balance -= amount, balance += amount
     DB->>DB: Insert transactions (reference_type='withdraw_release')
+    DB-->>A: Original withdrawal marked failed
+
+    C->>DB: retry_withdrawal(id, amount?, payout_method_id?)
+    DB->>DB: Validate: original status = 'failed', ownership
+    DB->>DB: Delegates to request_withdrawal (deduct, lock, insert new)
+    DB->>DB: Set superseded_by on original row → new id
+    DB-->>C: Returns new withdrawal_requests.id
 ```
 
 ---
@@ -147,9 +156,10 @@ Finance managers advance withdrawal requests through the lifecycle using this RP
 
 ```sql
 public.process_withdrawal(
-  p_withdrawal_id uuid,
-  p_new_status    public.withdrawal_status,
-  p_admin_note    text default null
+  p_withdrawal_id  uuid,
+  p_new_status     public.withdrawal_status,
+  p_admin_note     text default null,
+  p_failure_reason text default null
 )
 returns jsonb
 ```
@@ -191,6 +201,74 @@ See [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#process_withdrawal) f
 
 ---
 
+## `retry_withdrawal` RPC (creator only, from `failed` state)
+
+Creators can retry a failed withdrawal to create a fresh request without manually re-entering the details. Only withdrawals in `failed` status are eligible.
+
+### Signature
+
+```sql
+create or replace function public.retry_withdrawal(
+  p_withdrawal_id   uuid,
+  p_amount           numeric default null,
+  p_payout_method_id uuid   default null
+)
+returns uuid  -- the new withdrawal_requests.id
+```
+
+### What it does
+
+1. Authenticates the caller via `auth.uid()`.
+2. Validates the original withdrawal exists, belongs to the caller, and has `status = 'failed'`.
+3. Delegates to `request_withdrawal` with the original `amount` and `payout_method_id` (or overrides if provided).
+4. Sets `superseded_by` on the original row to point to the new request.
+5. Returns the new `withdrawal_requests.id`.
+
+### Calling it
+
+```sql
+select * from retry_withdrawal('failed-withdrawal-uuid');
+-- uses original amount and payout method
+
+select * from retry_withdrawal('failed-withdrawal-uuid', 1000.00);
+-- overrides amount to 1000, keeps original payout method
+
+select * from retry_withdrawal('failed-withdrawal-uuid', 500.00, 'new-payout-id');
+-- overrides both amount and payout method
+```
+
+### Error cases
+
+| Error message | Cause |
+|---|---|
+| `Not authenticated` | `auth.uid()` is null |
+| `Withdrawal not found or not eligible for retry` | Wrong owner, not found, or status ≠ `failed` |
+
+Any error from `request_withdrawal` is also propagated (insufficient balance, invalid payout method, etc.).
+
+---
+
+## `get_withdrawal_requests_page` RPC
+
+Cursor-based paginated list of the caller's withdrawal requests. Rows that have been superseded by a retry (`superseded_by IS NOT NULL`) are excluded — only the latest active request is visible.
+
+### Signature
+
+```sql
+create or replace function public.get_withdrawal_requests_page(
+  p_limit               integer     default 10,
+  p_cursor_requested_at timestamptz default null
+)
+returns table (
+  id, profile_id, wallet_id, payout_method_id,
+  amount, fee, net_amount, status,
+  requested_at, processed_at, completed_at,
+  failure_reason, payout_snapshot
+)
+```
+
+---
+
 ## Indexes
 
 | Index | Columns | Purpose |
@@ -199,6 +277,7 @@ See [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#process_withdrawal) f
 | `idx_withdrawal_requests_profile_requested_at` | `(profile_id, requested_at DESC)` | Paginated history |
 | `idx_withdrawal_requests_status` | `status` | Admin queue filtering |
 | `idx_withdrawal_requests_wallet_id` | `wallet_id` | Wallet reconciliation |
+| `idx_withdrawal_requests_superseded_by` | `superseded_by` | Retry chain lookups |
 
 ---
 
@@ -206,5 +285,6 @@ See [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#process_withdrawal) f
 
 - **Minimum withdrawal:** 500 BDT. Configured as `v_min_withdraw := 500` inside the RPC — update that constant if the minimum changes.
 - **Fee:** Currently `0`. The `fee` column exists for future use.
-- **`payout_method_id` is `ON DELETE RESTRICT`**: you cannot delete a payout method that has any associated withdrawal requests. Soft-delete (`is_active = false`) instead.
+- **`payout_method_id` is `ON DELETE SET NULL`**: deleting a payout method sets the column to null instead of blocking deletion. The immutable copy is preserved in `payout_snapshot`.
+- **`superseded_by`**: set when a failed withdrawal is retried. The original row links to the new request, forming a retry chain. `get_withdrawal_requests_page` excludes superseded rows.
 - **Concurrent safety:** The wallet row is locked with `SELECT ... FOR UPDATE` before balance checks, preventing race conditions if a user submits two requests simultaneously.
