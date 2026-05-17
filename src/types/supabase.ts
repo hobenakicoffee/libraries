@@ -335,6 +335,116 @@ export type Database = {
           },
         ];
       };
+      kyc_sessions: {
+        Row: {
+          created_at: string;
+          expires_at: string;
+          id: number;
+          profile_id: string;
+          status: Database["public"]["Enums"]["kyc_session_status_enum"];
+          token: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at?: string;
+          id?: never;
+          profile_id: string;
+          status?: Database["public"]["Enums"]["kyc_session_status_enum"];
+          token?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string;
+          id?: never;
+          profile_id?: string;
+          status?: Database["public"]["Enums"]["kyc_session_status_enum"];
+          token?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kyc_sessions_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kyc_submissions: {
+        Row: {
+          admin_notes: string | null;
+          attempt_number: number;
+          consent_given_at: string;
+          consent_ip: unknown;
+          created_at: string;
+          id: number;
+          nid_back_path: string;
+          nid_front_path: string;
+          nid_number: string;
+          profile_id: string;
+          rejection_reason: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          selfie_path: string;
+          status: Database["public"]["Enums"]["kyc_status_enum"];
+          updated_at: string;
+        };
+        Insert: {
+          admin_notes?: string | null;
+          attempt_number?: number;
+          consent_given_at?: string;
+          consent_ip?: unknown;
+          created_at?: string;
+          id?: never;
+          nid_back_path: string;
+          nid_front_path: string;
+          nid_number: string;
+          profile_id: string;
+          rejection_reason?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          selfie_path: string;
+          status?: Database["public"]["Enums"]["kyc_status_enum"];
+          updated_at?: string;
+        };
+        Update: {
+          admin_notes?: string | null;
+          attempt_number?: number;
+          consent_given_at?: string;
+          consent_ip?: unknown;
+          created_at?: string;
+          id?: never;
+          nid_back_path?: string;
+          nid_front_path?: string;
+          nid_number?: string;
+          profile_id?: string;
+          rejection_reason?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          selfie_path?: string;
+          status?: Database["public"]["Enums"]["kyc_status_enum"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "kyc_submissions_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "kyc_submissions_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       manager_role_permissions: {
         Row: {
           id: number;
@@ -1207,7 +1317,10 @@ export type Database = {
           has_first_service: boolean | null;
           has_wallet_balance: boolean | null;
           id: string;
+          is_kyc_verified: boolean;
           is_page_active: boolean | null;
+          is_verified: boolean;
+          kyc_verified_at: string | null;
           layout: Json | null;
           onboarding_completed_at: string | null;
           onboarding_step: number | null;
@@ -1234,7 +1347,10 @@ export type Database = {
           has_first_service?: boolean | null;
           has_wallet_balance?: boolean | null;
           id: string;
+          is_kyc_verified?: boolean;
           is_page_active?: boolean | null;
+          is_verified?: boolean;
+          kyc_verified_at?: string | null;
           layout?: Json | null;
           onboarding_completed_at?: string | null;
           onboarding_step?: number | null;
@@ -1261,7 +1377,10 @@ export type Database = {
           has_first_service?: boolean | null;
           has_wallet_balance?: boolean | null;
           id?: string;
+          is_kyc_verified?: boolean;
           is_page_active?: boolean | null;
+          is_verified?: boolean;
+          kyc_verified_at?: string | null;
           layout?: Json | null;
           onboarding_completed_at?: string | null;
           onboarding_step?: number | null;
@@ -2561,9 +2680,27 @@ export type Database = {
         };
         Returns: Json;
       };
+      admin_approve_kyc: {
+        Args: {
+          p_admin_notes?: string;
+          p_reviewed_by: string;
+          p_submission_id: number;
+        };
+        Returns: undefined;
+      };
       admin_grant_creator_subscription: {
         Args: { p_months?: number; p_plan_id: number; p_profile_id: string };
         Returns: Json;
+      };
+      admin_reject_kyc: {
+        Args: {
+          p_admin_notes?: string;
+          p_rejection_reason: string;
+          p_request_resubmit?: boolean;
+          p_reviewed_by: string;
+          p_submission_id: number;
+        };
+        Returns: undefined;
       };
       approve_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
       approve_shop_category: { Args: { p_category_id: string }; Returns: Json };
@@ -2671,6 +2808,23 @@ export type Database = {
       };
       get_followers: { Args: { target_user_id: string }; Returns: string[] };
       get_following: { Args: { target_user_id: string }; Returns: string[] };
+      get_kyc_queue: {
+        Args: {
+          p_cursor?: string;
+          p_limit?: number;
+          p_status?: Database["public"]["Enums"]["kyc_status_enum"];
+        };
+        Returns: {
+          attempt_number: number;
+          created_at: string;
+          display_name: string;
+          nid_number: string;
+          profile_id: string;
+          status: Database["public"]["Enums"]["kyc_status_enum"];
+          submission_id: number;
+          username: string;
+        }[];
+      };
       get_messages: {
         Args: {
           p_conversation_id: string;
@@ -3029,26 +3183,16 @@ export type Database = {
         };
         Returns: Json;
       };
-      process_withdrawal:
-        | {
-            Args: {
-              p_admin_note?: string;
-              p_failure_reason?: string;
-              p_new_status: Database["public"]["Enums"]["withdrawal_status"];
-              p_withdrawal_id: string;
-            };
-            Returns: Json;
-          }
-        | {
-            Args: {
-              p_admin_note?: string;
-              p_failure_reason?: string;
-              p_fee?: number;
-              p_new_status: Database["public"]["Enums"]["withdrawal_status"];
-              p_withdrawal_id: string;
-            };
-            Returns: Json;
-          };
+      process_withdrawal: {
+        Args: {
+          p_admin_note?: string;
+          p_failure_reason?: string;
+          p_fee?: number;
+          p_new_status: Database["public"]["Enums"]["withdrawal_status"];
+          p_withdrawal_id: string;
+        };
+        Returns: Json;
+      };
       purchase_newsletter_membership: {
         Args: {
           p_buyer_name: string;
@@ -3267,6 +3411,13 @@ export type Database = {
     };
     Enums: {
       access_grant_type_enum: "purchase" | "gift";
+      kyc_session_status_enum: "pending" | "opened" | "submitted" | "expired";
+      kyc_status_enum:
+        | "pending"
+        | "under_review"
+        | "approved"
+        | "rejected"
+        | "resubmit_requested";
       manager_permission:
         | "managers.create"
         | "managers.view"
@@ -3538,6 +3689,14 @@ export const Constants = {
   public: {
     Enums: {
       access_grant_type_enum: ["purchase", "gift"],
+      kyc_session_status_enum: ["pending", "opened", "submitted", "expired"],
+      kyc_status_enum: [
+        "pending",
+        "under_review",
+        "approved",
+        "rejected",
+        "resubmit_requested",
+      ],
       manager_permission: [
         "managers.create",
         "managers.view",
