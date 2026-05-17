@@ -64,6 +64,10 @@ export default withMermaid(
                 link: "/payments-and-memberships/frontend/",
               },
               {
+                text: "KYC Verification",
+                link: "/kyc/frontend/",
+              },
+              {
                 text: "Managers & RBAC",
                 link: "/managers-and-rbac/backend/",
               },
@@ -439,6 +443,26 @@ export default withMermaid(
                     link: "/managers-and-rbac/backend/rpcs",
                   },
                 ],
+              },
+            ],
+          },
+        ],
+        "/kyc/": [
+          ...common,
+          {
+            text: "KYC Verification",
+            items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [
+                  { text: "Implementation Guide", link: "/kyc/frontend/" },
+                ],
+              },
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [{ text: "Overview", link: "/kyc/" }],
               },
             ],
           },
