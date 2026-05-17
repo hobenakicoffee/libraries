@@ -2731,6 +2731,7 @@ export type Database = {
         Args: { p_profile_id: string };
         Returns: Json;
       };
+      cleanup_orphaned_kyc_documents: { Args: never; Returns: undefined };
       cleanup_orphaned_post_images: { Args: never; Returns: undefined };
       confirm_cod_cash_received: {
         Args: { p_order_item_id: string };

@@ -16,7 +16,9 @@ export type ActivityType =
   | "post_gifted"
   | "post_gift_sent"
   | "post_approved"
-  | "post_rejected";
+  | "post_rejected"
+  | "kyc_approved"
+  | "kyc_resubmit_requested";
 
 export type ActivityMetadata = {
   type?: string;
@@ -56,6 +58,7 @@ export type ActivityMetadata = {
   gift_message?: string;
   product_id?: string;
   product_title?: string;
+  submission_id?: string;
   action?: "follow" | "unfollow";
 };
 
