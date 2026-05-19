@@ -68,6 +68,10 @@ export default withMermaid(
                 link: "/kyc/frontend/",
               },
               {
+                text: "Explore Page",
+                link: "/explore/frontend/",
+              },
+              {
                 text: "Managers & RBAC",
                 link: "/managers-and-rbac/backend/",
               },
@@ -411,6 +415,32 @@ export default withMermaid(
                   {
                     text: "RPC Reference",
                     link: "/newsletter-service/backend/rpcs",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        "/explore/": [
+          ...common,
+          {
+            text: "Explore Page",
+            items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [
+                  { text: "Implementation Guide", link: "/explore/frontend/" },
+                ],
+              },
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/explore/backend/" },
+                  {
+                    text: "RPC: get_explore_creators",
+                    link: "/explore/backend/rpc-get-explore-creators",
                   },
                 ],
               },

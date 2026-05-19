@@ -1314,6 +1314,7 @@ export type Database = {
           avatar_url: string | null;
           banner_url: string | null;
           bio: string | null;
+          categories: string[] | null;
           created_at: string | null;
           display_name: string | null;
           first_service_name: string | null;
@@ -1331,10 +1332,12 @@ export type Database = {
           onboarding_completed_at: string | null;
           onboarding_step: number | null;
           page_slug: string;
+          popularity_score: number | null;
           role: Database["public"]["Enums"]["user_role"];
           social_links: Json | null;
           thank_you_items: Json | null;
           theme: Json | null;
+          total_supporter_count: number | null;
           updated_at: string | null;
           username: string;
         };
@@ -1344,6 +1347,7 @@ export type Database = {
           avatar_url?: string | null;
           banner_url?: string | null;
           bio?: string | null;
+          categories?: string[] | null;
           created_at?: string | null;
           display_name?: string | null;
           first_service_name?: string | null;
@@ -1361,10 +1365,12 @@ export type Database = {
           onboarding_completed_at?: string | null;
           onboarding_step?: number | null;
           page_slug: string;
+          popularity_score?: number | null;
           role?: Database["public"]["Enums"]["user_role"];
           social_links?: Json | null;
           thank_you_items?: Json | null;
           theme?: Json | null;
+          total_supporter_count?: number | null;
           updated_at?: string | null;
           username: string;
         };
@@ -1374,6 +1380,7 @@ export type Database = {
           avatar_url?: string | null;
           banner_url?: string | null;
           bio?: string | null;
+          categories?: string[] | null;
           created_at?: string | null;
           display_name?: string | null;
           first_service_name?: string | null;
@@ -1391,10 +1398,12 @@ export type Database = {
           onboarding_completed_at?: string | null;
           onboarding_step?: number | null;
           page_slug?: string;
+          popularity_score?: number | null;
           role?: Database["public"]["Enums"]["user_role"];
           social_links?: Json | null;
           thank_you_items?: Json | null;
           theme?: Json | null;
+          total_supporter_count?: number | null;
           updated_at?: string | null;
           username?: string;
         };
@@ -2812,6 +2821,31 @@ export type Database = {
       get_creator_effective_fee_rate: {
         Args: { p_profile_id: string; p_service_type: string };
         Returns: number;
+      };
+      get_explore_creators: {
+        Args: {
+          p_category?: string;
+          p_cursor_id?: string;
+          p_cursor_score?: number;
+          p_limit?: number;
+          p_search?: string;
+        };
+        Returns: {
+          avatar_url: string;
+          banner_url: string;
+          bio: string;
+          categories: string[];
+          display_name: string;
+          follower_count: number;
+          full_name: string;
+          id: string;
+          is_verified: boolean;
+          page_slug: string;
+          popularity_score: number;
+          services: string[];
+          supporter_count: number;
+          username: string;
+        }[];
       };
       get_followers: { Args: { target_user_id: string }; Returns: string[] };
       get_following: { Args: { target_user_id: string }; Returns: string[] };
