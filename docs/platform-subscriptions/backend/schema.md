@@ -15,6 +15,7 @@ erDiagram
         varchar name
         numeric price_per_month
         integer monthly_transaction_cap
+        numeric monthly_amount_cap
         boolean is_active
         integer sort_order
     }
@@ -28,6 +29,7 @@ erDiagram
         timestamptz period_end
         numeric price_at_purchase
         integer transactions_used_this_period
+        numeric amount_used_this_period
         uuid transaction_reference_id FK
     }
     creator_subscription_notifications {
@@ -65,6 +67,8 @@ create table public.platform_subscription_plans (
   price_per_month         numeric(10,2) not null check (price_per_month > 0),
   monthly_transaction_cap integer
                             check (monthly_transaction_cap is null or monthly_transaction_cap > 0),
+  monthly_amount_cap      numeric(12,2)
+                            check (monthly_amount_cap is null or monthly_amount_cap > 0),
   is_active               boolean not null default true,
   sort_order              integer not null default 0,
   created_at              timestamptz not null default now(),
@@ -81,7 +85,8 @@ create table public.platform_subscription_plans (
 | `name` | `varchar(100)` | NO | Display name shown to creators (e.g. "Gift Pro") |
 | `description` | `text` | YES | Human-readable description of what the plan includes |
 | `price_per_month` | `numeric(10,2)` | NO | Monthly price in BDT. Must be `> 0` |
-| `monthly_transaction_cap` | `integer` | YES | Max transactions at 0% fee per period. `NULL` = unlimited (Ultra tier) |
+| `monthly_transaction_cap` | `integer` | YES | Max transactions covered at 0% fee per period. `NULL` = unlimited (Ultra tier) |
+| `monthly_amount_cap` | `numeric(12,2)` | YES | Max total BDT volume covered at 0% fee per period. `NULL` = unlimited (Ultra tier). A plan enforces **both** caps — whichever is reached first ends the 0% benefit. |
 | `is_active` | `boolean` | NO | Inactive plans are hidden from creators and cannot be subscribed to. Defaults `true` |
 | `sort_order` | `integer` | NO | Display order within a service type. `1` = Basic, `2` = Pro, `3` = Ultra |
 | `created_at` | `timestamptz` | NO | Row creation timestamp |
@@ -124,6 +129,9 @@ create table public.creator_platform_subscriptions (
   transactions_used_this_period integer not null default 0
                                   constraint cps_transactions_used_nonneg
                                   check (transactions_used_this_period >= 0),
+  amount_used_this_period       numeric(12,2) not null default 0
+                                  constraint cps_amount_used_nonneg
+                                  check (amount_used_this_period >= 0),
 
   transaction_reference_id      uuid references public.transactions(reference_id) on delete set null,
 
@@ -146,7 +154,8 @@ create table public.creator_platform_subscriptions (
 | `period_start` | `timestamptz` | NO | When the subscription period begins |
 | `period_end` | `timestamptz` | NO | When the subscription period ends. Must be `> period_start` |
 | `price_at_purchase` | `numeric(10,2)` | NO | Price snapshot at time of purchase. Preserved even if the plan's price later changes |
-| `transactions_used_this_period` | `integer` | NO | Atomic counter incremented by `increment_creator_subscription_usage()`. Bounded by `plan.monthly_transaction_cap`. Defaults `0`. |
+| `transactions_used_this_period` | `integer` | NO | Running count of transactions processed under this subscription. Incremented by `increment_creator_subscription_usage()`. Bounded by `plan.monthly_transaction_cap`. Defaults `0`. |
+| `amount_used_this_period` | `numeric(12,2)` | NO | Running BDT volume processed under this subscription. Incremented by `increment_creator_subscription_usage()`. Bounded by `plan.monthly_amount_cap`. Defaults `0`. |
 | `transaction_reference_id` | `uuid` | YES | FK → `transactions.reference_id`. Links to the payment. `NULL` for admin-comped grants. |
 | `created_at` | `timestamptz` | NO | Row creation timestamp |
 | `updated_at` | `timestamptz` | NO | Auto-updated by trigger |
@@ -189,7 +198,7 @@ create index idx_cps_expiry
 
 ### Why `service_type` is denormalised
 
-`get_creator_effective_fee_rate()` and `increment_creator_subscription_usage()` look up subscriptions by `(profile_id, service_type)` millions of times per day. Denormalising avoids a join to `platform_subscription_plans` on every transaction. The value is copied from `plan.service_type` at insert time and never changes.
+`get_creator_effective_fee_rate()` and `increment_creator_subscription_usage()` look up subscriptions by `(profile_id, service_type)` on every paid transaction. Denormalising avoids a join to `platform_subscription_plans` on the hot path. The value is copied from `plan.service_type` at insert time and never changes.
 
 ---
 

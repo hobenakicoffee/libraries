@@ -208,6 +208,7 @@ export type Database = {
       };
       creator_platform_subscriptions: {
         Row: {
+          amount_used_this_period: number;
           created_at: string;
           id: number;
           period_end: string;
@@ -222,6 +223,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          amount_used_this_period?: number;
           created_at?: string;
           id?: never;
           period_end: string;
@@ -236,6 +238,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          amount_used_this_period?: number;
           created_at?: string;
           id?: never;
           period_end?: string;
@@ -1117,6 +1120,7 @@ export type Database = {
           description: string | null;
           id: number;
           is_active: boolean;
+          monthly_amount_cap: number | null;
           monthly_transaction_cap: number | null;
           name: string;
           price_per_month: number;
@@ -1129,6 +1133,7 @@ export type Database = {
           description?: string | null;
           id?: never;
           is_active?: boolean;
+          monthly_amount_cap?: number | null;
           monthly_transaction_cap?: number | null;
           name: string;
           price_per_month: number;
@@ -1141,6 +1146,7 @@ export type Database = {
           description?: string | null;
           id?: never;
           is_active?: boolean;
+          monthly_amount_cap?: number | null;
           monthly_transaction_cap?: number | null;
           name?: string;
           price_per_month?: number;
@@ -3157,7 +3163,11 @@ export type Database = {
         Returns: boolean;
       };
       increment_creator_subscription_usage: {
-        Args: { p_profile_id: string; p_service_type: string };
+        Args: {
+          p_amount: number;
+          p_profile_id: string;
+          p_service_type: string;
+        };
         Returns: undefined;
       };
       initiate_shop_checkout: {

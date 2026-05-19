@@ -17,7 +17,7 @@ Six functions power the platform subscription system. Two are internal helpers c
 
 ## `get_creator_effective_fee_rate`
 
-Returns `0` when the creator has an active, in-period subscription for the requested service type **and** the monthly transaction cap has not yet been reached. Otherwise returns the platform default percentage from `platform_settings`.
+Returns `0` when the creator has an active, in-period subscription for the requested service type **and both caps have not yet been reached** — neither the monthly transaction count cap nor the monthly amount cap. Otherwise returns the platform default percentage from `platform_settings`.
 
 **This function is the single source of truth for fee rates.** All service RPCs (`perform_coffee_gift`, `purchase_newsletter_post`, `purchase_newsletter_membership`, `initiate_shop_checkout`) call it server-side. It is never trusted from the client.
 
@@ -32,15 +32,18 @@ function public.get_creator_effective_fee_rate(
 
 ### Cap-Exceeded Behaviour
 
+Both caps are AND conditions — the subscription benefit applies only when **neither** cap has been reached. Whichever cap is hit first causes the fee to revert.
+
 | Subscription state | Return value |
 |---|---|
-| Active, `transactions_used_this_period < monthly_transaction_cap` | `0` |
+| Active, under both caps | `0` |
 | Active, `transactions_used_this_period >= monthly_transaction_cap` | platform default (e.g. `0.05`) |
-| Active, `monthly_transaction_cap IS NULL` (Ultra tier) | `0` always |
+| Active, `amount_used_this_period >= monthly_amount_cap` | platform default |
+| Active, both caps are `NULL` (Ultra tier) | `0` always |
 | No active subscription | platform default |
 | Subscription `period_end` passed | platform default |
 
-**Transactions never fail when the cap is exhausted.** The fee silently reverts to the platform default percentage; the service RPC continues normally.
+**Transactions never fail when a cap is exhausted.** The fee silently reverts to the platform default percentage; the service RPC continues normally.
 
 ### Platform Default Sources
 
@@ -70,7 +73,7 @@ v_platform_fee      := round(p_amount * v_platform_fee_rate, 2);
 
 ## `increment_creator_subscription_usage`
 
-Atomically increments `transactions_used_this_period` on the creator's active subscription. The increment only fires when the creator is under their cap (or the cap is `NULL`). No-op in all other cases — no exception is ever raised.
+Atomically increments **both** `transactions_used_this_period` (+1) and `amount_used_this_period` (+`p_amount`) on the creator's active subscription. The increment only fires when the creator is under **both** caps (or a cap is `NULL`). No-op in all other cases — no exception is ever raised.
 
 Called once per service transaction, not per item. For shop checkouts with mixed product types, it is called once per service type present in the order.
 
@@ -79,9 +82,18 @@ Called once per service transaction, not per item. For shop checkouts with mixed
 ```sql
 function public.increment_creator_subscription_usage(
   p_profile_id   uuid,
-  p_service_type varchar
+  p_service_type varchar,
+  p_amount       numeric
 ) returns void
 ```
+
+### Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `p_profile_id` | `uuid` | The creator whose subscription to update |
+| `p_service_type` | `varchar` | The service type of the transaction |
+| `p_amount` | `numeric` | The transaction amount in BDT to add to `amount_used_this_period` |
 
 ### No-op Conditions
 
@@ -89,6 +101,7 @@ The function silently does nothing when:
 - No active subscription exists for `(p_profile_id, p_service_type)`
 - The subscription's `period_end` has passed
 - `transactions_used_this_period >= monthly_transaction_cap`
+- `amount_used_this_period >= monthly_amount_cap`
 
 ### Security
 
@@ -101,17 +114,17 @@ The function silently does nothing when:
 -- Called immediately after fee computation:
 v_platform_fee_rate := public.get_creator_effective_fee_rate(p_creator_profile_id, 'gift');
 v_platform_fee      := round(p_amount * v_platform_fee_rate, 2);
-perform public.increment_creator_subscription_usage(p_creator_profile_id, 'gift');
+perform public.increment_creator_subscription_usage(p_creator_profile_id, 'gift', p_amount);
 ```
 
-For shop checkouts (once per checkout, per service type):
+For shop checkouts, amounts are accumulated per service type across all items, then passed once per service type:
 
 ```sql
 if v_has_digital then
-  perform public.increment_creator_subscription_usage(v_seller_id, 'shop_digital');
+  perform public.increment_creator_subscription_usage(v_seller_id, 'shop_digital', v_digital_amount);
 end if;
 if v_has_physical then
-  perform public.increment_creator_subscription_usage(v_seller_id, 'shop_physical');
+  perform public.increment_creator_subscription_usage(v_seller_id, 'shop_physical', v_physical_amount);
 end if;
 ```
 
@@ -295,7 +308,7 @@ function public.admin_grant_creator_subscription(
 | State | Action |
 |---|---|
 | No active subscription for that service type | Insert a new `active` row from `now()` for `p_months` months |
-| Active subscription exists | Extend `period_end` by `p_months` months **and reset `transactions_used_this_period = 0`** |
+| Active subscription exists | Extend `period_end` by `p_months` months **and reset both `transactions_used_this_period = 0` and `amount_used_this_period = 0`** |
 
 ### Success Response
 
@@ -379,9 +392,11 @@ const { data } = await supabase
     period_start,
     period_end,
     transactions_used_this_period,
+    amount_used_this_period,
     platform_subscription_plans (
       name,
       monthly_transaction_cap,
+      monthly_amount_cap,
       price_per_month
     )
   `)
@@ -398,19 +413,28 @@ const { data } = await supabase
     period_start: '2026-05-19T00:00:00Z',
     period_end: '2026-06-19T00:00:00Z',
     transactions_used_this_period: 37,
+    amount_used_this_period: 7400.00,
     platform_subscription_plans: {
       name: 'Gift Pro',
-      monthly_transaction_cap: 200,   // null = unlimited
+      monthly_transaction_cap: 200,      // null = unlimited
+      monthly_amount_cap: 50000.00,      // null = unlimited
       price_per_month: 500.00,
     },
   },
 ]
 ```
 
-Compute the usage percentage client-side:
+Compute usage percentages client-side. Both caps are independent — display whichever is more constraining:
 
 ```typescript
-const pct = plan.monthly_transaction_cap
+const txnPct = plan.monthly_transaction_cap
   ? Math.min(100, (sub.transactions_used_this_period / plan.monthly_transaction_cap) * 100)
-  : 0 // unlimited — always 0%
+  : 0 // unlimited
+
+const amtPct = plan.monthly_amount_cap
+  ? Math.min(100, (sub.amount_used_this_period / plan.monthly_amount_cap) * 100)
+  : 0 // unlimited
+
+// The effective usage is whichever cap is closer to exhaustion.
+const usagePct = Math.max(txnPct, amtPct)
 ```
