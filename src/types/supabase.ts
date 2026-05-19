@@ -218,6 +218,7 @@ export type Database = {
           service_type: string;
           status: string;
           transaction_reference_id: string | null;
+          transactions_used_this_period: number;
           updated_at: string;
         };
         Insert: {
@@ -231,6 +232,7 @@ export type Database = {
           service_type: string;
           status?: string;
           transaction_reference_id?: string | null;
+          transactions_used_this_period?: number;
           updated_at?: string;
         };
         Update: {
@@ -244,6 +246,7 @@ export type Database = {
           service_type?: string;
           status?: string;
           transaction_reference_id?: string | null;
+          transactions_used_this_period?: number;
           updated_at?: string;
         };
         Relationships: [
@@ -1114,6 +1117,7 @@ export type Database = {
           description: string | null;
           id: number;
           is_active: boolean;
+          monthly_transaction_cap: number | null;
           name: string;
           price_per_month: number;
           service_type: string;
@@ -1125,6 +1129,7 @@ export type Database = {
           description?: string | null;
           id?: never;
           is_active?: boolean;
+          monthly_transaction_cap?: number | null;
           name: string;
           price_per_month: number;
           service_type: string;
@@ -1136,6 +1141,7 @@ export type Database = {
           description?: string | null;
           id?: never;
           is_active?: boolean;
+          monthly_transaction_cap?: number | null;
           name?: string;
           price_per_month?: number;
           service_type?: string;
@@ -3115,6 +3121,10 @@ export type Database = {
           p_service_type: string;
         };
         Returns: boolean;
+      };
+      increment_creator_subscription_usage: {
+        Args: { p_profile_id: string; p_service_type: string };
+        Returns: undefined;
       };
       initiate_shop_checkout: {
         Args: {
