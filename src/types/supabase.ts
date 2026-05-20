@@ -3277,6 +3277,7 @@ export type Database = {
           p_filter?: string;
           p_from?: string;
           p_limit?: number;
+          p_profile_id?: string;
           p_search?: string;
           p_to?: string;
         };
