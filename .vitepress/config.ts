@@ -72,6 +72,10 @@ export default withMermaid(
                 link: "/explore/frontend/",
               },
               {
+                text: "Feed Discovery",
+                link: "/feed-discovery/frontend/",
+              },
+              {
                 text: "Managers & RBAC",
                 link: "/managers-and-rbac/backend/",
               },
@@ -441,6 +445,56 @@ export default withMermaid(
                   {
                     text: "RPC: get_explore_creators",
                     link: "/explore/backend/rpc-get-explore-creators",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        "/feed-discovery/": [
+          ...common,
+          {
+            text: "Feed Discovery",
+            items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [
+                  {
+                    text: "Implementation Guide",
+                    link: "/feed-discovery/frontend/",
+                  },
+                ],
+              },
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/feed-discovery/backend/" },
+                  {
+                    text: "Data Model",
+                    link: "/feed-discovery/backend/data-model",
+                  },
+                  {
+                    text: "Feed Population",
+                    link: "/feed-discovery/backend/feed-population",
+                  },
+                  { text: "Ranking", link: "/feed-discovery/backend/ranking" },
+                  {
+                    text: "RPC: get_feed",
+                    link: "/feed-discovery/backend/rpc-get-feed",
+                  },
+                  {
+                    text: "RPC: search_feed",
+                    link: "/feed-discovery/backend/rpc-search-feed",
+                  },
+                  {
+                    text: "RPC: Social Interactions",
+                    link: "/feed-discovery/backend/rpc-social",
+                  },
+                  {
+                    text: "RPC: Aside Panels",
+                    link: "/feed-discovery/backend/rpc-aside",
                   },
                 ],
               },
