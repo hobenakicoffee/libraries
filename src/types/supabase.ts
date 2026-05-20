@@ -305,6 +305,225 @@ export type Database = {
           },
         ];
       };
+      feed_item_bookmarks: {
+        Row: {
+          created_at: string;
+          feed_item_id: number;
+          id: number;
+          profile_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          feed_item_id: number;
+          id?: never;
+          profile_id: string;
+        };
+        Update: {
+          created_at?: string;
+          feed_item_id?: number;
+          id?: never;
+          profile_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feed_item_bookmarks_feed_item_id_fkey";
+            columns: ["feed_item_id"];
+            isOneToOne: false;
+            referencedRelation: "feed_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feed_item_bookmarks_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feed_item_comments: {
+        Row: {
+          body: string | null;
+          created_at: string;
+          feed_item_id: number;
+          id: number;
+          is_deleted: boolean;
+          parent_comment_id: number | null;
+          profile_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          body?: string | null;
+          created_at?: string;
+          feed_item_id: number;
+          id?: never;
+          is_deleted?: boolean;
+          parent_comment_id?: number | null;
+          profile_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          body?: string | null;
+          created_at?: string;
+          feed_item_id?: number;
+          id?: never;
+          is_deleted?: boolean;
+          parent_comment_id?: number | null;
+          profile_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feed_item_comments_feed_item_id_fkey";
+            columns: ["feed_item_id"];
+            isOneToOne: false;
+            referencedRelation: "feed_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feed_item_comments_parent_comment_id_fkey";
+            columns: ["parent_comment_id"];
+            isOneToOne: false;
+            referencedRelation: "feed_item_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feed_item_comments_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feed_item_likes: {
+        Row: {
+          created_at: string;
+          feed_item_id: number;
+          id: number;
+          profile_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          feed_item_id: number;
+          id?: never;
+          profile_id: string;
+        };
+        Update: {
+          created_at?: string;
+          feed_item_id?: number;
+          id?: never;
+          profile_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feed_item_likes_feed_item_id_fkey";
+            columns: ["feed_item_id"];
+            isOneToOne: false;
+            referencedRelation: "feed_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feed_item_likes_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feed_item_shares: {
+        Row: {
+          created_at: string;
+          feed_item_id: number;
+          id: number;
+          profile_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          feed_item_id: number;
+          id?: never;
+          profile_id: string;
+        };
+        Update: {
+          created_at?: string;
+          feed_item_id?: number;
+          id?: never;
+          profile_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feed_item_shares_feed_item_id_fkey";
+            columns: ["feed_item_id"];
+            isOneToOne: false;
+            referencedRelation: "feed_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "feed_item_shares_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feed_items: {
+        Row: {
+          boost_tier: number;
+          content_type: string;
+          created_at: string;
+          creator_profile_id: string | null;
+          id: number;
+          interaction_counts: Json;
+          is_pinned: boolean;
+          metadata: Json;
+          rank_score: number;
+          reference_id: string | null;
+          search_vector: unknown;
+          updated_at: string;
+          visibility: Database["public"]["Enums"]["visibility_enum"];
+        };
+        Insert: {
+          boost_tier?: number;
+          content_type: string;
+          created_at?: string;
+          creator_profile_id?: string | null;
+          id?: never;
+          interaction_counts?: Json;
+          is_pinned?: boolean;
+          metadata?: Json;
+          rank_score?: number;
+          reference_id?: string | null;
+          search_vector?: unknown;
+          updated_at?: string;
+          visibility?: Database["public"]["Enums"]["visibility_enum"];
+        };
+        Update: {
+          boost_tier?: number;
+          content_type?: string;
+          created_at?: string;
+          creator_profile_id?: string | null;
+          id?: never;
+          interaction_counts?: Json;
+          is_pinned?: boolean;
+          metadata?: Json;
+          rank_score?: number;
+          reference_id?: string | null;
+          search_vector?: unknown;
+          updated_at?: string;
+          visibility?: Database["public"]["Enums"]["visibility_enum"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feed_items_creator_profile_id_fkey";
+            columns: ["creator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       follows: {
         Row: {
           created_at: string | null;
@@ -2690,6 +2909,29 @@ export type Database = {
         };
         Returns: Json;
       };
+      add_feed_comment: {
+        Args: {
+          p_body: string;
+          p_feed_item_id: number;
+          p_parent_comment_id?: number;
+        };
+        Returns: {
+          body: string | null;
+          created_at: string;
+          feed_item_id: number;
+          id: number;
+          is_deleted: boolean;
+          parent_comment_id: number | null;
+          profile_id: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "feed_item_comments";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       add_shop_product_file: {
         Args: {
           p_file_name: string;
@@ -2741,6 +2983,14 @@ export type Database = {
         Args: { p_service_type: string };
         Returns: Json;
       };
+      check_and_emit_milestone: {
+        Args: {
+          p_creator_profile_id: string;
+          p_current_count: number;
+          p_milestone_type: string;
+        };
+        Returns: undefined;
+      };
       check_newsletter_post_access: {
         Args: { p_post_id: string };
         Returns: {
@@ -2767,6 +3017,17 @@ export type Database = {
         };
         Returns: string;
       };
+      create_manager_feed_post: {
+        Args: {
+          p_body: string;
+          p_cta_label?: string;
+          p_cta_url?: string;
+          p_image_url?: string;
+          p_is_pinned?: boolean;
+          p_title: string;
+        };
+        Returns: number;
+      };
       create_newsletter_draft: {
         Args: { p_profile_id: string };
         Returns: {
@@ -2777,6 +3038,10 @@ export type Database = {
       };
       create_next_month_partition: { Args: never; Returns: undefined };
       custom_access_token_hook: { Args: { event: Json }; Returns: Json };
+      delete_feed_comment: {
+        Args: { p_comment_id: number };
+        Returns: undefined;
+      };
       delete_shop_category: { Args: { p_category_id: string }; Returns: Json };
       delete_shop_policy: {
         Args: {
@@ -2853,6 +3118,32 @@ export type Database = {
           username: string;
         }[];
       };
+      get_feed: {
+        Args: {
+          p_content_types?: string[];
+          p_cursor_id?: number;
+          p_cursor_score?: number;
+          p_limit?: number;
+        };
+        Returns: {
+          boost_tier: number;
+          content_type: string;
+          created_at: string;
+          creator_avatar_url: string;
+          creator_display_name: string;
+          creator_profile_id: string;
+          creator_username: string;
+          id: number;
+          interaction_counts: Json;
+          is_bookmarked: boolean;
+          is_liked: boolean;
+          is_pinned: boolean;
+          metadata: Json;
+          rank_score: number;
+          reference_id: string;
+          visibility: Database["public"]["Enums"]["visibility_enum"];
+        }[];
+      };
       get_followers: { Args: { target_user_id: string }; Returns: string[] };
       get_following: { Args: { target_user_id: string }; Returns: string[] };
       get_kyc_queue: {
@@ -2890,6 +3181,22 @@ export type Database = {
           sender_username: string;
         }[];
       };
+      get_my_active_memberships: {
+        Args: never;
+        Returns: {
+          billing_cycle: Database["public"]["Enums"]["membership_billing_cycle_enum"];
+          creator_avatar_url: string;
+          creator_display_name: string;
+          creator_profile_id: string;
+          creator_username: string;
+          membership_id: string;
+          period_end: string;
+          plan_name: string;
+          plan_price: number;
+          service_type: string;
+          status: Database["public"]["Enums"]["membership_status_enum"];
+        }[];
+      };
       get_newsletter_stats: {
         Args: { p_from?: string; p_profile_id: string; p_to?: string };
         Returns: {
@@ -2904,6 +3211,7 @@ export type Database = {
       };
       get_order_by_number: { Args: { p_order_number: string }; Returns: Json };
       get_platform_setting: { Args: { p_key: string }; Returns: number };
+      get_platform_setting_jsonb: { Args: { p_key: string }; Returns: Json };
       get_popular_content: {
         Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
         Returns: {
@@ -2994,6 +3302,35 @@ export type Database = {
           tags: string[];
           title: string;
           view_count: number;
+        }[];
+      };
+      get_recommended_creators: {
+        Args: { p_limit?: number };
+        Returns: {
+          avatar_url: string;
+          boost_tier: number;
+          display_name: string;
+          follower_count: number;
+          profile_id: string;
+          recent_posts: number;
+          username: string;
+        }[];
+      };
+      get_recommended_items: {
+        Args: { p_limit?: number };
+        Returns: {
+          boost_tier: number;
+          content_type: string;
+          created_at: string;
+          creator_avatar_url: string;
+          creator_display_name: string;
+          creator_profile_id: string;
+          creator_username: string;
+          id: number;
+          interaction_counts: Json;
+          metadata: Json;
+          rank_score: number;
+          reference_id: string;
         }[];
       };
       get_seller_orders: {
@@ -3277,6 +3614,11 @@ export type Database = {
         };
         Returns: Json;
       };
+      recompute_feed_rank_scores: { Args: never; Returns: undefined };
+      record_feed_item_share: {
+        Args: { p_feed_item_id: number };
+        Returns: undefined;
+      };
       record_newsletter_post_click: {
         Args: { p_post_id: string };
         Returns: undefined;
@@ -3318,6 +3660,27 @@ export type Database = {
         };
         Returns: string;
       };
+      search_feed: {
+        Args: { p_cursor_id?: number; p_limit?: number; p_query: string };
+        Returns: {
+          boost_tier: number;
+          content_type: string;
+          created_at: string;
+          creator_avatar_url: string;
+          creator_display_name: string;
+          creator_profile_id: string;
+          creator_username: string;
+          id: number;
+          interaction_counts: Json;
+          is_bookmarked: boolean;
+          is_liked: boolean;
+          is_pinned: boolean;
+          metadata: Json;
+          rank_score: number;
+          reference_id: string;
+          search_rank: number;
+        }[];
+      };
       send_message: {
         Args: { p_content: string; p_conversation_id: string };
         Returns: {
@@ -3330,6 +3693,14 @@ export type Database = {
       };
       set_shop_active_by_manager: {
         Args: { p_is_active: boolean; p_profile_id: string };
+        Returns: Json;
+      };
+      toggle_feed_item_bookmark: {
+        Args: { p_feed_item_id: number };
+        Returns: Json;
+      };
+      toggle_feed_item_like: {
+        Args: { p_feed_item_id: number };
         Returns: Json;
       };
       toggle_follow: { Args: { target_user_id: string }; Returns: boolean };
