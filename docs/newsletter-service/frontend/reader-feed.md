@@ -6,6 +6,7 @@ The reader feed is the public-facing post list. It is powered by the `get_reader
 
 ```ts
 const { data, error } = await supabase.rpc('get_reader_feed', {
+	p_profile_id: 'some-id',
   p_filter: 'all',
   p_limit: 20,
 })
@@ -61,6 +62,7 @@ let cursor: string | null = null
 
 async function loadNextPage() {
   const { data } = await supabase.rpc('get_reader_feed', {
+  	p_profile_id: 'id-here',
     p_filter: 'all',
     p_limit: 20,
     p_cursor: cursor,
@@ -82,13 +84,13 @@ The three filter tabs map directly to `p_filter`:
 
 ```ts
 // All posts
-supabase.rpc('get_reader_feed', { p_filter: 'all' })
+supabase.rpc('get_reader_feed', { p_profile_id: 'id', p_filter: 'all' })
 
 // Posts the current user has liked
-supabase.rpc('get_reader_feed', { p_filter: 'liked' })
+supabase.rpc('get_reader_feed', { p_profile_id: 'id', p_filter: 'liked' })
 
 // Posts the current user has purchased or received as gifts
-supabase.rpc('get_reader_feed', { p_filter: 'owned' })
+supabase.rpc('get_reader_feed', { p_profile_id: 'id', p_filter: 'owned' })
 ```
 
 > `'liked'` and `'owned'` silently return empty results if the user is not authenticated. Handle this case by prompting login instead of showing "no posts found".
@@ -99,6 +101,7 @@ Pass `p_search` to filter by title or subtitle:
 
 ```ts
 const { data } = await supabase.rpc('get_reader_feed', {
+  p_profile_id: 'id',
   p_filter: 'all',
   p_search: 'typescript tips',
 })
@@ -114,6 +117,7 @@ Useful for showing posts from a specific period (e.g. "This month"):
 
 ```ts
 const { data } = await supabase.rpc('get_reader_feed', {
+  p_profile_id: 'id',
   p_filter: 'all',
   p_from: '2026-04-01T00:00:00Z',
   p_to:   '2026-04-30T23:59:59Z',
@@ -171,6 +175,7 @@ if (!post.has_access) {
     }
 
     const { data } = await supabase.rpc('get_reader_feed', {
+      p_profile_id: 'id',
       p_filter: filter,
       p_limit: 20,
       p_cursor: cursor,

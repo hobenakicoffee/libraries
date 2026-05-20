@@ -16,7 +16,7 @@ All functions use `SECURITY DEFINER` and `SET search_path = ''`. The empty searc
 | `get_newsletter_stats(p_profile_id, p_from, p_to)` | Authenticated (author) | `TABLE(...)` | 3-card stat summary for Creator Studio |
 | `get_post_analytics(p_post_id, p_from, p_to)` | Authenticated (author) | `TABLE(...)` | Per-post analytics for the dialog |
 | `get_posts_page(p_profile_id, p_status, ...)` | Authenticated (author) | `TABLE(...)` | Paginated post list for Creator Studio |
-| `get_reader_feed(p_filter, p_limit, p_cursor, ...)` | Any | `TABLE(...)` | Paginated reader feed |
+| `get_reader_feed(p_profile_id, p_filter, p_limit, p_cursor, ...)` | Any | `TABLE(...)` | Paginated reader feed |
 | `purchase_newsletter_post(...)` | **Service role only** | `jsonb` | Post purchase after payment confirmed |
 | `purchase_newsletter_membership(...)` | **Service role only** | `jsonb` | Membership purchase after payment confirmed |
 | `approve_newsletter_post(p_post_id)` | **Manager only** | `jsonb` | Publish a post in review + notify author |
@@ -287,6 +287,7 @@ Every row includes the current draft count for the profile. This lets the UI sho
 
 ```sql
 FUNCTION public.get_reader_feed(
+  p_profile_id varchar,
   p_filter varchar     DEFAULT 'all',  -- 'all' | 'liked' | 'owned'
   p_limit  integer     DEFAULT 20,
   p_cursor timestamptz DEFAULT NULL,
