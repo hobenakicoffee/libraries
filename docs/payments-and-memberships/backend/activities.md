@@ -65,17 +65,10 @@ flowchart LR
 
 | `visibility` | Who can read it |
 |---|---|
-| `public` | Anonymous users, authenticated users (RLS policy: `visibility = 'public'`) |
+| `public` | Via the `get_creator_public_activities` RPC (accessible to anon + authenticated) |
 | `private` | Only `user_profile_id` — the activity owner |
 
-The anonymous RLS policy reads:
-```sql
-create policy "Anonymous users can view public activities"
-on public.activities for select to anon
-using (visibility = 'public');
-```
-
-This means a creator's public support feed is visible to any visitor without authentication.
+`anon` is **revoked from the `activities` table entirely** — there is no direct anon `SELECT` policy. Public activities reach anonymous visitors through the `get_creator_public_activities` security-definer RPC, which queries the table with elevated privileges and returns only `visibility = 'public'` rows for the requested creator.
 
 ---
 
@@ -259,7 +252,7 @@ Note: `amount` in the creator activity is the **net amount** (after platform fee
 
 | Operation | Role | Policy |
 |---|---|---|
-| `SELECT` | `anon` | `visibility = 'public'` |
+| `SELECT` | `anon` | **Blocked** — `revoke all from anon` |
 | `SELECT` | `authenticated` | `visibility = 'public'` OR `user_profile_id = auth.uid()` |
 | `INSERT` | `authenticated` | **Blocked** (`with check (false)`) — backend only |
 | `UPDATE` | `authenticated` | Only `is_dismissed` on own rows, and only to `true` |
@@ -301,20 +294,76 @@ The `WITH CHECK` constraint on the update policy prevents setting `is_dismissed`
 
 ---
 
-## Common Queries
+## RPC: `get_creator_public_activities`
 
-### Creator's public feed (paginated)
+Paginated public activity feed for a creator's profile page. Accessible by `anon`, `authenticated`, and `service_role` via `SECURITY DEFINER` — the underlying `activities` table is fully revoked from `anon`.
 
 ```sql
-select a.*, p.display_name, p.username, p.avatar_url
-from public.activities a
-left join public.profiles p on p.id = a.counterparty_profile_id
-where a.user_profile_id = $1
-  and a.visibility = 'public'
-  and a.role = 'creator'
-order by a.created_at desc
-limit 20;
+get_creator_public_activities(
+  p_creator_profile_id  uuid,
+  p_limit               int           default 10,
+  p_cursor_created_at   timestamptz   default null,
+  p_cursor_id           uuid          default null
+)
+returns table (
+  id                       uuid,
+  counterparty_profile_id  uuid,
+  service_type             varchar,
+  visibility               public.visibility_enum,
+  metadata                 jsonb,
+  created_at               timestamptz,
+  cp_id                    uuid,
+  cp_display_name          text,
+  cp_avatar_url            text,
+  cp_username              text
+)
 ```
+
+### Behaviour
+
+- Returns only `visibility = 'public'` rows owned by `p_creator_profile_id`.
+- Joins `profiles` on `counterparty_profile_id` — `cp_*` columns are `NULL` when the counterparty is anonymous or system-generated.
+- Results are ordered `created_at DESC, id DESC`.
+- Uses **keyset (cursor) pagination** for stable traversal — pass the `created_at` and `id` of the last row received to get the next page.
+
+### Pagination
+
+**First page** — omit cursor params (or pass `null`):
+
+```typescript
+const { data } = await supabase.rpc('get_creator_public_activities', {
+  p_creator_profile_id: creatorId,
+  p_limit: 10,
+})
+```
+
+**Subsequent pages** — pass the last row's `created_at` and `id` as the cursor:
+
+```typescript
+const last = data.at(-1)
+
+const { data: nextPage } = await supabase.rpc('get_creator_public_activities', {
+  p_creator_profile_id: creatorId,
+  p_limit: 10,
+  p_cursor_created_at: last.created_at,
+  p_cursor_id: last.id,
+})
+```
+
+### Security
+
+```sql
+security definer
+set search_path = public
+grant execute on function get_creator_public_activities(uuid, int, timestamptz, uuid)
+  to anon, authenticated, service_role;
+```
+
+Anon callers cannot query `activities` directly — this function is the only public entry point for the creator feed.
+
+---
+
+## Common Queries
 
 ### Unread notification count
 

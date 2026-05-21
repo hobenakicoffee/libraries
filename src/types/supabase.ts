@@ -3093,6 +3093,26 @@ export type Database = {
         Args: { p_profile_id: string; p_service_type: string };
         Returns: number;
       };
+      get_creator_public_activities: {
+        Args: {
+          p_creator_profile_id: string;
+          p_cursor_created_at?: string;
+          p_cursor_id?: string;
+          p_limit?: number;
+        };
+        Returns: {
+          counterparty_profile_id: string;
+          cp_avatar_url: string;
+          cp_display_name: string;
+          cp_id: string;
+          cp_username: string;
+          created_at: string;
+          id: string;
+          metadata: Json;
+          service_type: string;
+          visibility: Database["public"]["Enums"]["visibility_enum"];
+        }[];
+      };
       get_explore_creators: {
         Args: {
           p_category?: string;

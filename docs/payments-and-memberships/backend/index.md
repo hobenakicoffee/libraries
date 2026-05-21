@@ -101,7 +101,7 @@ erDiagram
 | `payout_methods` | ✗ | Full CRUD | Full |
 | `transactions` | ✗ | SELECT | Full |
 | `withdrawal_requests` | ✗ | SELECT, INSERT | Full |
-| `activities` | SELECT (public only) | SELECT (own + public), UPDATE `is_dismissed` | Full |
+| `activities` | ✗ (use `get_creator_public_activities` RPC) | SELECT (own + public), UPDATE `is_dismissed` | Full |
 | `membership_plans` | SELECT (active only) | Full CRUD (own) | Full |
 | `profile_memberships` | ✗ | SELECT (own), UPDATE cancel/pause | Full |
 | `membership_notifications` | ✗ | SELECT | Full |
