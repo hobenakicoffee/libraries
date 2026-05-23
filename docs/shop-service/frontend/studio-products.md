@@ -55,12 +55,16 @@ export function ProductList() {
 
 Soft-deleted products show a "Deleted" badge and no edit controls.
 
-> **Approval workflow:** Products do not have an owner-side active/inactive toggle. `is_active` is exclusively controlled by managers via `approve_shop_product`. Every create or edit triggers a manager review via the draft pattern:
-> - **New product** → `is_active = false`, pending draft created. Manager approves to make it live.
-> - **Edit of a live product** → live row stays online untouched; only `shop_product_drafts` is written. Manager approves to apply the changes.
-> - **Edit of a pending/rejected product** → `shop_products` updated directly + draft refreshed.
+> **Approval workflow:** Products do not have an owner-side active/inactive toggle. `is_active` is exclusively controlled by managers via `approve_shop_product`. The product lifecycle is:
+> - **New product / any edit** → `upsert_shop_product` sets `approval_status = 'draft'` on `shop_product_drafts`. The product is saved but **not yet in the manager queue**.
+> - **Submit for review** → seller explicitly calls `submit_shop_product_for_review(product_id)` → `approval_status = 'pending'`. This is what puts the product in the manager queue.
+> - **Edit of a live product** → live row stays online untouched; only `shop_product_drafts` is written as `'draft'`. Seller must submit again to queue the change.
+> - **After rejection** → re-editing resets to `'draft'`; seller must submit again.
 >
-> Display the product's approval state by joining `shop_product_drafts` (query key `['shop', 'product-drafts']`). If a draft row exists with `approval_status = 'pending'`, show a "Pending review" badge. If `approval_status = 'rejected'`, show a "Rejected" badge and surface `rejection_reason` in the edit form so the creator knows what to fix.
+> Display the product's approval state by joining `shop_product_drafts` (query key `['shop', 'product-drafts']`):
+> - `approval_status = 'draft'` → show a "Draft" badge + "Submit for review" button
+> - `approval_status = 'pending'` → show a "Pending review" badge (no submit button)
+> - `approval_status = 'rejected'` → show a "Rejected" badge and surface `rejection_reason` in the edit form so the creator knows what to fix
 
 ---
 
@@ -70,6 +74,7 @@ Fetch the owner's product drafts alongside the product list to display approval 
 
 ```typescript
 // app/src/services/product.service.ts (additions)
+// ApprovalStatus = 'draft' | 'pending' | 'approved' | 'rejected'
 import type { ApprovalStatus } from '@/types/shop';
 
 export interface ShopProductDraft {
@@ -125,6 +130,10 @@ export function ProductApprovalBadge({ isActive, draft }: ProductApprovalBadgePr
 
   if (draft?.approval_status === 'pending') {
     return <Badge variant="secondary">Pending review</Badge>;
+  }
+
+  if (draft?.approval_status === 'draft') {
+    return <Badge variant="outline">Draft</Badge>;
   }
 
   if (isActive) {

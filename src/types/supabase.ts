@@ -3716,6 +3716,10 @@ export type Database = {
         Args: { p_is_active: boolean; p_profile_id: string };
         Returns: Json;
       };
+      submit_shop_product_for_review: {
+        Args: { p_product_id: string };
+        Returns: Json;
+      };
       toggle_feed_item_bookmark: {
         Args: { p_feed_item_id: number };
         Returns: Json;
@@ -3958,7 +3962,7 @@ export type Database = {
         | "implemented"
         | "rejected"
         | "duplicate";
-      shop_approval_status_enum: "pending" | "approved" | "rejected";
+      shop_approval_status_enum: "draft" | "pending" | "approved" | "rejected";
       shop_order_item_status_enum:
         | "pending"
         | "paid"
@@ -4246,7 +4250,7 @@ export const Constants = {
         "rejected",
         "duplicate",
       ],
-      shop_approval_status_enum: ["pending", "approved", "rejected"],
+      shop_approval_status_enum: ["draft", "pending", "approved", "rejected"],
       shop_order_item_status_enum: [
         "pending",
         "paid",

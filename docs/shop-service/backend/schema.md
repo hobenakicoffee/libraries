@@ -466,7 +466,7 @@ create table public.shop_category_drafts (
 );
 ```
 
-**States:**
+**States (categories):**
 
 | `approval_status` | Meaning |
 |---|---|
@@ -474,6 +474,10 @@ create table public.shop_category_drafts (
 | `rejected` | Manager rejected; `rejection_reason` set; owner can revise |
 
 `approved` is never stored — on approval the draft is applied to the live row and deleted.
+
+::: info Categories auto-submit
+Unlike products, categories go straight to `'pending'` on `upsert_shop_category`. The `'draft'` state is product-only — products require an explicit `submit_shop_product_for_review()` call.
+:::
 
 **RLS:** Owners can SELECT their own drafts. All writes go through security-definer RPCs only (no direct owner DML).
 
@@ -522,6 +526,16 @@ create table public.shop_product_drafts (
   updated_at                  timestamptz not null default now()
 );
 ```
+
+**States (products):**
+
+| `approval_status` | Meaning |
+|---|---|
+| `draft` | Saved by owner; not in manager queue yet. Call `submit_shop_product_for_review()` to advance. |
+| `pending` | Submitted for review; awaiting manager action |
+| `rejected` | Manager rejected; `rejection_reason` set; re-edit resets to `'draft'` |
+
+`approved` is never stored — on approval the draft is applied to the live row and deleted.
 
 **RLS:** Owners can SELECT their own drafts. All writes go through security-definer RPCs only.
 
@@ -681,10 +695,11 @@ create type public.shop_policy_type_enum as enum (
   'privacy', 'terms_of_service'
 );
 
--- Three-state approval lifecycle for draft tables.
+-- Four-state approval lifecycle for draft tables.
 -- 'approved' is never persisted — draft is deleted on approval.
 create type public.shop_approval_status_enum as enum (
-  'pending',   -- submitted by owner, awaiting manager action
+  'draft',     -- saved by owner; not yet submitted for manager review
+  'pending',   -- owner submitted for review; awaiting manager action
   'approved',  -- (transitional only — draft deleted immediately after)
   'rejected'   -- manager rejected; rejection_reason shown in Studio
 );

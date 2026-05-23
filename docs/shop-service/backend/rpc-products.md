@@ -90,17 +90,29 @@ Hard-deletes the address. Safe because `shop_orders.shipping_address` is a snaps
 
 ## Approval workflow overview
 
-All products go through a manager review before (or after editing) they become publicly active. The pending state lives in `shop_product_drafts`, not on the live `shop_products` row.
+All products go through a manager review before (or after editing) they become publicly active. The approval state lives in `shop_product_drafts`, not on the live `shop_products` row.
 
-| Situation | What `upsert_shop_product` does | Live product |
+### Lifecycle
+
+```
+upsert_shop_product()             →  approval_status = 'draft'   (saved, not queued)
+submit_shop_product_for_review()  →  approval_status = 'pending' (enters manager queue)
+approve_shop_product()            →  is_active = true, draft deleted
+reject_shop_product()             →  approval_status = 'rejected', rejection_reason set
+upsert after rejection            →  approval_status = 'draft'   (must re-submit explicitly)
+```
+
+### What `upsert_shop_product` does per situation
+
+| Situation | Action | Live product |
 |---|---|---|
-| Brand-new product | Writes `shop_products` (`is_active=false`) + inserts pending draft | Inactive until approved |
-| Edit of a **live** product | Writes only to `shop_product_drafts` (ON CONFLICT overwrites) | Stays online untouched |
-| Edit of a **pending/rejected** product | Updates `shop_products` directly + refreshes draft | Still inactive |
+| Brand-new product | Writes `shop_products` (`is_active=false`) + inserts `'draft'` draft | Inactive until seller submits + manager approves |
+| Edit of a **live** product | Writes only to `shop_product_drafts` (`approval_status='draft'`) | Stays online untouched |
+| Edit of a **draft/rejected** product | Updates `shop_products` directly + refreshes draft as `'draft'` | Still inactive |
 
-Manager calls `approve_shop_product` → draft applied to live row, `is_active=true`, draft deleted, **private activity notification sent to owner** (`activity_type: 'product_approved'`).
+Manager calls `approve_shop_product` → draft must be `'pending'`; applied to live row, `is_active=true`, draft deleted, **private activity notification sent to owner** (`activity_type: 'product_approved'`).
 Manager calls `reject_shop_product` → draft `approval_status='rejected'` + `rejection_reason` set, live row untouched, **private activity notification sent to owner** (`activity_type: 'product_rejected'`).
-Owner re-edits after rejection → draft overwritten, `approval_status` reset to `'pending'`.
+Owner re-edits after rejection → draft overwritten, `approval_status` reset to `'draft'` — must call `submit_shop_product_for_review()` again to re-enter the queue.
 
 ---
 
@@ -192,6 +204,27 @@ Setting `cod_enabled = true` on a digital product returns `COD_ONLY_FOR_PHYSICAL
 
 ---
 
+### `submit_shop_product_for_review`
+
+```sql
+public.submit_shop_product_for_review(p_product_id uuid) → jsonb
+```
+
+Transitions a product's draft from `'draft'` (or `'rejected'`) to `'pending'`, entering the manager review queue. The seller calls this when they are ready for the product to go live.
+
+- Clears any previous `rejection_reason` on submit
+- Idempotent guard: returns `ALREADY_PENDING` if the draft is already pending
+- Returns `DRAFT_NOT_FOUND` if no draft exists for this product or the caller does not own it
+
+**Response:**
+```json
+{ "success": true }
+```
+
+**Errors:** `UNAUTHENTICATED`, `DRAFT_NOT_FOUND`, `ALREADY_PENDING`
+
+---
+
 ### `delete_shop_product`
 
 ```sql
@@ -257,7 +290,7 @@ Loads the pending draft from `shop_product_drafts`, applies all its columns to t
 { "success": true }
 ```
 
-**Errors:** `UNAUTHORIZED`, `NOT_FOUND`
+**Errors:** `UNAUTHORIZED`, `NOT_FOUND`, `DRAFT_NOT_PENDING`
 
 ---
 
@@ -477,30 +510,42 @@ select approve_shop_product('<your-product-id>');
 ### Full approval flow test
 
 ```sql
--- 1. Confirm the draft exists
-select * from shop_product_drafts where product_id = '<your-product-id>';
+-- 1. Confirm the draft exists (approval_status = 'draft' after upsert)
+select product_id, approval_status from shop_product_drafts where product_id = '<your-product-id>';
 
--- 2. Set the manager claim
+-- 2. Seller submits for review (as the product owner)
+select submit_shop_product_for_review('<your-product-id>');
+
+-- 3. Confirm draft is now 'pending'
+select approval_status from shop_product_drafts where product_id = '<your-product-id>';
+
+-- 4. Set the manager claim and approve
 select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', false);
-
--- 3. Approve
 select approve_shop_product('<your-product-id>');
 
--- 4. Verify: draft gone, product now active
+-- 5. Verify: draft gone, product now active
 select id, title, is_active from shop_products where id = '<your-product-id>';
 select * from shop_product_drafts where product_id = '<your-product-id>'; -- 0 rows
 ```
 
+::: tip Approve without submitting?
+If you call `approve_shop_product` while the draft is still `'draft'` (not submitted by the seller), it returns `{ "success": false, "error": "DRAFT_NOT_PENDING", "status": "draft" }`. The seller must call `submit_shop_product_for_review` first.
+:::
+
 ### Full rejection flow test
 
 ```sql
+-- Seller must have submitted for review first
+select submit_shop_product_for_review('<your-product-id>');
+
 select set_config('request.jwt.claims', '{"manager_role": "super_admin"}', false);
 select reject_shop_product('<your-product-id>', 'Description is too short — please add more detail.');
 
--- Verify
+-- Verify: draft is 'rejected' with reason
 select approval_status, rejection_reason
 from shop_product_drafts
 where product_id = '<your-product-id>';
+-- After the seller re-edits (upsert_shop_product), approval_status resets to 'draft'
 ```
 
 ::: tip Same pattern for categories

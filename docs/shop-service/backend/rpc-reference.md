@@ -28,7 +28,7 @@ flowchart TB
     end
 ```
 
-37 RPCs total. All are `SECURITY DEFINER` with `SET search_path = ''`. All return `jsonb` (except `get_platform_setting` which returns `numeric`, `get_user_addresses` which returns a table, and `record_shop_view` which returns `void`).
+38 RPCs total. All are `SECURITY DEFINER` with `SET search_path = ''`. All return `jsonb` (except `get_platform_setting` which returns `numeric`, `get_user_addresses` which returns a table, and `record_shop_view` which returns `void`).
 
 ## Convention
 
@@ -79,6 +79,7 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 | RPC | Auth | Returns |
 |---|---|---|
 | `upsert_shop_product(...)` | authenticated | `{ success, product_id }` |
+| `submit_shop_product_for_review(p_product_id)` | authenticated | `{ success }` |
 | `delete_shop_product(p_product_id)` | authenticated | `{ success, deleted: 'soft'\|'hard' }` |
 | `reorder_shop_products(p_product_ids[])` | authenticated | `{ success }` |
 
