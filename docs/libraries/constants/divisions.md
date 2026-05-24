@@ -59,9 +59,41 @@ create table unions (
 );
 ```
 
-## RLS & Access
+## Indexes
 
-All geo tables are read-only for `anon` and `authenticated` roles with RLS enabled via a `public_read` policy.
+```sql
+create index idx_districts_division_id on districts(division_id);
+create index idx_upazillas_district_id on upazillas(district_id);
+create index idx_unions_upazilla_id on unions(upazilla_id);
+```
+
+Foreign-key columns are indexed for efficient join queries up and down the hierarchy.
+
+## Access Control
+
+All geo tables are read-only for unauthenticated (`anon`) and authenticated users. Write access is fully revoked.
+
+```sql
+-- Revoke all from public, anon, and authenticated
+revoke all on divisions, districts, upazillas, unions from public, anon, authenticated;
+
+-- Grant read-only
+grant select on divisions, districts, upazillas, unions to anon, authenticated;
+```
+
+Row-level security (RLS) is enabled with a blanket `public_read` policy on each table:
+
+```sql
+alter table divisions  enable row level security;
+alter table districts  enable row level security;
+alter table upazillas  enable row level security;
+alter table unions     enable row level security;
+
+create policy "public_read" on divisions  for select to anon, authenticated using (true);
+create policy "public_read" on districts  for select to anon, authenticated using (true);
+create policy "public_read" on upazillas  for select to anon, authenticated using (true);
+create policy "public_read" on unions     for select to anon, authenticated using (true);
+```
 
 ## Constants Usage
 
