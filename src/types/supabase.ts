@@ -3127,6 +3127,8 @@ export type Database = {
       };
       cleanup_orphaned_kyc_documents: { Args: never; Returns: undefined };
       cleanup_orphaned_post_images: { Args: never; Returns: undefined };
+      cleanup_orphaned_shop_images: { Args: never; Returns: undefined };
+      cleanup_orphaned_shop_product_files: { Args: never; Returns: undefined };
       confirm_cod_cash_received: {
         Args: { p_order_item_id: string };
         Returns: Json;

@@ -167,6 +167,8 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 |---|---|---|
 | `get_shop_overview()` | authenticated | `ShopOverviewData` |
 | `auto_deactivate_ineligible_shops()` | service role | `{ success, shops_deactivated, ran_at }` |
+| `cleanup_orphaned_shop_images()` | service role | `void` — deletes unreferenced `shop-images` objects |
+| `cleanup_orphaned_shop_product_files()` | service role | `void` — deletes unreferenced `shop-product-files` objects |
 
 ---
 

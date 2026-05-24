@@ -762,7 +762,7 @@ Two Supabase Storage buckets are provisioned by the shop migration.
 
 ### `shop-images` (public)
 
-Stores all shop UI images: logo, banner, product cover, product gallery, and variant photos. Referenced by `shop_settings.logo_url`, `shop_settings.banner_url`, `shop_products.cover_image_url`, `shop_products.images[]`, and `shop_product_variants.image_url`.
+Stores all shop UI images: logo, banner, product cover, product gallery, and variant photos. Referenced by `shop_settings.logo_url`, `shop_settings.banner_url`, `shop_products.cover_image_url`, `shop_products.images[]`, `shop_product_variants.image_url`, and the draft mirrors on `shop_product_drafts`.
 
 | Property | Value |
 |---|---|
@@ -775,6 +775,8 @@ Stores all shop UI images: logo, banner, product cover, product gallery, and var
 **RLS policies:**
 - Public read (anon + authenticated)
 - Authenticated users can upload, update, and delete only within their own folder (`storage.foldername(name)[1] = auth.uid()::text`)
+
+**Orphan cleanup:** `cleanup_orphaned_shop_images()` runs nightly at **05:00 Dhaka (23:00 UTC)** via pg_cron. Objects older than 24 hours that are not referenced by any shop row are deleted. See [Dashboard & Cron → cleanup_orphaned_shop_images](./rpc-dashboard#cleanup_orphaned_shop_images).
 
 ---
 
@@ -793,6 +795,8 @@ Stores digital product download files. **Raw paths are never sent to clients.** 
 **RLS policies:**
 - Sellers can SELECT, INSERT, UPDATE, DELETE only within their own folder (Studio file browser)
 - No public or buyer read — download access is granted exclusively via signed URLs issued by the Edge Function (service role)
+
+**Orphan cleanup:** `cleanup_orphaned_shop_product_files()` runs nightly at **05:30 Dhaka (23:30 UTC)** via pg_cron. Objects older than 24 hours with no matching `shop_product_files.storage_path` row (including soft-deleted rows) are deleted. See [Dashboard & Cron → cleanup_orphaned_shop_product_files](./rpc-dashboard#cleanup_orphaned_shop_product_files).
 
 ---
 

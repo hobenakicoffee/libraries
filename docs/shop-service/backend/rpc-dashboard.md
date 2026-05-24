@@ -208,3 +208,70 @@ where jobname = 'auto-deactivate-ineligible-shops';
 ::: tip Ops responsibility
 The `select cron.schedule(...)` call is **not** in the migration SQL — it must be run manually by ops after the migration completes. This avoids running it on test/staging environments unintentionally.
 :::
+
+---
+
+## `cleanup_orphaned_shop_images`
+
+```sql
+public.cleanup_orphaned_shop_images() → void
+```
+
+Nightly cron job. Deletes objects in the `shop-images` bucket that are no longer referenced by any shop row, subject to a 24-hour grace window.
+
+### What counts as referenced
+
+An object is kept if its full public URL appears in any of:
+
+| Table | Column |
+|---|---|
+| `shop_settings` | `logo_url`, `banner_url` |
+| `shop_products` | `cover_image_url`, `images[]` |
+| `shop_product_variants` | `image_url` |
+| `shop_product_drafts` | `cover_image_url`, `images[]` |
+
+The base URL is derived at runtime from `storage.objects.metadata->>'httpUrl'` — no hardcoded Supabase project URL required.
+
+### Grace window
+
+Only objects older than **24 hours** are candidates. This prevents race conditions where a seller has uploaded an image mid-edit but hasn't saved the product or shop settings yet.
+
+### Scheduling
+
+```sql
+select cron.schedule(
+  'cleanup-shop-orphaned-images',
+  '0 23 * * *',    -- 11 PM UTC = 5 AM Dhaka (UTC+6)
+  $$ select public.cleanup_orphaned_shop_images(); $$
+);
+```
+
+---
+
+## `cleanup_orphaned_shop_product_files`
+
+```sql
+public.cleanup_orphaned_shop_product_files() → void
+```
+
+Nightly cron job. Deletes objects in the `shop-product-files` private bucket that have no corresponding `shop_product_files` row.
+
+### What counts as referenced
+
+An object is kept if `storage.objects.name` matches any `shop_product_files.storage_path`, **including soft-deleted rows** (`is_deleted = true`). Soft-deleted file rows are kept alive because buyers may still hold valid `shop_download_tokens` pointing at those files — the `ON DELETE RESTRICT` FK on `shop_product_files` enforces this separately.
+
+Only objects with **no row at all** in `shop_product_files` are deleted.
+
+### Grace window
+
+Only objects older than **24 hours** are candidates.
+
+### Scheduling
+
+```sql
+select cron.schedule(
+  'cleanup-shop-orphaned-product-files',
+  '30 23 * * *',   -- 11:30 PM UTC = 5:30 AM Dhaka (UTC+6)
+  $$ select public.cleanup_orphaned_shop_product_files(); $$
+);
+```
