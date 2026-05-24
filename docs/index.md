@@ -16,7 +16,7 @@ hero:
 
 features:
   - title: Constants
-    details: Payment types, statuses, platforms, visibility, and service type constants.
+    details: Payment types, statuses, platforms, visibility, service types, and Bangladesh geo data.
   - title: Utilities
     details: Format amounts, dates, validate phone numbers, social links, and more.
   - title: TypeScript Types

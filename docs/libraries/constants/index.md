@@ -4,12 +4,12 @@ outline: deep
 
 # Constants
 
-The constants module provides predefined constants for payment types, statuses, platforms, visibility, and service types.
+The constants module provides predefined constants for payment types, statuses, platforms, visibility, service types, and Bangladesh geographical data.
 
 ## Usage
 
 ```ts
-import { Visibility, PaymentStatuses, SupporterPlatforms } from "@hobenakicoffee/libraries/constants";
+import { Visibility, PaymentStatuses, SupporterPlatforms, divisions } from "@hobenakicoffee/libraries/constants";
 ```
 
 ## Exports
@@ -27,6 +27,7 @@ import { Visibility, PaymentStatuses, SupporterPlatforms } from "@hobenakicoffee
 | `WithdrawalStatuses` | Withdrawal status constants |
 | `SupporterPlatforms` | Social platform constants |
 | `ServiceTypes` | Service type constants |
+| `divisions` | Bangladesh division constants (8 divisions with names and URLs) |
 | `MAX_PRODUCT_PRICE` | Maximum product price constant |
 | `ShopProductType` | Digital and physical product type constants |
 
@@ -37,3 +38,4 @@ import { Visibility, PaymentStatuses, SupporterPlatforms } from "@hobenakicoffee
 - [Platforms](./platforms)
 - [Services](./services)
 - [Shop Service](./shop-service)
+- [Divisions / Geo Data](./divisions)

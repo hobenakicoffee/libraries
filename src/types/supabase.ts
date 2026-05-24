@@ -305,6 +305,65 @@ export type Database = {
           },
         ];
       };
+      districts: {
+        Row: {
+          bn_name: string;
+          division_id: number;
+          id: number;
+          lat: number | null;
+          lon: number | null;
+          name: string;
+          url: string | null;
+        };
+        Insert: {
+          bn_name: string;
+          division_id: number;
+          id?: never;
+          lat?: number | null;
+          lon?: number | null;
+          name: string;
+          url?: string | null;
+        };
+        Update: {
+          bn_name?: string;
+          division_id?: number;
+          id?: never;
+          lat?: number | null;
+          lon?: number | null;
+          name?: string;
+          url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "districts_division_id_fkey";
+            columns: ["division_id"];
+            isOneToOne: false;
+            referencedRelation: "divisions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      divisions: {
+        Row: {
+          bn_name: string;
+          id: number;
+          name: string;
+          url: string | null;
+        };
+        Insert: {
+          bn_name: string;
+          id?: never;
+          name: string;
+          url?: string | null;
+        };
+        Update: {
+          bn_name?: string;
+          id?: never;
+          name?: string;
+          url?: string | null;
+        };
+        Relationships: [];
+      };
       feed_item_bookmarks: {
         Row: {
           created_at: string;
@@ -2673,6 +2732,70 @@ export type Database = {
             columns: ["wallet_id"];
             isOneToOne: false;
             referencedRelation: "wallets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      unions: {
+        Row: {
+          bn_name: string;
+          id: number;
+          name: string;
+          upazilla_id: number;
+          url: string | null;
+        };
+        Insert: {
+          bn_name: string;
+          id?: never;
+          name: string;
+          upazilla_id: number;
+          url?: string | null;
+        };
+        Update: {
+          bn_name?: string;
+          id?: never;
+          name?: string;
+          upazilla_id?: number;
+          url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "unions_upazilla_id_fkey";
+            columns: ["upazilla_id"];
+            isOneToOne: false;
+            referencedRelation: "upazillas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      upazillas: {
+        Row: {
+          bn_name: string;
+          district_id: number;
+          id: number;
+          name: string;
+          url: string | null;
+        };
+        Insert: {
+          bn_name: string;
+          district_id: number;
+          id?: never;
+          name: string;
+          url?: string | null;
+        };
+        Update: {
+          bn_name?: string;
+          district_id?: number;
+          id?: never;
+          name?: string;
+          url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "upazillas_district_id_fkey";
+            columns: ["district_id"];
+            isOneToOne: false;
+            referencedRelation: "districts";
             referencedColumns: ["id"];
           },
         ];

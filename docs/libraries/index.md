@@ -16,7 +16,7 @@ npm install @hobenakicoffee/libraries
 
 | Export | Description |
 | ------- | ----------- |
-| `constants` | Payment types, statuses, platforms, visibility, and service type constants |
+| `constants` | Payment types, statuses, platforms, visibility, service types, and Bangladesh geo data |
 | `lib/utils` | Utility functions (cn, formatting, validation) |
 | `moderation` | Profanity detection for English and Bengali with leetspeak normalization |
 | `types` | Full Supabase database types and custom type definitions |
