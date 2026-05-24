@@ -3218,6 +3218,37 @@ export type Database = {
         Args: { p_profile_id: string; p_service_type: string };
         Returns: number;
       };
+      get_creator_newsletter_posts: {
+        Args: {
+          p_creator_profile_id: string;
+          p_cursor?: string;
+          p_limit?: number;
+          p_search?: string;
+        };
+        Returns: {
+          access_badge: string;
+          author_avatar_url: string;
+          author_display_name: string;
+          author_username: string;
+          cover_image_url: string;
+          excerpt: string;
+          has_access: boolean;
+          is_liked: boolean;
+          is_members_only: boolean;
+          is_pay_per_post: boolean;
+          like_count: number;
+          post_id: string;
+          price: number;
+          profile_id: string;
+          published_at: string;
+          reading_time_minutes: number;
+          slug: string;
+          subtitle: string;
+          tags: string[];
+          title: string;
+          view_count: number;
+        }[];
+      };
       get_creator_public_activities: {
         Args: {
           p_creator_profile_id: string;
@@ -3422,7 +3453,6 @@ export type Database = {
           p_filter?: string;
           p_from?: string;
           p_limit?: number;
-          p_profile_id?: string;
           p_search?: string;
           p_to?: string;
         };

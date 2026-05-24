@@ -16,7 +16,8 @@ All functions use `SECURITY DEFINER` and `SET search_path = ''`. The empty searc
 | `get_newsletter_stats(p_profile_id, p_from, p_to)` | Authenticated (author) | `TABLE(...)` | 3-card stat summary for Creator Studio |
 | `get_post_analytics(p_post_id, p_from, p_to)` | Authenticated (author) | `TABLE(...)` | Per-post analytics for the dialog |
 | `get_posts_page(p_profile_id, p_status, ...)` | Authenticated (author) | `TABLE(...)` | Paginated post list for Creator Studio |
-| `get_reader_feed(p_profile_id, p_filter, p_limit, p_cursor, ...)` | Any | `TABLE(...)` | Paginated reader feed |
+| `get_creator_newsletter_posts(p_creator_profile_id, ...)` | **Anon + Authenticated** | `TABLE(...)` | Public browse of one creator's posts (profile card) |
+| `get_reader_feed(p_filter, p_limit, p_cursor, ...)` | **Authenticated only** | `TABLE(...)` | Interaction-based personal feed (liked/owned/subscribed) |
 | `purchase_newsletter_post(...)` | **Service role only** | `jsonb` | Post purchase after payment confirmed |
 | `purchase_newsletter_membership(...)` | **Service role only** | `jsonb` | Membership purchase after payment confirmed |
 | `approve_newsletter_post(p_post_id)` | **Manager only** | `jsonb` | Publish a post in review + notify author |
@@ -283,12 +284,44 @@ Every row includes the current draft count for the profile. This lets the UI sho
 
 ---
 
+## `get_creator_newsletter_posts`
+
+```sql
+FUNCTION public.get_creator_newsletter_posts(
+  p_creator_profile_id uuid,
+  p_limit  integer     DEFAULT 20,
+  p_cursor timestamptz DEFAULT NULL,
+  p_search varchar     DEFAULT NULL
+)
+RETURNS TABLE (
+  post_id, profile_id,
+  author_display_name, author_username, author_avatar_url,
+  title, slug, subtitle, cover_image_url, excerpt,
+  is_members_only, is_pay_per_post, price, tags, reading_time_minutes,
+  view_count, like_count, published_at,
+  is_liked boolean,
+  has_access boolean,
+  access_badge text  -- 'free' | 'members_only' | 'paid' | 'members_only_and_paid'
+)
+```
+
+**Callable by anon and authenticated.** Powers creator profile cards — shows all published public posts for a specific creator regardless of who is viewing.
+
+- `is_liked` is always `false` for unauthenticated callers; computed for authenticated viewers.
+- `has_access` and `access_badge` are computed contextually for the viewer.
+- No interaction required — this is a pure browse function.
+
+### Pagination
+
+Cursor-based on `published_at DESC`. Pass the last row's `published_at` as `p_cursor` for the next page.
+
+---
+
 ## `get_reader_feed`
 
 ```sql
 FUNCTION public.get_reader_feed(
-  p_profile_id varchar,
-  p_filter varchar     DEFAULT 'all',  -- 'all' | 'liked' | 'owned'
+  p_filter varchar     DEFAULT 'all',  -- 'all' | 'liked' | 'owned' | 'subscribed'
   p_limit  integer     DEFAULT 20,
   p_cursor timestamptz DEFAULT NULL,
   p_from   timestamptz DEFAULT NULL,
@@ -307,13 +340,16 @@ RETURNS TABLE (
 )
 ```
 
+**Authenticated only.** Returns posts where the viewer has some interaction. If the viewer has no interactions, the feed is empty. Powers the supporter dashboard.
+
 ### Filters
 
 | `p_filter` | What is returned |
 |---|---|
-| `'all'` | All published public posts |
-| `'liked'` | Only posts the authenticated viewer has liked |
-| `'owned'` | Only posts with a valid `post_access_grants` row for the viewer |
+| `'all'` | Posts where the viewer has **any** interaction: liked OR has an access grant OR has active membership with that creator |
+| `'liked'` | Only posts the viewer has liked |
+| `'owned'` | Only posts with a valid `post_access_grants` row (purchased or gifted) |
+| `'subscribed'` | Only posts from creators the viewer has an active newsletter membership with |
 
 ### `has_access` Logic (in-query)
 
