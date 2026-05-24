@@ -1,6 +1,7 @@
 {
   "name": "@hobenakicoffee/libraries",
   "version": "5.12.1",
+  "license": "MIT",
   "type": "module",
   "types": "src/index.ts",
   "repository": {
