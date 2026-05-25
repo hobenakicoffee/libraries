@@ -21,12 +21,12 @@ describe("ServiceTypes", () => {
 
   test("should have correct values for each service type", () => {
     expect(ServiceTypes.GIFT).toBe("gift");
-    expect(ServiceTypes.DIGITAL_CONTENT).toBe("digital_content");
-    expect(ServiceTypes.MY_SHOP).toBe("my_shop");
-    expect(ServiceTypes.CONSULTANCY_1ON1).toBe("consultancy_1on1");
-    expect(ServiceTypes.HIRE_ME).toBe("hire_me");
+    expect(ServiceTypes.DIGITAL_CONTENT).toBe("digital-content");
+    expect(ServiceTypes.MY_SHOP).toBe("shop");
+    expect(ServiceTypes.CONSULTANCY_1ON1).toBe("consultancy");
+    expect(ServiceTypes.HIRE_ME).toBe("hire");
     expect(ServiceTypes.COURSES).toBe("courses");
-    expect(ServiceTypes.LIVE_STREAMS).toBe("live_streams");
+    expect(ServiceTypes.LIVE_STREAMS).toBe("live-streaming");
     expect(ServiceTypes.NEWSLETTER).toBe("newsletter");
     expect(ServiceTypes.WITHDRAWAL).toBe("withdrawal");
     expect(ServiceTypes.FOLLOW).toBe("follow");
@@ -52,7 +52,7 @@ describe("ServiceTypes", () => {
     for (const type of Object.values(ServiceTypes)) {
       expect(typeof type).toBe("string");
       // Check that it only contains lowercase letters, numbers, and underscores
-      expect(type).toMatch(/^[a-z0-9_]+$/);
+      expect(type).toMatch(/^[a-z0-9-]+$/);
     }
   });
 });
