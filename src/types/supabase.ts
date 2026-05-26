@@ -3993,6 +3993,8 @@ export type Database = {
       upsert_shop_settings: {
         Args: {
           p_banner_url?: string;
+          p_clear_banner_url?: boolean;
+          p_clear_logo_url?: boolean;
           p_cod_enabled?: boolean;
           p_is_active?: boolean;
           p_logo_url?: string;

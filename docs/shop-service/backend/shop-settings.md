@@ -118,18 +118,34 @@ public.upsert_shop_settings(
   p_is_active               boolean default null,
   p_theme_config            jsonb   default null,
   p_seo_title               varchar default null,
-  p_seo_description          varchar default null,
+  p_seo_description         varchar default null,
   p_shipping_fee_inside_dhaka   numeric(10,2) default null,
   p_shipping_fee_outside_dhaka  numeric(10,2) default null,
   p_processing_min_days         integer        default null,
   p_processing_max_days         integer        default null,
   p_requires_shipping           boolean        default null,
   p_cod_enabled                 boolean        default null,
-  p_shipping_from_address       jsonb          default null
+  p_shipping_from_address       jsonb          default null,
+  p_clear_banner_url            boolean        default false,
+  p_clear_logo_url              boolean        default false
 ) → jsonb
 ```
 
 All fields are optional — only non-null values update. `theme_config` is **merged** (not replaced) via JSONB `||` operator.
+
+#### Clearing image fields
+
+Because `null` is also used to mean "leave unchanged", passing `null` for `p_banner_url` or `p_logo_url` does **not** clear the field. Use the explicit-clear flags instead:
+
+```sql
+-- remove banner
+upsert_shop_settings(p_clear_banner_url := true)
+
+-- remove logo
+upsert_shop_settings(p_clear_logo_url := true)
+```
+
+Setting `p_clear_banner_url = true` takes precedence over any value in `p_banner_url`.
 
 #### Reactivation gate
 

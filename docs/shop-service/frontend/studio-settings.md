@@ -39,6 +39,20 @@ Settings panels under `/studio/shop/settings/*`:
 | `policies` | Per-type markdown overrides | `upsert_shop_policy`, `delete_shop_policy` |
 | `theme` | Color, typography, layout — see [Theming](./theming) | `upsert_shop_settings` |
 
+### Removing logo or banner
+
+Passing `null` for `p_logo_url` / `p_banner_url` is treated as "leave unchanged" by the RPC (coalesce semantics). To actually clear an image, pass the explicit-clear flag:
+
+```ts
+// remove banner
+mutate({ clearBannerUrl: true })
+
+// remove logo
+mutate({ clearLogoUrl: true })
+```
+
+The `UpsertShopSettingsParams` interface exposes `clearBannerUrl?: boolean` and `clearLogoUrl?: boolean` which map to `p_clear_banner_url` / `p_clear_logo_url` in the RPC.
+
 ---
 
 ## Basic info form
