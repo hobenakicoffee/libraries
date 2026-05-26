@@ -1,11 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import type {
   ShopApprovalStatus as ShopApprovalStatusType,
+  ShopPolicyType as ShopPolicyTypeType,
   ShopProductType as ShopProductTypeType,
 } from "./shop-service";
 import {
   MAX_PRODUCT_PRICE,
   ShopApprovalStatuses,
+  ShopPolicyTypes,
   ShopProductTypes,
 } from "./shop-service";
 
@@ -92,5 +94,64 @@ describe("ShopApprovalStatus type", () => {
   test("should accept 'rejected' as a valid status", () => {
     const validStatus: ShopApprovalStatusType = "rejected";
     expect(validStatus).toBe("rejected");
+  });
+});
+
+describe("ShopPolicyTypes", () => {
+  test("should contain all expected policy type keys", () => {
+    const expectedKeys = [
+      "return_refund",
+      "digital_products",
+      "shipping",
+      "privacy",
+      "terms_of_service",
+    ];
+    expect(Object.keys(ShopPolicyTypes)).toEqual(expectedKeys);
+  });
+
+  test("should have correct values for each policy type", () => {
+    expect(ShopPolicyTypes.return_refund).toBe("return_refund");
+    expect(ShopPolicyTypes.digital_products).toBe("digital_products");
+    expect(ShopPolicyTypes.shipping).toBe("shipping");
+    expect(ShopPolicyTypes.privacy).toBe("privacy");
+    expect(ShopPolicyTypes.terms_of_service).toBe("terms_of_service");
+  });
+
+  test("should have 5 policy types", () => {
+    expect(Object.keys(ShopPolicyTypes).length).toBe(5);
+  });
+
+  test("all values should be lowercase strings with underscores", () => {
+    for (const type of Object.values(ShopPolicyTypes)) {
+      expect(typeof type).toBe("string");
+      expect(type).toMatch(/^[a-z_]+$/);
+    }
+  });
+});
+
+describe("ShopPolicyType type", () => {
+  test("should accept 'return_refund' as a valid type", () => {
+    const validType: ShopPolicyTypeType = "return_refund";
+    expect(validType).toBe("return_refund");
+  });
+
+  test("should accept 'digital_products' as a valid type", () => {
+    const validType: ShopPolicyTypeType = "digital_products";
+    expect(validType).toBe("digital_products");
+  });
+
+  test("should accept 'shipping' as a valid type", () => {
+    const validType: ShopPolicyTypeType = "shipping";
+    expect(validType).toBe("shipping");
+  });
+
+  test("should accept 'privacy' as a valid type", () => {
+    const validType: ShopPolicyTypeType = "privacy";
+    expect(validType).toBe("privacy");
+  });
+
+  test("should accept 'terms_of_service' as a valid type", () => {
+    const validType: ShopPolicyTypeType = "terms_of_service";
+    expect(validType).toBe("terms_of_service");
   });
 });

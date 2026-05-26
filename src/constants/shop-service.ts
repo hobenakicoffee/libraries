@@ -16,3 +16,14 @@ export const ShopApprovalStatuses = {
 
 export type ShopApprovalStatus =
   (typeof ShopApprovalStatuses)[keyof typeof ShopApprovalStatuses];
+
+export const ShopPolicyTypes = {
+  return_refund: "return_refund",
+  digital_products: "digital_products",
+  shipping: "shipping",
+  privacy: "privacy",
+  terms_of_service: "terms_of_service",
+} as const;
+
+export type ShopPolicyType =
+  (typeof ShopPolicyTypes)[keyof typeof ShopPolicyTypes];
