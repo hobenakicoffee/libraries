@@ -2494,6 +2494,7 @@ export type Database = {
           processing_min_days: number | null;
           profile_id: string;
           requires_shipping: boolean;
+          seo_custom_meta_tags: Json | null;
           seo_description: string | null;
           seo_title: string | null;
           shipping_fee_inside_dhaka: number | null;
@@ -2520,6 +2521,7 @@ export type Database = {
           processing_min_days?: number | null;
           profile_id: string;
           requires_shipping?: boolean;
+          seo_custom_meta_tags?: Json | null;
           seo_description?: string | null;
           seo_title?: string | null;
           shipping_fee_inside_dhaka?: number | null;
@@ -2546,6 +2548,7 @@ export type Database = {
           processing_min_days?: number | null;
           profile_id?: string;
           requires_shipping?: boolean;
+          seo_custom_meta_tags?: Json | null;
           seo_description?: string | null;
           seo_title?: string | null;
           shipping_fee_inside_dhaka?: number | null;
@@ -4001,6 +4004,7 @@ export type Database = {
           p_processing_max_days?: number;
           p_processing_min_days?: number;
           p_requires_shipping?: boolean;
+          p_seo_custom_meta_tags?: Json;
           p_seo_description?: string;
           p_seo_title?: string;
           p_shipping_fee_inside_dhaka?: number;

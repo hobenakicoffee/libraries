@@ -52,6 +52,7 @@ create table public.shop_settings (
   theme_config        jsonb        not null default '{}',
   seo_title           varchar(60),
   seo_description     varchar(160),
+  seo_custom_meta_tags jsonb,   -- [{ "name": "...", "content": "..." }, ...]
 
   -- Shop-level shipping defaults (null = fall through to platform_settings)
   shipping_fee_inside_dhaka   numeric(10,2),   -- null → platform default 85
@@ -119,6 +120,7 @@ public.upsert_shop_settings(
   p_theme_config            jsonb   default null,
   p_seo_title               varchar default null,
   p_seo_description         varchar default null,
+  p_seo_custom_meta_tags    jsonb   default null,   -- [{ "name": "...", "content": "..." }]
   p_shipping_fee_inside_dhaka   numeric(10,2) default null,
   p_shipping_fee_outside_dhaka  numeric(10,2) default null,
   p_processing_min_days         integer        default null,
@@ -131,7 +133,7 @@ public.upsert_shop_settings(
 ) → jsonb
 ```
 
-All fields are optional — only non-null values update. `theme_config` is **merged** (not replaced) via JSONB `||` operator.
+All fields are optional — only non-null values update. `theme_config` is **merged** (not replaced) via JSONB `||` operator. `p_seo_custom_meta_tags` **replaces** the entire array when non-null (pass `null` to leave unchanged).
 
 #### Clearing image fields
 
@@ -266,6 +268,22 @@ When ineligible:
   "settlement_max_days": 30
 }
 ```
+
+## Custom Meta Tags
+
+`shop_settings.seo_custom_meta_tags` stores an optional JSONB array of extra `<meta>` tags injected by Astro SSR into the shop page `<head>`:
+
+```json
+[
+  { "name": "theme-color", "content": "#1a1a1a" },
+  { "name": "robots",      "content": "index, follow" }
+]
+```
+
+- Tags are ordered as stored — first tag wins if names collide.
+- Maximum 10 tags enforced by the Studio UI (not the DB).
+- Tags with an empty `name` are stripped before saving.
+- Pass `null` for `p_seo_custom_meta_tags` to leave the stored value unchanged. Pass an empty array `[]` to clear all tags.
 
 ## Shipping Defaults
 
@@ -427,7 +445,8 @@ Settings panels under `/studio/shop/settings/*`:
 
 | Sub-route | Panel | RPC |
 |---|---|---|
-| `basic` | Shop name, description, logo, banner, SEO, active toggle | `upsert_shop_settings` |
+| `basic` | Shop name, description, logo, banner, active toggle | `upsert_shop_settings` |
+| `seo` | Meta title, description, banner image, favicon, custom meta tags | `upsert_shop_settings` |
 | `shipping` | Shop-level shipping defaults + per-product overrides | `upsert_shop_settings`, `upsert_shop_product` |
 | `policies` | Per-type markdown overrides | `upsert_shop_policy`, `delete_shop_policy` |
 | `theme` | Color, typography, layout | `upsert_shop_settings` |

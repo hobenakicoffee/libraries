@@ -8,8 +8,11 @@ The [Shop Settings](../backend/shop-settings) page has complete documentation on
 graph TB
     subgraph "/studio/shop/settings/*"
         A[basic] --> B[Shop Config]
-        A --> C[SEO]
         A --> D[Logo/Banner]
+        
+        C[seo] --> C1[Meta Title/Description]
+        C --> C2[Meta Image/Favicon]
+        C --> C3[Custom Meta Tags]
         
         E[shipping] --> F[Bulk Shipping Rates]
         F --> G[All Physical Products]
@@ -34,7 +37,8 @@ Settings panels under `/studio/shop/settings/*`:
 
 | Sub-route | Panel | RPC |
 |---|---|---|
-| `basic` | Shop name, description, logo, banner, SEO, active toggle | `upsert_shop_settings` |
+| `basic` | Shop name, description, logo, banner, active toggle | `upsert_shop_settings` |
+| `seo` | Meta title, description, banner image, favicon, custom meta tags | `upsert_shop_settings` |
 | `shipping` | Shop-level shipping defaults + per-product overrides | `upsert_shop_settings`, `upsert_shop_product` |
 | `policies` | Per-type markdown overrides | `upsert_shop_policy`, `delete_shop_policy` |
 | `theme` | Color, typography, layout — see [Theming](./theming) | `upsert_shop_settings` |
@@ -125,6 +129,61 @@ const toggleMutation = useMutation({
 ```
 
 When `p_is_active = false`, the RPC sets `deactivation_reason = 'manual'`. When `p_is_active = true` and eligibility passes, it clears `deactivation_reason`.
+
+---
+
+## SEO settings
+
+The `seo` sub-route manages all `<head>` metadata for the public shop page.
+
+### Fields
+
+| Field | DB column | Max |
+|---|---|---|
+| Meta title | `seo_title` | 60 chars |
+| Meta description | `seo_description` | 160 chars |
+| Meta image (OG banner) | `banner_url` | — |
+| Favicon | `logo_url` | — |
+| Custom meta tags | `seo_custom_meta_tags` | 10 tags |
+
+### Custom meta tags (Advanced section)
+
+An array of `{ name, content }` pairs stored as JSONB. Injected verbatim as `<meta name="…" content="…">` by Astro SSR.
+
+```ts
+// Shape stored in seo_custom_meta_tags
+type CustomMetaTag = { name: string; content: string };
+```
+
+UI behaviour:
+- Tags with an empty `name` are stripped before the mutation is called.
+- Maximum 10 tags — the "Add tag" button is hidden once the limit is reached.
+- Saving passes the full array to `p_seo_custom_meta_tags`; passing `null` leaves the stored value unchanged.
+
+```ts
+// In the form submit handler:
+await upsertSettings.mutateAsync({
+  seoTitle:        value.metaTitle,
+  seoDescription:  value.metaDescription,
+  customMetaTags:  localCustomTags.filter((t) => t.name.trim()),
+  // ...image change flags
+});
+```
+
+### SEO score checklist
+
+The live SEO score panel (`SeoScore`) and search preview (`SeoPreview`) include a checklist. Items and their point values:
+
+| Checklist item | Points | Controlled by |
+|---|---|---|
+| Meta Title | 25 | Seller |
+| Meta Description | 25 | Seller |
+| Meta Image | 20 | Seller |
+| Favicon | 10 | Seller |
+| Robots.txt | 8 | Platform |
+| Sitemap | 8 | Platform |
+| Structured Data | 4 | Platform |
+| Custom Meta Tags | 0 (informational) | Seller |
 
 ---
 
