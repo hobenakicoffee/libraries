@@ -52,7 +52,7 @@ bun add @hobenakicoffee/libraries
 
 ## Usage
 
-This package exposes multiple entry points:
+This package exposes multiple entry points. You can import from the main entry or specific submodules.
 
 ```ts
 // Main entry - constants
