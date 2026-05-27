@@ -47,8 +47,9 @@ export function ShopOverview() {
   if (isLoading) return <ShopOverviewSkeleton />;
   if (!data?.success) return <ErrorState />;
 
-  const { revenue, orders, products, pending_count, cash_pending_count,
-          top_selling, recent_orders, eligibility } = data;
+  const { revenue, orders, products, pending_count, pending_last_30,
+          pending_prev_30, cash_pending_count, top_selling,
+          recent_orders, eligibility } = data;
 
   return (
     <div className="space-y-8">

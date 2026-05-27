@@ -8,15 +8,21 @@ flowchart TB
         B --> D[prev_30_days]
         B --> E[all_time]
         
-        F[Order Counts] --> G[same buckets]
+        F[Order Counts] --> H[same buckets]
         
-        H[Metrics] --> I[pending_count<br/>physical items in processing]
-        H --> J[cash_pending_count<br/>COD delivered, unsettled]
+        I[Products] --> J[published]
+        I --> K[last_30_days / prev_30_days<br/>newly active growth delta]
         
-        K[Top Items] --> L[sales_count desc]
-        M[Recent Orders] --> N[created_at desc]
+        L[Metrics] --> M[pending_count<br/>physical items in processing]
+        L --> N[pending_last_30 / pending_prev_30<br/>processing items delta]
+        L --> O[cash_pending_count<br/>COD delivered, unsettled]
         
-        O[Eligibility] --> P[check_shop_active_eligibility]
+        P[Top Items] --> Q[sales_count desc]
+        R[Recent Orders] --> S[created_at desc]
+        
+        T[Eligibility] --> U[check_shop_active_eligibility]
+        
+        B --> V[sparkline<br/>30-day daily array]
     end
     
     subgraph "Auto-Deactivate Cron"
@@ -43,7 +49,13 @@ Single-call RPC that powers the Creator Studio Overview tab. Aggregates revenue,
   "revenue": {
     "all_time": 48200.00,
     "last_30_days": 8400.00,
-    "prev_30_days": 6200.00
+    "prev_30_days": 6200.00,
+    "sparkline": [
+      { "day": "2026-04-28", "value": 0 },
+      { "day": "2026-04-29", "value": 1200.00 },
+      { "day": "2026-04-30", "value": 0 },
+      { "day": "2026-05-01", "value": 850.00 }
+    ]
   },
   "orders": {
     "all_time": 87,
@@ -51,9 +63,13 @@ Single-call RPC that powers the Creator Studio Overview tab. Aggregates revenue,
     "prev_30_days": 11
   },
   "products": {
-    "published": 6
+    "published": 6,
+    "last_30_days": 3,
+    "prev_30_days": 1
   },
   "pending_count": 3,
+  "pending_last_30": 2,
+  "pending_prev_30": 4,
   "cash_pending_count": 1,
   "top_selling": [
     {
@@ -92,13 +108,18 @@ Single-call RPC that powers the Creator Studio Overview tab. Aggregates revenue,
 ### What each field means
 
 | Field | Definition |
-|---|---|
+|---|---|---|
 | `revenue.all_time` | Sum of `seller_net` on orders where `transaction_reference_id IS NOT NULL OR cod_settled_at IS NOT NULL` |
 | `revenue.last_30_days` | Same filter, `created_at >= now() - 30 days` |
 | `revenue.prev_30_days` | Same filter, `60 days ago → 30 days ago` (for % delta) |
+| `revenue.sparkline` | 30-element array of `{ day, value }` — daily `seller_net` for last 30 days via `generate_series`, zero-filled for days with no revenue |
 | `orders.*` | Counts all orders (not just settled) for same buckets |
 | `products.published` | Active + not-deleted products |
+| `products.last_30_days` | Products created (and active) in last 30 days |
+| `products.prev_30_days` | Products created (and active) 60–30 days ago (for % delta) |
 | `pending_count` | Physical items in `processing` — seller should ship these |
+| `pending_last_30` | Processing items from orders placed in last 30 days |
+| `pending_prev_30` | Processing items from orders placed 60–30 days ago (for % delta) |
 | `cash_pending_count` | COD items in `delivered` with `cod_settled_at IS NULL` — seller should confirm cash |
 | `top_selling` | Top 5 by `sales_count`, active + not-deleted |
 | `recent_orders` | Latest 5 by `created_at` with computed status |
@@ -125,6 +146,18 @@ const { data } = useQuery({
 
 // Derive % delta for the revenue card
 const revenueDelta = percentDelta(data.revenue.last_30_days, data.revenue.prev_30_days);
+
+// Render a mini sparkline chart from the 30-point array
+const sparklineData = data.revenue.sparkline.map(({ day, value }) => ({
+  date: new Date(day),
+  revenue: value,
+}));
+
+// Derive % delta for pending items
+const pendingDelta = percentDelta(data.pending_last_30, data.pending_prev_30);
+
+// Derive % delta for product growth
+const productDelta = percentDelta(data.products.last_30_days, data.products.prev_30_days);
 
 // Use eligibility directly for the banner
 if (!data.eligibility.eligible) {
