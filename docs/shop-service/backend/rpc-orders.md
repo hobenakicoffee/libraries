@@ -131,7 +131,7 @@ public.get_buyer_orders(
 
 Paginated order history for the authenticated buyer. Uses `created_at` as the cursor — pass the `created_at` of the last item in the previous page.
 
-Returns lightweight order cards (not full detail):
+Returns lightweight order cards (not full detail). Includes a computed `status` field using the same logic as `get_order_by_number` (see [computed status logic](#computed-status-logic)):
 
 ```json
 {
@@ -140,6 +140,7 @@ Returns lightweight order cards (not full detail):
     {
       "order_number": "SHOP-20240115-A3F2",
       "payment_method": "cod",
+      "status": "processing",
       "has_digital": false,
       "has_physical": true,
       "subtotal": 1700.00,

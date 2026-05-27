@@ -59,7 +59,10 @@ export function OrderHistory() {
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-medium">{o.order_number}</div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{o.order_number}</span>
+                  <OrderStatusBadge status={o.status} />
+                </div>
                 <div className="text-sm text-muted-foreground">
                   {o.item_count} item{o.item_count !== 1 ? 's' : ''} ·{' '}
                   ৳{(o.subtotal + o.shipping_total).toLocaleString()} ·{' '}
