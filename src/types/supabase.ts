@@ -1717,6 +1717,56 @@ export type Database = {
         };
         Relationships: [];
       };
+      reviews: {
+        Row: {
+          content: string | null;
+          created_at: string;
+          entity_id: string;
+          entity_type: string;
+          id: string;
+          is_deleted: boolean;
+          is_hidden: boolean;
+          is_verified_purchase: boolean;
+          profile_id: string;
+          rating: number;
+          updated_at: string;
+        };
+        Insert: {
+          content?: string | null;
+          created_at?: string;
+          entity_id: string;
+          entity_type: string;
+          id?: string;
+          is_deleted?: boolean;
+          is_hidden?: boolean;
+          is_verified_purchase?: boolean;
+          profile_id: string;
+          rating: number;
+          updated_at?: string;
+        };
+        Update: {
+          content?: string | null;
+          created_at?: string;
+          entity_id?: string;
+          entity_type?: string;
+          id?: string;
+          is_deleted?: boolean;
+          is_hidden?: boolean;
+          is_verified_purchase?: boolean;
+          profile_id?: string;
+          rating?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reviews_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       service_requests: {
         Row: {
           admin_note: string | null;
@@ -2383,6 +2433,8 @@ export type Database = {
           processing_min_days: number | null;
           product_type: Database["public"]["Enums"]["shop_product_type_enum"];
           profile_id: string;
+          rating_avg: number | null;
+          rating_count: number;
           requires_shipping: boolean;
           sales_count: number;
           shipping_fee_inside_dhaka: number;
@@ -2417,6 +2469,8 @@ export type Database = {
           processing_min_days?: number | null;
           product_type: Database["public"]["Enums"]["shop_product_type_enum"];
           profile_id: string;
+          rating_avg?: number | null;
+          rating_count?: number;
           requires_shipping?: boolean;
           sales_count?: number;
           shipping_fee_inside_dhaka?: number;
@@ -2451,6 +2505,8 @@ export type Database = {
           processing_min_days?: number | null;
           product_type?: Database["public"]["Enums"]["shop_product_type_enum"];
           profile_id?: string;
+          rating_avg?: number | null;
+          rating_count?: number;
           requires_shipping?: boolean;
           sales_count?: number;
           shipping_fee_inside_dhaka?: number;
@@ -3194,6 +3250,7 @@ export type Database = {
         Args: { p_comment_id: number };
         Returns: undefined;
       };
+      delete_review: { Args: { p_review_id: string }; Returns: Json };
       delete_shop_category: { Args: { p_category_id: string }; Returns: Json };
       delete_shop_policy: {
         Args: {
@@ -3474,6 +3531,19 @@ export type Database = {
         Args: { p_product_slug: string; p_username: string };
         Returns: Json;
       };
+      get_product_reviews: {
+        Args: { p_cursor?: string; p_entity_id: string; p_limit?: number };
+        Returns: {
+          content: string;
+          created_at: string;
+          is_verified_purchase: boolean;
+          rating: number;
+          review_id: string;
+          reviewer_avatar_url: string;
+          reviewer_username: string;
+          updated_at: string;
+        }[];
+      };
       get_reader_feed: {
         Args: {
           p_cursor?: string;
@@ -3702,6 +3772,7 @@ export type Database = {
         };
         Returns: boolean;
       };
+      hide_review: { Args: { p_review_id: string }; Returns: Json };
       increment_creator_subscription_usage: {
         Args: {
           p_amount: number;
@@ -3927,6 +3998,15 @@ export type Database = {
           p_order_item_id: string;
           p_tracking_number: string;
           p_tracking_url?: string;
+        };
+        Returns: Json;
+      };
+      upsert_review: {
+        Args: {
+          p_content?: string;
+          p_entity_id: string;
+          p_entity_type: string;
+          p_rating: number;
         };
         Returns: Json;
       };
