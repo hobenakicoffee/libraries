@@ -79,6 +79,10 @@ export default withMermaid(
                 text: "Managers & RBAC",
                 link: "/managers-and-rbac/backend/",
               },
+              {
+                text: "Creator Reports",
+                link: "/reports/backend/",
+              },
             ],
           },
         ],
@@ -527,6 +531,24 @@ export default withMermaid(
                     link: "/managers-and-rbac/backend/rpcs",
                   },
                 ],
+              },
+            ],
+          },
+        ],
+        "/reports/": [
+          ...common,
+          {
+            text: "Creator Reports",
+            items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [{ text: "Overview", link: "/reports/frontend/" }],
+              },
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [{ text: "Overview", link: "/reports/backend/" }],
               },
             ],
           },

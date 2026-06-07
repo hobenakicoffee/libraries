@@ -276,6 +276,120 @@ export type Database = {
           },
         ];
       };
+      creator_report_summary: {
+        Row: {
+          creator_id: string;
+          flagged_at: string | null;
+          is_flagged: boolean;
+          last_reported_at: string | null;
+          pending_reports: number;
+          total_reports: number;
+          updated_at: string;
+        };
+        Insert: {
+          creator_id: string;
+          flagged_at?: string | null;
+          is_flagged?: boolean;
+          last_reported_at?: string | null;
+          pending_reports?: number;
+          total_reports?: number;
+          updated_at?: string;
+        };
+        Update: {
+          creator_id?: string;
+          flagged_at?: string | null;
+          is_flagged?: boolean;
+          last_reported_at?: string | null;
+          pending_reports?: number;
+          total_reports?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "creator_report_summary_creator_id_fkey";
+            columns: ["creator_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      creator_reports: {
+        Row: {
+          category: Database["public"]["Enums"]["report_category"];
+          created_at: string;
+          creator_id: string;
+          description: string | null;
+          email_notified_at: string | null;
+          evidence_file_path: string | null;
+          evidence_url: string | null;
+          id: string;
+          reporter_email: string;
+          reporter_user_id: string | null;
+          resolution_note: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          severity_score: number;
+          status: string;
+        };
+        Insert: {
+          category: Database["public"]["Enums"]["report_category"];
+          created_at?: string;
+          creator_id: string;
+          description?: string | null;
+          email_notified_at?: string | null;
+          evidence_file_path?: string | null;
+          evidence_url?: string | null;
+          id?: string;
+          reporter_email: string;
+          reporter_user_id?: string | null;
+          resolution_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          severity_score?: number;
+          status?: string;
+        };
+        Update: {
+          category?: Database["public"]["Enums"]["report_category"];
+          created_at?: string;
+          creator_id?: string;
+          description?: string | null;
+          email_notified_at?: string | null;
+          evidence_file_path?: string | null;
+          evidence_url?: string | null;
+          id?: string;
+          reporter_email?: string;
+          reporter_user_id?: string | null;
+          resolution_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          severity_score?: number;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "creator_reports_creator_id_fkey";
+            columns: ["creator_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "creator_reports_reporter_user_id_fkey";
+            columns: ["reporter_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "creator_reports_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       creator_subscription_notifications: {
         Row: {
           id: number;
@@ -950,30 +1064,6 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
-      };
-      messages_2026_04: {
-        Row: {
-          content: string;
-          conversation_id: string;
-          created_at: string;
-          id: number;
-          sender_id: string;
-        };
-        Insert: {
-          content: string;
-          conversation_id: string;
-          created_at?: string;
-          id?: number;
-          sender_id: string;
-        };
-        Update: {
-          content?: string;
-          conversation_id?: string;
-          created_at?: string;
-          id?: number;
-          sender_id?: string;
-        };
-        Relationships: [];
       };
       messages_2026_05: {
         Row: {
@@ -4219,6 +4309,16 @@ export type Database = {
         | "withdraw_release"
         | "withdraw_complete"
         | "manual_adjustment";
+      report_category:
+        | "bullying_or_harassment"
+        | "illegal_activity"
+        | "nudity_or_explicit_content"
+        | "hate_speech_or_discrimination"
+        | "inaccurate_or_misleading_info"
+        | "scam_or_fraud"
+        | "intellectual_property"
+        | "incomplete_or_unfulfilled_orders"
+        | "other";
       service_request_status:
         | "pending"
         | "reviewing"
@@ -4505,6 +4605,17 @@ export const Constants = {
         "withdraw_release",
         "withdraw_complete",
         "manual_adjustment",
+      ],
+      report_category: [
+        "bullying_or_harassment",
+        "illegal_activity",
+        "nudity_or_explicit_content",
+        "hate_speech_or_discrimination",
+        "inaccurate_or_misleading_info",
+        "scam_or_fraud",
+        "intellectual_property",
+        "incomplete_or_unfulfilled_orders",
+        "other",
       ],
       service_request_status: [
         "pending",
