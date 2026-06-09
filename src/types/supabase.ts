@@ -4084,9 +4084,11 @@ export type Database = {
       unpublish_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
       update_creator_report_status: {
         Args: {
+          p_manager_role?: Database["public"]["Enums"]["manager_role"];
           p_new_status: string;
           p_report_id: string;
           p_resolution_note?: string;
+          p_reviewer_id?: string;
         };
         Returns: Json;
       };
