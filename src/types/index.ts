@@ -18,7 +18,8 @@ export type ActivityType =
   | "post_approved"
   | "post_rejected"
   | "kyc_approved"
-  | "kyc_resubmit_requested";
+  | "kyc_resubmit_requested"
+  | "report_status_updated";
 
 export type ActivityMetadata = {
   type?: string;
@@ -59,6 +60,10 @@ export type ActivityMetadata = {
   product_id?: string;
   product_title?: string;
   submission_id?: string;
+  report_id?: string;
+  old_status?: string;
+  new_status?: string;
+  resolution_note?: string;
   action?: "follow" | "unfollow";
 };
 
