@@ -4082,6 +4082,14 @@ export type Database = {
       };
       unfollow_user: { Args: { target_user_id: string }; Returns: undefined };
       unpublish_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
+      update_creator_report_status: {
+        Args: {
+          p_new_status: string;
+          p_report_id: string;
+          p_resolution_note?: string;
+        };
+        Returns: Json;
+      };
       update_order_tracking: {
         Args: {
           p_carrier?: string;
