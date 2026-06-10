@@ -1,6 +1,7 @@
 export * from "./common";
 export * from "./divisions";
 export * from "./legal";
+export * from "./notifications";
 export * from "./payment";
 export * from "./platforms";
 export * from "./services";

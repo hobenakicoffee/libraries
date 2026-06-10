@@ -84,6 +84,10 @@ export default withMermaid(
                 link: "/reports/backend/",
               },
               {
+                text: "Notifications",
+                link: "/notifications/",
+              },
+              {
                 text: "Developer Training",
                 link: "/training/day-01-sql-basics",
               },
@@ -553,6 +557,19 @@ export default withMermaid(
                 text: "Backend",
                 collapsed: false,
                 items: [{ text: "Overview", link: "/reports/backend/" }],
+              },
+            ],
+          },
+        ],
+        "/notifications/": [
+          ...common,
+          {
+            text: "Notifications",
+            items: [
+              {
+                text: "Backend",
+                collapsed: false,
+                items: [{ text: "Overview", link: "/notifications/" }],
               },
             ],
           },

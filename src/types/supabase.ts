@@ -1444,6 +1444,75 @@ export type Database = {
           },
         ];
       };
+      notification_preference_overrides: {
+        Row: {
+          enabled: boolean;
+          notification_type_key: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          enabled: boolean;
+          notification_type_key: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          enabled?: boolean;
+          notification_type_key?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_preference_overrides_notification_type_key_fkey";
+            columns: ["notification_type_key"];
+            isOneToOne: false;
+            referencedRelation: "notification_types";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "notification_preference_overrides_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notification_types: {
+        Row: {
+          category: string;
+          created_at: string;
+          default_enabled: boolean;
+          description: string | null;
+          is_active: boolean;
+          key: string;
+          label: string;
+          service: string;
+        };
+        Insert: {
+          category: string;
+          created_at?: string;
+          default_enabled?: boolean;
+          description?: string | null;
+          is_active?: boolean;
+          key: string;
+          label: string;
+          service: string;
+        };
+        Update: {
+          category?: string;
+          created_at?: string;
+          default_enabled?: boolean;
+          description?: string | null;
+          is_active?: boolean;
+          key?: string;
+          label?: string;
+          service?: string;
+        };
+        Relationships: [];
+      };
       payout_methods: {
         Row: {
           created_at: string;
@@ -1715,6 +1784,7 @@ export type Database = {
           categories: string[] | null;
           created_at: string | null;
           display_name: string | null;
+          email_notifications_enabled: boolean;
           first_service_name: string | null;
           follower_count: number | null;
           following_count: number | null;
@@ -1748,6 +1818,7 @@ export type Database = {
           categories?: string[] | null;
           created_at?: string | null;
           display_name?: string | null;
+          email_notifications_enabled?: boolean;
           first_service_name?: string | null;
           follower_count?: number | null;
           following_count?: number | null;
@@ -1781,6 +1852,7 @@ export type Database = {
           categories?: string[] | null;
           created_at?: string | null;
           display_name?: string | null;
+          email_notifications_enabled?: boolean;
           first_service_name?: string | null;
           follower_count?: number | null;
           following_count?: number | null;
@@ -3555,6 +3627,10 @@ export type Database = {
           total_post_views: number;
         }[];
       };
+      get_notification_preferences: {
+        Args: { p_target_user_id?: string };
+        Returns: Json;
+      };
       get_or_create_direct_conversation: {
         Args: { p_recipient_id: string };
         Returns: string;
@@ -3881,6 +3957,10 @@ export type Database = {
         Returns: Json;
       };
       is_admin: { Args: never; Returns: boolean };
+      is_email_notification_enabled: {
+        Args: { p_type_key: string; p_user_id: string };
+        Returns: boolean;
+      };
       is_following: { Args: { target_user_id: string }; Returns: boolean };
       is_manager: { Args: { user_email: string }; Returns: boolean };
       mark_conversation_as_read: {
@@ -4055,6 +4135,14 @@ export type Database = {
           sender_id: string;
         }[];
       };
+      set_notification_preference: {
+        Args: {
+          p_enabled: boolean;
+          p_target_user_id?: string;
+          p_type_key: string;
+        };
+        Returns: Json;
+      };
       set_shop_active_by_manager: {
         Args: { p_is_active: boolean; p_profile_id: string };
         Returns: Json;
@@ -4090,6 +4178,10 @@ export type Database = {
           p_resolution_note?: string;
           p_reviewer_id?: string;
         };
+        Returns: Json;
+      };
+      update_email_notifications_enabled: {
+        Args: { p_enabled: boolean; p_target_user_id?: string };
         Returns: Json;
       };
       update_order_tracking: {
