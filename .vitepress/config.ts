@@ -83,6 +83,10 @@ export default withMermaid(
                 text: "Creator Reports",
                 link: "/reports/backend/",
               },
+              {
+                text: "Developer Training",
+                link: "/training/day-01-sql-basics",
+              },
             ],
           },
         ],
@@ -623,6 +627,120 @@ export default withMermaid(
                   {
                     text: "Platform Settings",
                     link: "/memberships-hub/backend/platform-settings",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        "/training/": [
+          ...common,
+          {
+            text: "Developer Training",
+            items: [
+              { text: "Overview", link: "/training/day-01-sql-basics" },
+              {
+                text: "Week 1: SQL Foundations",
+                collapsed: false,
+                items: [
+                  {
+                    text: "Day 1: SQL Basics",
+                    link: "/training/day-01-sql-basics",
+                  },
+                  {
+                    text: "Day 2: SQL CRUD",
+                    link: "/training/day-02-sql-crud",
+                  },
+                  {
+                    text: "Day 3: SQL Joins",
+                    link: "/training/day-03-sql-joins",
+                  },
+                  {
+                    text: "Day 4: Functions & Aggregates",
+                    link: "/training/day-04-sql-functions-aggregates",
+                  },
+                  {
+                    text: "Day 5: Constraints, Indexes & Enums",
+                    link: "/training/day-05-sql-constraints-indexes-enums",
+                  },
+                ],
+              },
+              {
+                text: "Week 2: PostgreSQL & Supabase Core",
+                collapsed: false,
+                items: [
+                  {
+                    text: "Day 6: PL/pgSQL & Triggers",
+                    link: "/training/day-06-plpgsql-triggers",
+                  },
+                  {
+                    text: "Day 7: Supabase Auth",
+                    link: "/training/day-07-supabase-auth",
+                  },
+                  {
+                    text: "Day 8: Row Level Security",
+                    link: "/training/day-08-row-level-security",
+                  },
+                  {
+                    text: "Day 9: Edge Functions",
+                    link: "/training/day-09-edge-functions",
+                  },
+                  { text: "Day 10: Storage", link: "/training/day-10-storage" },
+                ],
+              },
+              {
+                text: "Week 3: Project Deep-Dives",
+                collapsed: false,
+                items: [
+                  {
+                    text: "Day 11: Schema Walkthrough",
+                    link: "/training/day-11-schema-walkthrough",
+                  },
+                  {
+                    text: "Day 12: RBAC & JWT",
+                    link: "/training/day-12-rbac-jwt",
+                  },
+                  {
+                    text: "Day 13: Wallets & Transactions",
+                    link: "/training/day-13-wallets-transactions",
+                  },
+                  {
+                    text: "Day 14: Edge Functions Deep-Dive",
+                    link: "/training/day-14-edge-functions-deepdive",
+                  },
+                  {
+                    text: "Day 15: Testing & Migrations",
+                    link: "/training/day-15-testing-migrations",
+                  },
+                ],
+              },
+              {
+                text: "Week 4: Advanced SQL Patterns",
+                collapsed: false,
+                items: [
+                  {
+                    text: "Day 16: CTEs, Subqueries & CASE",
+                    link: "/training/day-16-cte-subqueries-case",
+                  },
+                  {
+                    text: "Day 17: Transactions & Locking",
+                    link: "/training/day-17-transactions-locking",
+                  },
+                  {
+                    text: "Day 18: Error Handling in PL/pgSQL",
+                    link: "/training/day-18-error-handling-plpgsql",
+                  },
+                  {
+                    text: "Day 19: Full-Text Search",
+                    link: "/training/day-19-full-text-search",
+                  },
+                  {
+                    text: "Day 20: Table Partitioning",
+                    link: "/training/day-20-table-partitioning",
+                  },
+                  {
+                    text: "Day 21: Cron, Aggregation & Grants",
+                    link: "/training/day-21-cron-aggregation-grants",
                   },
                 ],
               },
