@@ -210,7 +210,8 @@ The nightly cron function (runs at **22:00 UTC / 04:00 BDT**) that generates in-
 
 1. Inserts an `activities` row with `role = 'system'`, `visibility = 'private'`, scoped to the member.
 2. Inserts a `membership_notifications` row (`ON CONFLICT DO NOTHING` for dedup).
-3. Accumulates a batch for the `notify-membership-expiry` Edge Function (currently stubbed with a TODO comment — wire up when the email service is ready).
+
+The activity insert triggers `on_activity_insert_queue_email`, which resolves the `membership.expiring` notification type via `resolve_activity_notification_key()` and queues an email (sent via `dispatch_pending_email_notifications()` and the `send-notification-emails` Edge Function) if the recipient has it enabled.
 
 #### Hard cutoff
 

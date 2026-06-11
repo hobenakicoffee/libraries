@@ -279,6 +279,19 @@ The `WITH CHECK` constraint on the update policy prevents setting `is_dismissed`
 
 ---
 
+## Email Notifications
+
+Every insert into `activities` fires the `on_activity_insert_queue_email`
+trigger (`queue_activity_email_notification()`), which maps the activity to a
+`notification_types` key and — if email notifications are enabled for that
+user/type — queues a row in `email_notification_queue` for async delivery.
+This never blocks or affects the in-app activity row, which is always
+inserted regardless. See
+[Email Sending Pipeline](../../notifications/index.md#email-sending-pipeline-email_notificationssql)
+for the full flow.
+
+---
+
 ## Indexes
 
 | Index | Columns | Purpose |

@@ -127,3 +127,99 @@ on conflict (key) do nothing;
 ```
 
 No changes needed to `profiles`, `notification_preference_overrides`, RLS, or RPCs — the settings page and `is_email_notification_enabled()` pick up new types automatically.
+
+---
+
+## Email Sending Pipeline (`email_notifications.sql`)
+
+While the in-app activity feed (`public.activities`) always receives a row for
+every event, the corresponding **email** is only sent if
+`is_email_notification_enabled()` returns true for that user/type. This is
+implemented in `backend/supabase/schemas/email_notifications.sql`.
+
+```mermaid
+flowchart LR
+    A[activities INSERT] -->|trigger| B[queue_activity_email_notification]
+    B -->|resolve_activity_notification_key| C{notification_types.key?}
+    C -- null --> X[no email]
+    C -- key --> D{is_email_notification_enabled?}
+    D -- false --> X
+    D -- true --> E[email_notification_queue<br/>status=pending]
+    E -->|pg_cron, every minute| F[dispatch_pending_email_notifications]
+    F -->|pg_net http_post, batch of 50| G[edge function:<br/>send-notification-emails]
+    G -->|render template + Resend| H[email sent]
+    G -->|update status| E
+```
+
+### `notification_types` email columns
+
+Each notification type carries its own admin-editable email template directly
+on the registry row (no separate templates table — 1:1 relationship):
+
+| Column | Notes |
+|---|---|
+| `email_subject` | Subject template, supports `{{placeholder}}` substitution. `null` = no email configured for this type yet. |
+| `email_html_body` | Body template (HTML), supports `{{placeholder}}`. Rendered into the shared layout (`_shared/email-templates/layout.ts`) by the edge function. |
+| `email_placeholders` | Human-readable doc of available `{{placeholder}}` keys, shown in the admin template editor. |
+| `email_updated_at` / `email_updated_by` | Audit fields, set by `update_notification_email_template()`. |
+
+Three additional keys were added beyond the original 8 to cover moderation
+activities: `shop.product_status`, `shop.category_status`,
+`newsletter.post_status`.
+
+### `resolve_activity_notification_key(service_type, role, metadata)`
+
+Pure SQL function mapping an `activities` row to a `notification_types.key`,
+or `null` if the activity has no associated email (e.g. unfollow, reports).
+See `email_notifications.sql` for the full mapping table.
+
+### `email_notification_queue`
+
+Outbox table populated by the `on_activity_insert_queue_email` trigger
+(`activities.sql`) → `queue_activity_email_notification()`
+(`email_notifications.sql`). Fully revoked from `anon`/`authenticated` —
+service-role only. Columns: `activity_id`, `user_profile_id`,
+`notification_type_key`, `status` (`pending`/`processing`/`sent`/`failed`),
+`attempts`, `last_error`, `sent_at`.
+
+### `dispatch_pending_email_notifications()`
+
+pg_cron job (`dispatch-email-notifications`, every minute). Batches up to 50
+`pending` rows, marks them `processing`, and posts them via `net.http_post` to
+the `send-notification-emails` edge function. The dispatch secret is sent as
+a custom `X-Dispatch-Secret` header (not `Authorization`), since Kong
+strips/blanks the `Authorization` header for routes with `verify_jwt = false`.
+Requires the `edge_function_base_url` and `secret_key` Supabase Vault secrets
+to be configured (read via `vault.decrypted_secrets`):
+
+```sql
+select vault.create_secret('https://<project-ref>.supabase.co/functions/v1', 'edge_function_base_url', 'Base URL for edge function dispatch');
+select vault.create_secret('<secret-key>', 'secret_key', 'Secret API key for send-notification-emails calls');
+```
+
+### `cleanup_old_email_notification_queue()`
+
+pg_cron job (`cleanup-old-email-notification-queue`, nightly at 03:00 Dhaka
+time / 21:00 UTC — pg_cron runs in UTC). Deletes `email_notification_queue`
+rows with `status = 'sent'` and `sent_at` older than 6 months, keeping the
+outbox table from growing unbounded. `pending`, `processing`, and `failed`
+rows are never deleted by this job.
+
+### Edge function: `send-notification-emails`
+
+`backend/supabase/functions/send-notification-emails/index.ts`. For each
+queued item: fetches the activity + recipient profile + counterparty profile +
+recipient email (`auth.admin.getUserById`), looks up the
+`notification_types.email_subject` / `email_html_body`, builds a
+`{{placeholder}}` map from the activity metadata, renders via
+`_shared/email-templates/render.ts`, wraps in `_shared/email-templates/layout.ts`,
+and sends via `_shared/resend.ts` (Resend API, `RESEND_API_KEY` secret). Marks
+the queue row `sent` or `failed`.
+
+### Admin template editing
+
+`update_notification_email_template(p_key, p_subject, p_html_body)` —
+`security definer`, `is_admin()`-gated, granted to `authenticated`. The admin
+tool can read current templates via
+`select * from notification_types` (already permitted) and save edits via this
+RPC.

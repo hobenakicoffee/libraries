@@ -478,6 +478,64 @@ export type Database = {
         };
         Relationships: [];
       };
+      email_notification_queue: {
+        Row: {
+          activity_id: string;
+          attempts: number;
+          created_at: string;
+          id: number;
+          last_error: string | null;
+          notification_type_key: string;
+          sent_at: string | null;
+          status: string;
+          user_profile_id: string;
+        };
+        Insert: {
+          activity_id: string;
+          attempts?: number;
+          created_at?: string;
+          id?: never;
+          last_error?: string | null;
+          notification_type_key: string;
+          sent_at?: string | null;
+          status?: string;
+          user_profile_id: string;
+        };
+        Update: {
+          activity_id?: string;
+          attempts?: number;
+          created_at?: string;
+          id?: never;
+          last_error?: string | null;
+          notification_type_key?: string;
+          sent_at?: string | null;
+          status?: string;
+          user_profile_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "email_notification_queue_activity_id_fkey";
+            columns: ["activity_id"];
+            isOneToOne: false;
+            referencedRelation: "activities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_notification_queue_notification_type_key_fkey";
+            columns: ["notification_type_key"];
+            isOneToOne: false;
+            referencedRelation: "notification_types";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "email_notification_queue_user_profile_id_fkey";
+            columns: ["user_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       feed_item_bookmarks: {
         Row: {
           created_at: string;
@@ -1065,6 +1123,30 @@ export type Database = {
           },
         ];
       };
+      messages_2026_04: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
       messages_2026_05: {
         Row: {
           content: string;
@@ -1090,30 +1172,6 @@ export type Database = {
         Relationships: [];
       };
       messages_2026_06: {
-        Row: {
-          content: string;
-          conversation_id: string;
-          created_at: string;
-          id: number;
-          sender_id: string;
-        };
-        Insert: {
-          content: string;
-          conversation_id: string;
-          created_at?: string;
-          id?: number;
-          sender_id: string;
-        };
-        Update: {
-          content?: string;
-          conversation_id?: string;
-          created_at?: string;
-          id?: number;
-          sender_id?: string;
-        };
-        Relationships: [];
-      };
-      messages_2026_07: {
         Row: {
           content: string;
           conversation_id: string;
@@ -1486,6 +1544,11 @@ export type Database = {
           created_at: string;
           default_enabled: boolean;
           description: string | null;
+          email_html_body: string | null;
+          email_placeholders: string | null;
+          email_subject: string | null;
+          email_updated_at: string | null;
+          email_updated_by: string | null;
           is_active: boolean;
           key: string;
           label: string;
@@ -1496,6 +1559,11 @@ export type Database = {
           created_at?: string;
           default_enabled?: boolean;
           description?: string | null;
+          email_html_body?: string | null;
+          email_placeholders?: string | null;
+          email_subject?: string | null;
+          email_updated_at?: string | null;
+          email_updated_by?: string | null;
           is_active?: boolean;
           key: string;
           label: string;
@@ -1506,12 +1574,25 @@ export type Database = {
           created_at?: string;
           default_enabled?: boolean;
           description?: string | null;
+          email_html_body?: string | null;
+          email_placeholders?: string | null;
+          email_subject?: string | null;
+          email_updated_at?: string | null;
+          email_updated_by?: string | null;
           is_active?: boolean;
           key?: string;
           label?: string;
           service?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "notification_types_email_updated_by_fkey";
+            columns: ["email_updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       payout_methods: {
         Row: {
@@ -3370,6 +3451,7 @@ export type Database = {
         Args: { p_profile_id: string };
         Returns: Json;
       };
+      cleanup_old_email_notification_queue: { Args: never; Returns: undefined };
       cleanup_orphaned_kyc_documents: { Args: never; Returns: undefined };
       cleanup_orphaned_post_images: { Args: never; Returns: undefined };
       cleanup_orphaned_shop_images: { Args: never; Returns: undefined };
@@ -3427,6 +3509,7 @@ export type Database = {
         Returns: Json;
       };
       delete_user_address: { Args: { p_address_id: string }; Returns: Json };
+      dispatch_pending_email_notifications: { Args: never; Returns: undefined };
       drop_old_partitions: { Args: never; Returns: undefined };
       follow_user: { Args: { target_user_id: string }; Returns: undefined };
       get_buyer_orders: {
@@ -4096,6 +4179,10 @@ export type Database = {
         Args: { p_amount: number; p_payout_method_id: string };
         Returns: string;
       };
+      resolve_activity_notification_key: {
+        Args: { p_metadata: Json; p_role: string; p_service_type: string };
+        Returns: string;
+      };
       retry_withdrawal: {
         Args: {
           p_amount?: number;
@@ -4182,6 +4269,10 @@ export type Database = {
       };
       update_email_notifications_enabled: {
         Args: { p_enabled: boolean; p_target_user_id?: string };
+        Returns: Json;
+      };
+      update_notification_email_template: {
+        Args: { p_html_body: string; p_key: string; p_subject: string };
         Returns: Json;
       };
       update_order_tracking: {
