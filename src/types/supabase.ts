@@ -3435,9 +3435,9 @@ export type Database = {
       apply_unsubscribe: {
         Args: {
           p_comment: string;
-          p_disable_all: boolean;
+          p_disabled_type_keys: string[];
+          p_email_notifications_enabled: boolean;
           p_reason: string;
-          p_type_keys: string[];
           p_user_id: string;
         };
         Returns: Json;
