@@ -81,7 +81,7 @@ export default withMermaid(
               },
               {
                 text: "Creator Reports",
-                link: "/reports/backend/",
+                link: "/reports/frontend/",
               },
               {
                 text: "Notifications",
