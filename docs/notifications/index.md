@@ -117,6 +117,8 @@ profiles.email_notifications_enabled
 | `update_email_notifications_enabled(p_enabled, p_target_user_id default null)` | Updates the master toggle on `profiles`. |
 | `set_notification_preference(p_type_key, p_enabled, p_target_user_id default null)` | Upserts an override; deletes the override row if `p_enabled` matches the type's default (keeps the table sparse). |
 | `get_notification_preferences(p_target_user_id default null)` | Returns `{ email_notifications_enabled, preferences: [...] }` — the full settings page payload, automatically including any newly registered notification types. |
+| `get_notification_preferences_for_user(p_user_id)` | Service-role-only variant of `get_notification_preferences` for an arbitrary user (no `auth.uid()` session). Used by the marketing site's `/unsubscribe` page for users arriving via a signed email link. |
+| `apply_unsubscribe(p_user_id, p_disable_all, p_type_keys, p_reason, p_comment)` | Service-role-only. Disables `profiles.email_notifications_enabled` (if `p_disable_all`) or adds `false` overrides for each key in `p_type_keys`, and records a row per affected type (or one row with `notification_type_key = null` for "all") in `email_unsubscribe_feedback`. |
 
 ## Adding a New Service's Notification Types
 
@@ -215,6 +217,58 @@ recipient email (`auth.admin.getUserById`), looks up the
 `_shared/email-templates/render.ts`, wraps in `_shared/email-templates/layout.ts`,
 and sends via `_shared/resend.ts` (Resend API, `RESEND_API_KEY` secret). Marks
 the queue row `sent` or `failed`.
+
+**Local testing**: if `SMTP_HOST` is set (with `SMTP_PORT` defaulting to
+`54325`), `_shared/resend.ts` sends via SMTP to that host instead of the Resend
+API. Edge functions run inside the `supabase_edge_runtime` container, so use
+the Inbucket container's hostname on the shared docker network:
+`SMTP_HOST=inbucket`, `SMTP_PORT=1025` (not the host-mapped
+`127.0.0.1:54325`). With local Supabase running, captured emails can be viewed
+at `http://127.0.0.1:54324` (Mailpit/Inbucket UI). Leave `SMTP_HOST` unset to
+use Resend.
+
+### One-click unsubscribe (footer link)
+
+Every notification email's footer (rendered by
+`_shared/email-templates/layout.ts`) includes a signed unsubscribe link built by
+`_shared/email-templates/unsubscribe-link.ts`:
+
+```
+{MARKETING_URL}/unsubscribe?uid={user_profile_id}&type={notification_type_key}&sig={hmac}
+```
+
+`sig` is `HMAC-SHA256(user_profile_id, UNSUBSCRIBE_SECRET)`, hex-encoded. The
+`type` param is only a hint for which row to highlight — the page always shows
+the user's full preference set.
+
+The link points at the **marketing site**, not an edge function — there is no
+public `unsubscribe` edge function. The marketing `/unsubscribe` page
+(`marketing/src/pages/unsubscribe/`) recomputes the HMAC server-side with the
+same `UNSUBSCRIBE_SECRET`, and on match calls
+`get_notification_preferences_for_user` / `apply_unsubscribe` via its
+service-role Supabase client (`createServiceDBClient()`). It renders:
+
+- a master "unsubscribe from all emails" toggle
+- per-type toggles grouped by `notification_types.category`
+- an optional "why are you leaving" reason + free-text comment, stored in
+  `email_unsubscribe_feedback`
+
+`UNSUBSCRIBE_SECRET` must be set identically in `backend/supabase/functions/.env`
+(edge function secrets) and in the marketing site's environment.
+
+### `email_unsubscribe_feedback`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `bigint PK` | |
+| `user_id` | `uuid` | FK → `profiles(id) ON DELETE CASCADE` |
+| `notification_type_key` | `text` | FK → `notification_types(key) ON DELETE SET NULL`; `null` = "unsubscribed from all" |
+| `reason` | `text` | Selected reason from the unsubscribe page's radio group |
+| `comment` | `text` | Optional free-text feedback |
+| `created_at` | `timestamptz NOT NULL DEFAULT now()` | |
+
+Fully revoked from `anon`/`authenticated`; written only via `apply_unsubscribe`
+(service-role).
 
 ### Admin template editing
 

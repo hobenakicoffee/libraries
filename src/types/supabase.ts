@@ -536,6 +536,48 @@ export type Database = {
           },
         ];
       };
+      email_unsubscribe_feedback: {
+        Row: {
+          comment: string | null;
+          created_at: string;
+          id: number;
+          notification_type_key: string | null;
+          reason: string | null;
+          user_id: string;
+        };
+        Insert: {
+          comment?: string | null;
+          created_at?: string;
+          id?: never;
+          notification_type_key?: string | null;
+          reason?: string | null;
+          user_id: string;
+        };
+        Update: {
+          comment?: string | null;
+          created_at?: string;
+          id?: never;
+          notification_type_key?: string | null;
+          reason?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "email_unsubscribe_feedback_notification_type_key_fkey";
+            columns: ["notification_type_key"];
+            isOneToOne: false;
+            referencedRelation: "notification_types";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "email_unsubscribe_feedback_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       feed_item_bookmarks: {
         Row: {
           created_at: string;
@@ -1122,30 +1164,6 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
-      };
-      messages_2026_04: {
-        Row: {
-          content: string;
-          conversation_id: string;
-          created_at: string;
-          id: number;
-          sender_id: string;
-        };
-        Insert: {
-          content: string;
-          conversation_id: string;
-          created_at?: string;
-          id?: number;
-          sender_id: string;
-        };
-        Update: {
-          content?: string;
-          conversation_id?: string;
-          created_at?: string;
-          id?: number;
-          sender_id?: string;
-        };
-        Relationships: [];
       };
       messages_2026_05: {
         Row: {
@@ -3414,6 +3432,16 @@ export type Database = {
         };
         Returns: undefined;
       };
+      apply_unsubscribe: {
+        Args: {
+          p_comment: string;
+          p_disable_all: boolean;
+          p_reason: string;
+          p_type_keys: string[];
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
       approve_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
       approve_shop_category: { Args: { p_category_id: string }; Returns: Json };
       approve_shop_product: { Args: { p_product_id: string }; Returns: Json };
@@ -3712,6 +3740,10 @@ export type Database = {
       };
       get_notification_preferences: {
         Args: { p_target_user_id?: string };
+        Returns: Json;
+      };
+      get_notification_preferences_for_user: {
+        Args: { p_user_id: string };
         Returns: Json;
       };
       get_or_create_direct_conversation: {
