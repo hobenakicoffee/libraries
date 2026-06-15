@@ -163,6 +163,7 @@ Seller cancels a COD item with a mandatory reason. The reason is visible to the 
 1. Sets `status = 'cancelled'`, `cancellation_reason = p_reason`
 2. **Restocks** the product/variant: `stock_count += item.quantity`
 3. No platform fee is charged on cancelled COD items
+4. Writes a private `order_item_cancelled` activity to the buyer's feed, including `cancellation_reason` (see [activities](../../payments-and-memberships/backend/activities.md))
 
 ::: warning Restocking only works when stock_count IS NOT NULL
 If `stock_count` is `null` (unlimited), restocking is skipped silently. This is intentional — unlimited-stock products don't need restock tracking.

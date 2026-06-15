@@ -169,6 +169,15 @@ Three additional keys were added beyond the original 8 to cover moderation
 activities: `shop.product_status`, `shop.category_status`,
 `newsletter.post_status`.
 
+Three more keys cover buyer-facing shop order fulfillment activities (category
+`orders`): `shop.order_shipped`, `shop.order_delivered`, `shop.order_cancelled`
+— mapped from the `order_item_shipped` / `order_item_delivered` /
+`order_item_cancelled` activities written by `update_order_tracking`,
+`mark_order_item_delivered`, and `cancel_cod_order_item` respectively. The
+self-service `post_status_updated` activity (from
+`update_newsletter_post_status`) intentionally has no email mapping — it's a
+notification of the author's own action.
+
 ### `resolve_activity_notification_key(service_type, role, metadata)`
 
 Pure SQL function mapping an `activities` row to a `notification_types.key`,

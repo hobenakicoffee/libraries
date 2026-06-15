@@ -9,6 +9,7 @@ All functions use `SECURITY DEFINER` and `SET search_path = ''`. The empty searc
 | `check_newsletter_post_access(p_post_id)` | Any | `TABLE(has_access bool, access_reason text)` | Access check for a single post |
 | `create_newsletter_draft(p_profile_id)` | Authenticated | `TABLE(id, title, slug)` | Create a new blank draft |
 | `unpublish_newsletter_post(p_post_id)` | Authenticated (author) | `jsonb` | Move published post back to draft |
+| `update_newsletter_post_status(p_post_id, p_new_status)` | Authenticated (author) | `jsonb` | Self-service draft↔review, published→archived, archived→draft/published + notify author |
 | `toggle_newsletter_post_like(p_post_id)` | Authenticated | `jsonb` | Like / unlike a post |
 | `gift_newsletter_post(...)` | Authenticated | `uuid` (grant_id) | Gift a post to another profile |
 | `record_newsletter_post_view(p_post_id)` | Any | `void` | Increment view counter + daily row |
@@ -108,6 +109,49 @@ LANGUAGE plpgsql SECURITY DEFINER
   "message": "You have 50 drafts saved. Please publish or delete a draft before un-publishing this post."
 }
 ```
+
+---
+
+## `update_newsletter_post_status`
+
+```sql
+FUNCTION public.update_newsletter_post_status(p_post_id uuid, p_new_status post_status_enum)
+RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER
+```
+
+Author-only self-service status transitions:
+
+| From | To | Meaning |
+|---|---|---|
+| `draft` | `review` | Submit for manager review |
+| `review` | `draft` | Withdraw from review |
+| `published` | `archived` | Archive (hide from feed, keep content) |
+| `archived` | `draft` | Restore for editing |
+| `archived` | `published` | Un-archive (re-publish; `published_at` preserved) |
+
+Manager-only `review → published/draft` transitions remain in
+`approve_newsletter_post` / `reject_newsletter_post`. Any other transition
+returns `INVALID_STATUS_TRANSITION`. Moving to `draft` re-checks the 50-draft
+cap, same as `unpublish_newsletter_post`.
+
+### Error Responses
+
+| `error` key | Condition |
+|---|---|
+| `POST_NOT_FOUND` | Post does not exist |
+| `FORBIDDEN` | Caller is not the author |
+| `INVALID_STATUS_TRANSITION` | The (current → new) status pair is not allowed |
+| `DRAFT_LIMIT_REACHED` | Moving to `draft` would exceed the 50-draft cap |
+
+### Success Response
+
+```json
+{ "success": true, "old_status": "draft", "new_status": "review" }
+```
+
+On success, a private `post_status_updated` activity is written to the
+author's own feed (see [activities](../../payments-and-memberships/backend/activities.md)).
 
 ---
 

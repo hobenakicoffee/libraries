@@ -19,7 +19,11 @@ export type ActivityType =
   | "post_rejected"
   | "kyc_approved"
   | "kyc_resubmit_requested"
-  | "report_status_updated";
+  | "report_status_updated"
+  | "post_status_updated"
+  | "order_item_shipped"
+  | "order_item_delivered"
+  | "order_item_cancelled";
 
 export type ActivityMetadata = {
   type?: string;
@@ -67,6 +71,12 @@ export type ActivityMetadata = {
   new_status?: string;
   resolution_note?: string;
   notification_type?: string;
+  order_id?: string;
+  order_number?: string;
+  carrier?: string;
+  tracking_number?: string;
+  tracking_url?: string;
+  cancellation_reason?: string;
   action?: "follow" | "unfollow";
 };
 

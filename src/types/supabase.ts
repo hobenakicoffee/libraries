@@ -4311,6 +4311,13 @@ export type Database = {
         Args: { p_enabled: boolean; p_target_user_id?: string };
         Returns: Json;
       };
+      update_newsletter_post_status: {
+        Args: {
+          p_new_status: Database["public"]["Enums"]["post_status_enum"];
+          p_post_id: string;
+        };
+        Returns: Json;
+      };
       update_notification_email_template: {
         Args: { p_html_body: string; p_key: string; p_subject: string };
         Returns: Json;

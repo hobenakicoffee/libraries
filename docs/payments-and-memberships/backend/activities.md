@@ -246,6 +246,76 @@ Note: `amount` in the creator activity is the **net amount** (after platform fee
 }
 ```
 
+### Newsletter: Post Status Updated
+
+Written by `update_newsletter_post_status` to the author's own feed
+(`role: "system"`, `visibility: "private"`) on every self-service
+draft↔review / archive transition.
+
+```json
+{
+  "activity_type": "post_status_updated",
+  "service_type": "newsletter",
+  "post_id": "uuid",
+  "post_slug": "weekly-update-42",
+  "post_title": "Weekly Update #42",
+  "old_status": "draft",
+  "new_status": "review"
+}
+```
+
+### Shop: Order Item Shipped
+
+Written by `update_order_tracking` to the buyer's feed
+(`role: "supporter"`, `visibility: "private"`).
+
+```json
+{
+  "activity_type": "order_item_shipped",
+  "service_type": "shop",
+  "order_id": "uuid",
+  "order_number": "SHOP-20260616-0001",
+  "product_id": "uuid",
+  "product_title": "Ceramic Mug",
+  "carrier": "Pathao",
+  "tracking_number": "PTH123456",
+  "tracking_url": "https://pathao.com/track/PTH123456"
+}
+```
+
+### Shop: Order Item Delivered
+
+Written by `mark_order_item_delivered` to the buyer's feed
+(`role: "supporter"`, `visibility: "private"`).
+
+```json
+{
+  "activity_type": "order_item_delivered",
+  "service_type": "shop",
+  "order_id": "uuid",
+  "order_number": "SHOP-20260616-0001",
+  "product_id": "uuid",
+  "product_title": "Ceramic Mug"
+}
+```
+
+### Shop: Order Item Cancelled
+
+Written by `cancel_cod_order_item` to the buyer's feed
+(`role: "supporter"`, `visibility: "private"`).
+
+```json
+{
+  "activity_type": "order_item_cancelled",
+  "service_type": "shop",
+  "order_id": "uuid",
+  "order_number": "SHOP-20260616-0001",
+  "product_id": "uuid",
+  "product_title": "Ceramic Mug",
+  "cancellation_reason": "Out of stock"
+}
+```
+
 ---
 
 ## Row Level Security

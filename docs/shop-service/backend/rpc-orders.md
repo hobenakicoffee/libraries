@@ -258,6 +258,8 @@ Seller marks a physical item as `shipped`. Sets `status → 'shipped'`, `shipped
 
 The `buyer_profile_id` and `product_title` are returned so the notification Edge Function can dispatch a "Your order has shipped" message without an extra query.
 
+Also writes a private `order_item_shipped` activity to the buyer's feed (see [activities](../../payments-and-memberships/backend/activities.md)).
+
 **Errors:** `NOT_FOUND`, `NOT_PHYSICAL_ITEM`, `INVALID_STATUS_TRANSITION`
 
 ---
@@ -291,6 +293,8 @@ For COD items, marking delivered does **not** confirm cash or create a transacti
   "requires_cash_confirmation": true
 }
 ```
+
+Also writes a private `order_item_delivered` activity to the buyer's feed (see [activities](../../payments-and-memberships/backend/activities.md)).
 
 **Errors:** `NOT_FOUND`, `NOT_PHYSICAL_ITEM`, `INVALID_STATUS_TRANSITION`
 
