@@ -1357,6 +1357,7 @@ export type Database = {
       };
       newsletter_posts: {
         Row: {
+          ai_review_todos: Json | null;
           click_count: number;
           content: string | null;
           cover_image_url: string | null;
@@ -1383,6 +1384,7 @@ export type Database = {
           visibility: Database["public"]["Enums"]["visibility_enum"];
         };
         Insert: {
+          ai_review_todos?: Json | null;
           click_count?: number;
           content?: string | null;
           cover_image_url?: string | null;
@@ -1409,6 +1411,7 @@ export type Database = {
           visibility?: Database["public"]["Enums"]["visibility_enum"];
         };
         Update: {
+          ai_review_todos?: Json | null;
           click_count?: number;
           content?: string | null;
           cover_image_url?: string | null;

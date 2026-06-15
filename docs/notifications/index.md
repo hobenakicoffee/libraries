@@ -85,7 +85,7 @@ erDiagram
 
 RLS: `select` for `authenticated` (`using (true)`); `anon` fully revoked. Writes are service-role only (seed migrations) — no insert/update/delete policy.
 
-**Seeded types**: `gift.received`, `follow.new_follower`, `supporter.new_supporter`, `membership.new_member`, `membership.expiring`, `withdrawal.status_changed`, `platform_subscription.expiring`, `kyc.status_changed`.
+**Seeded types**: `gift.received`, `follow.new_follower`, `supporter.new_supporter`, `membership.new_member`, `membership.expiring`, `withdrawal.status_changed`, `platform_subscription.expiring`, `platform_subscription.activated`, `kyc.status_changed`.
 
 ### `profiles.email_notifications_enabled` (in `profiles.sql`)
 
