@@ -1891,6 +1891,7 @@ export type Database = {
           has_first_service: boolean | null;
           has_wallet_balance: boolean | null;
           id: string;
+          is_founder_discount: boolean;
           is_kyc_verified: boolean;
           is_page_active: boolean | null;
           is_verified: boolean;
@@ -1925,6 +1926,7 @@ export type Database = {
           has_first_service?: boolean | null;
           has_wallet_balance?: boolean | null;
           id: string;
+          is_founder_discount?: boolean;
           is_kyc_verified?: boolean;
           is_page_active?: boolean | null;
           is_verified?: boolean;
@@ -1959,6 +1961,7 @@ export type Database = {
           has_first_service?: boolean | null;
           has_wallet_balance?: boolean | null;
           id?: string;
+          is_founder_discount?: boolean;
           is_kyc_verified?: boolean;
           is_page_active?: boolean | null;
           is_verified?: boolean;
@@ -3928,6 +3931,7 @@ export type Database = {
         Args: {
           p_direction?: Database["public"]["Enums"]["transaction_direction_enum"];
           p_from?: string;
+          p_limit?: number;
           p_to?: string;
         };
         Returns: {
@@ -4090,6 +4094,7 @@ export type Database = {
         Args: {
           p_allow_gifting?: boolean;
           p_allow_subs?: boolean;
+          p_is_founder_discount?: boolean;
           p_is_page_active?: boolean;
           p_user_id: string;
         };

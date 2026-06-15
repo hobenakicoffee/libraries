@@ -17,7 +17,9 @@ Six functions power the platform subscription system. Two are internal helpers c
 
 ## `get_creator_effective_fee_rate`
 
-Returns `0` when the creator has an active, in-period subscription for the requested service type **and both caps have not yet been reached** — neither the monthly transaction count cap nor the monthly amount cap. Otherwise returns the platform default percentage from `platform_settings`.
+Returns `0` for **every** service type when the creator's `profiles.is_founder_discount` flag is `true` — this check runs first and short-circuits before any subscription lookup (Founder 1,000 cohort perk, granted manually via `moderate_user`).
+
+Otherwise, returns `0` when the creator has an active, in-period subscription for the requested service type **and both caps have not yet been reached** — neither the monthly transaction count cap nor the monthly amount cap. Otherwise returns the platform default percentage from `platform_settings`.
 
 **This function is the single source of truth for fee rates.** All service RPCs (`perform_coffee_gift`, `purchase_newsletter_post`, `purchase_newsletter_membership`, `initiate_shop_checkout`) call it server-side. It is never trusted from the client.
 
@@ -42,6 +44,7 @@ Both caps are AND conditions — the subscription benefit applies only when **ne
 | Active, both caps are `NULL` (Ultra tier) | `0` always |
 | No active subscription | platform default |
 | Subscription `period_end` passed | platform default |
+| `profiles.is_founder_discount = true` | `0` always, regardless of caps or subscription state |
 
 **Transactions never fail when a cap is exhausted.** The fee silently reverts to the platform default percentage; the service RPC continues normally.
 
@@ -132,7 +135,7 @@ end if;
 
 ## `activate_creator_platform_subscription`
 
-Called by the Edge Function after the payment gateway confirms the prepaid monthly charge. Cancels any existing active subscription for the same service type, records a debit transaction, and inserts a new active subscription row valid for 1 month.
+Called by the Edge Function after the payment gateway confirms the prepaid monthly charge. Cancels any existing active subscription for the same service type, records a debit transaction, inserts a new active subscription row valid for 1 month, and inserts a private `activities` entry (`role='system'`, `service_type='platform_subscription'`) so the creator sees the activation in their activity feed.
 
 ### Signature
 
@@ -167,6 +170,7 @@ sequenceDiagram
     RPC->>DB: cancel existing active sub for same service_type
     RPC->>DB: insert transactions row (service_type='platform_subscription', direction='debit')
     RPC->>DB: insert creator_platform_subscriptions row (status='active', period = now → now+1 month)
+    RPC->>DB: insert activities row (role='system', service_type='platform_subscription', visibility='private')
     RPC-->>EF: { success, subscription_id, service_type, period_start, period_end }
 ```
 

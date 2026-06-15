@@ -12,10 +12,11 @@ Toggles moderation flags on a user profile. Pass `null` for any flag to leave it
 
 ```sql
 public.moderate_user(
-  p_user_id        uuid,
-  p_is_page_active boolean default null,
-  p_allow_gifting  boolean default null,
-  p_allow_subs     boolean default null
+  p_user_id             uuid,
+  p_is_page_active      boolean default null,
+  p_allow_gifting       boolean default null,
+  p_allow_subs          boolean default null,
+  p_is_founder_discount boolean default null
 )
 returns jsonb
 ```
@@ -26,7 +27,7 @@ returns jsonb
 |---|---|
 | `p_is_page_active = false` | `users.suspend` |
 | `p_is_page_active = true` | `users.reactivate` |
-| `p_allow_gifting` or `p_allow_subs` | `content.moderate` |
+| `p_allow_gifting`, `p_allow_subs`, or `p_is_founder_discount` | `content.moderate` |
 
 A single call can mix flags (e.g. suspend + disable gifting), but each flag is checked independently. If any permission check fails, the function returns immediately with `UNAUTHORIZED` — **no partial writes occur**.
 
@@ -60,6 +61,9 @@ select public.moderate_user(
   p_allow_gifting  := false,
   p_allow_subs     := false
 );
+
+-- Grant the Founder 1,000 cohort perk (0% platform fees on all service types)
+select public.moderate_user('user-uuid', p_is_founder_discount := true);
 ```
 
 ### Notes

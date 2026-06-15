@@ -272,7 +272,7 @@ select * from get_transaction_stats(
 
 ### `get_transaction_service_breakdown`
 
-Powers the "Top Services" analytics card. Returns the top 3 services by volume in the given period.
+Powers the "Top Services" analytics card and the billing page's per-service stats. Returns the top `p_limit` services (default 3) by volume in the given period.
 
 #### Signature
 
@@ -280,7 +280,8 @@ Powers the "Top Services" analytics card. Returns the top 3 services by volume i
 create or replace function public.get_transaction_service_breakdown(
   p_from      timestamptz default now() - interval '30 days',
   p_to        timestamptz default now(),
-  p_direction public.transaction_direction_enum default 'credit'
+  p_direction public.transaction_direction_enum default 'credit',
+  p_limit     integer default 3
 )
 returns table (
   service_type       text,
@@ -290,7 +291,7 @@ returns table (
 )
 ```
 
-Pass `p_direction = 'credit'` for the Earnings tab, `'debit'` for the Spending tab.
+Pass `p_direction = 'credit'` for the Earnings tab, `'debit'` for the Spending tab. Pass `p_limit = 5` to get all 5 `platform_subscription_plans.service_type` values (used by the billing page's upsell stats).
 
 #### Example
 
@@ -300,4 +301,7 @@ select * from get_transaction_service_breakdown();
 
 -- Top 3 spending services
 select * from get_transaction_service_breakdown(p_direction := 'debit');
+
+-- All 5 platform services, for billing page upsell stats
+select * from get_transaction_service_breakdown(p_direction := 'credit', p_limit := 5);
 ```
