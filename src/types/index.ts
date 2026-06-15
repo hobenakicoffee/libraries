@@ -49,9 +49,11 @@ export type ActivityMetadata = {
   plan_id?: string;
   plan_name?: string;
   service_type?: string;
+  subscription_id?: string;
   billing_cycle?: string;
   activity_type?: ActivityType;
   period_end?: string;
+  period_start?: string;
   rejection_reason?: string;
   category_id?: string;
   category_name?: string;
@@ -64,6 +66,7 @@ export type ActivityMetadata = {
   old_status?: string;
   new_status?: string;
   resolution_note?: string;
+  notification_type?: string;
   action?: "follow" | "unfollow";
 };
 
