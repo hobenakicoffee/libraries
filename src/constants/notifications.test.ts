@@ -12,7 +12,14 @@ describe("NotificationTypes", () => {
       "MEMBERSHIP_EXPIRING",
       "WITHDRAWAL_STATUS_CHANGED",
       "PLATFORM_SUBSCRIPTION_EXPIRING",
+      "PLATFORM_SUBSCRIPTION_ACTIVATED",
       "KYC_STATUS_CHANGED",
+      "NEWSLETTER_POST_STATUS",
+      "SHOP_PRODUCT_STATUS",
+      "SHOP_CATEGORY_STATUS",
+      "SHOP_ORDER_SHIPPED",
+      "SHOP_ORDER_DELIVERED",
+      "SHOP_ORDER_CANCELLED",
     ];
     expect(Object.keys(NotificationTypes)).toEqual(expectedKeys);
   });
@@ -29,7 +36,18 @@ describe("NotificationTypes", () => {
     expect(NotificationTypes.PLATFORM_SUBSCRIPTION_EXPIRING).toBe(
       "platform_subscription.expiring"
     );
+    expect(NotificationTypes.PLATFORM_SUBSCRIPTION_ACTIVATED).toBe(
+      "platform_subscription.activated"
+    );
     expect(NotificationTypes.KYC_STATUS_CHANGED).toBe("kyc.status_changed");
+    expect(NotificationTypes.NEWSLETTER_POST_STATUS).toBe(
+      "newsletter.post_status"
+    );
+    expect(NotificationTypes.SHOP_PRODUCT_STATUS).toBe("shop.product_status");
+    expect(NotificationTypes.SHOP_CATEGORY_STATUS).toBe("shop.category_status");
+    expect(NotificationTypes.SHOP_ORDER_SHIPPED).toBe("shop.order_shipped");
+    expect(NotificationTypes.SHOP_ORDER_DELIVERED).toBe("shop.order_delivered");
+    expect(NotificationTypes.SHOP_ORDER_CANCELLED).toBe("shop.order_cancelled");
   });
 
   test("NotificationType type should accept valid notification type values", () => {
@@ -37,8 +55,8 @@ describe("NotificationTypes", () => {
     expect(validType).toBe("gift.received");
   });
 
-  test("should have 8 notification types", () => {
-    expect(Object.keys(NotificationTypes).length).toBe(8);
+  test("should have 15 notification types", () => {
+    expect(Object.keys(NotificationTypes).length).toBe(15);
   });
 
   test("all values should be dot-separated lowercase snake_case strings", () => {
