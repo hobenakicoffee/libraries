@@ -88,6 +88,10 @@ export default withMermaid(
                 link: "/notifications/",
               },
               {
+                text: "Wishlist Signups",
+                link: "/wishlist/",
+              },
+              {
                 text: "Developer Training",
                 link: "/training/day-01-sql-basics",
               },

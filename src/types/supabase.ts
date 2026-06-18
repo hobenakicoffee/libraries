@@ -3285,6 +3285,30 @@ export type Database = {
           },
         ];
       };
+      wishlist_signups: {
+        Row: {
+          created_at: string;
+          email: string;
+          id: number;
+          ip_address: string | null;
+          user_agent: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          email: string;
+          id?: never;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          email?: string;
+          id?: never;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Relationships: [];
+      };
       withdrawal_requests: {
         Row: {
           admin_note: string | null;
