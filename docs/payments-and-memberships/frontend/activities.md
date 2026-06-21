@@ -5,6 +5,11 @@ The activities table powers two distinct UI surfaces:
 - **Public creator feed** — visible to anyone who visits a creator's page, showing who supported them.
 - **Private notification list** — visible only to the logged-in user, showing their own sent gifts, received payments, and system notifications (e.g. membership expiry reminders).
 
+The Activities page also has a **Weekly Pulse** panel (earnings, new followers,
+active supporters, plus an AI coaching tip) — see
+[Weekly Pulse Panel & Coaching Tip](../backend/activities.md#weekly-pulse-panel--coaching-tip)
+in the backend docs for the RPCs and caching behavior behind it.
+
 ---
 
 ## Data shape

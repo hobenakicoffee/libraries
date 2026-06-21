@@ -446,6 +446,130 @@ Anon callers cannot query `activities` directly — this function is the only pu
 
 ---
 
+## Weekly Pulse Panel & Coaching Tip
+
+The Activities page's "Weekly Pulse" panel shows three tiles — earnings (via
+`get_transaction_stats`, see [Transactions](./transactions#get-transaction-stats)),
+new followers, and active supporters — plus an AI-generated coaching tip. The
+follower and supporter tiles are powered by two RPCs that follow the exact
+same period-over-period pattern as `get_transaction_stats`: both are
+`SECURITY DEFINER`, `STABLE`, scoped internally to `auth.uid()`, and compute
+the previous-period comparison window automatically from `p_from`/`p_to`.
+
+### RPC: `get_follower_stats`
+
+Defined in `follows.sql`. Powers the "new followers" tile.
+
+```sql
+get_follower_stats(
+  p_from timestamptz default now() - interval '7 days',
+  p_to   timestamptz default now()
+)
+returns table (
+  new_followers        bigint,
+  new_followers_change numeric
+)
+```
+
+Counts rows in `public.follows` where `following_id = auth.uid()`, scoped to
+the given window. The previous period is the same-length window immediately
+before `p_from`.
+
+```typescript
+const { data } = await supabase.rpc('get_follower_stats', {
+  p_from: '2026-06-14T00:00:00Z',
+  p_to:   '2026-06-21T00:00:00Z',
+})
+// data[0] = { new_followers: 12, new_followers_change: 33.33 }
+```
+
+### RPC: `get_active_supporters_stats`
+
+Defined in `supporters.sql`. Powers the "active supporters" tile.
+
+```sql
+get_active_supporters_stats(
+  p_from timestamptz default now() - interval '7 days',
+  p_to   timestamptz default now()
+)
+returns table (
+  active_supporters        bigint,
+  active_supporters_change numeric
+)
+```
+
+A supporter counts as "active" if their `supporters.last_supported_at` falls
+within the window, scoped to `creator_id = auth.uid()`.
+
+```typescript
+const { data } = await supabase.rpc('get_active_supporters_stats', {
+  p_from: '2026-06-14T00:00:00Z',
+  p_to:   '2026-06-21T00:00:00Z',
+})
+// data[0] = { active_supporters: 8, active_supporters_change: -11.11 }
+```
+
+### Change Percentage Formula
+
+Both RPCs use the same convention as `get_transaction_stats`:
+
+| Case | Result |
+|---|---|
+| Both periods are `0` | `0` |
+| Previous is `0`, current > `0` | `100` |
+| Otherwise | `ROUND((current - previous) / previous * 100, 2)` |
+
+### Security
+
+Both functions are revoked from `anon` and `public` — only `authenticated`
+(via the default per-role grant) can call them:
+
+```sql
+revoke execute on function public.get_follower_stats(timestamptz, timestamptz) from public, anon;
+revoke execute on function public.get_active_supporters_stats(timestamptz, timestamptz) from public, anon;
+```
+
+### Coaching Tip Cache (`profiles.coaching_tip`)
+
+The panel also shows a short, bilingual AI coaching tip. Rather than calling
+OpenAI on every page load, the tip is cached on the creator's own profile row:
+
+| Column | Type | Description |
+|---|---|---|
+| `profiles.coaching_tip` | `jsonb` | `{ tip: { en, "bn-BD" }, ctaLabel: { en, "bn-BD" }, ctaHref } \| null` |
+| `profiles.coaching_tip_generated_at` | `timestamptz` | When the cache was last (re)generated |
+
+The `coaching-tip` edge function is the only writer:
+
+1. Reads `coaching_tip` / `coaching_tip_generated_at` for the authenticated caller.
+2. If a cached tip exists and is **less than 24h old** (and `force` was not requested), returns it as-is (`cached: true`).
+3. Otherwise calls OpenAI (`gpt-4o-mini`) with the caller's stats (earnings, follower/supporter deltas, KYC/payout/membership flags) and writes the result back to `profiles`, then returns it (`cached: false`).
+
+`ctaHref` is constrained server-side to a fixed allow-list
+(`/settings/verification`, `/earnings`, `/earnings/payouts`, `/supporters`,
+`/services`) — the model's output can never point the CTA anywhere else, even
+under prompt injection.
+
+```typescript
+const { data } = await supabase.functions.invoke('coaching-tip', {
+  body: {
+    stats: {
+      earnedTotal: 2750, earnedChange: 14.29,
+      newFollowers: 12, newFollowersChange: 33.33,
+      activeSupporters: 8, activeSupportersChange: -11.11,
+    },
+    isKycVerified: true,
+    hasPayoutMethod: true,
+    hasActiveMembershipPlan: false,
+  },
+})
+// data = { tip: { en, "bn-BD" }, ctaLabel: { en, "bn-BD" }, ctaHref, cached, generatedAt }
+```
+
+Pass `force: true` to bypass the 24h cache and regenerate immediately (e.g. a manual "refresh" button).
+
+---
+
 ## Common Queries
 
 ### Unread notification count

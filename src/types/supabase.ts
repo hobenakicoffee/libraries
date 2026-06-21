@@ -1884,6 +1884,8 @@ export type Database = {
           banner_url: string | null;
           bio: string | null;
           categories: string[] | null;
+          coaching_tip: Json | null;
+          coaching_tip_generated_at: string | null;
           created_at: string | null;
           display_name: string | null;
           email_notifications_enabled: boolean;
@@ -1919,6 +1921,8 @@ export type Database = {
           banner_url?: string | null;
           bio?: string | null;
           categories?: string[] | null;
+          coaching_tip?: Json | null;
+          coaching_tip_generated_at?: string | null;
           created_at?: string | null;
           display_name?: string | null;
           email_notifications_enabled?: boolean;
@@ -1954,6 +1958,8 @@ export type Database = {
           banner_url?: string | null;
           bio?: string | null;
           categories?: string[] | null;
+          coaching_tip?: Json | null;
+          coaching_tip_generated_at?: string | null;
           created_at?: string | null;
           display_name?: string | null;
           email_notifications_enabled?: boolean;
@@ -3570,6 +3576,13 @@ export type Database = {
       dispatch_pending_email_notifications: { Args: never; Returns: undefined };
       drop_old_partitions: { Args: never; Returns: undefined };
       follow_user: { Args: { target_user_id: string }; Returns: undefined };
+      get_active_supporters_stats: {
+        Args: { p_from?: string; p_to?: string };
+        Returns: {
+          active_supporters: number;
+          active_supporters_change: number;
+        }[];
+      };
       get_buyer_orders: {
         Args: { p_cursor?: string; p_limit?: number };
         Returns: Json;
@@ -3705,6 +3718,13 @@ export type Database = {
           rank_score: number;
           reference_id: string;
           visibility: Database["public"]["Enums"]["visibility_enum"];
+        }[];
+      };
+      get_follower_stats: {
+        Args: { p_from?: string; p_to?: string };
+        Returns: {
+          new_followers: number;
+          new_followers_change: number;
         }[];
       };
       get_followers: { Args: { target_user_id: string }; Returns: string[] };
