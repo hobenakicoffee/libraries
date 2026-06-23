@@ -61,7 +61,7 @@ export default withMermaid(
             "A framework-agnostic TypeScript package providing shared constants, utilities, types, and moderation tools.",
         },
       ],
-      ["meta", { name: "theme-color", content: "#0a0c10" }],
+      ["meta", { name: "theme-color", content: "#CC3355" }],
     ],
 
     sitemap: {

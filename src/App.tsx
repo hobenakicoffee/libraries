@@ -52,13 +52,13 @@ const App = () => {
     <div className="min-dvh relative flex flex-col overflow-hidden bg-[#0a0c10] text-slate-200">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_0.5px,transparent_0.5px),linear-gradient(to_bottom,#1e293b_0.5px,transparent_0.5px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
-        <div className="absolute top-0 left-1/4 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-indigo-500/[0.03] blur-3xl" />
-        <div className="absolute right-1/4 bottom-0 h-[400px] w-[400px] translate-y-1/2 rounded-full bg-cyan-500/[0.03] blur-3xl" />
+        <div className="absolute top-0 left-1/4 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-brand/[0.03] blur-3xl" />
+        <div className="absolute right-1/4 bottom-0 h-[400px] w-[400px] translate-y-1/2 rounded-full bg-brand/[0.03] blur-3xl" />
       </div>
 
       <header className="relative z-10 flex items-center justify-between px-6 py-4 md:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 shadow-[0_0_20px_rgba(204,51,85,0.2)]">
             <img
               alt=""
               className="h-6 w-6"
@@ -94,31 +94,31 @@ const App = () => {
 
           <h2 className="mb-4 font-bold font-mono text-3xl tracking-tight md:text-5xl">
             <span className="text-slate-100">Shared </span>
-            <span className="bg-linear-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-brand to-[#e84a6f] bg-clip-text text-transparent">
               constants,
             </span>
             <br />
             <span className="text-slate-100">utilities & </span>
-            <span className="bg-linear-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-brand to-[#e84a6f] bg-clip-text text-transparent">
               types
             </span>
           </h2>
 
           <p className="mx-auto mb-8 max-w-lg font-mono text-slate-400 text-sm leading-relaxed">
             The core package for{" "}
-            <span className="text-cyan-400">"{productInfo.name}"</span>{" "}
-            projects. Build faster with pre-built constants, utilities, types,
-            and moderation tools.
+            <span className="text-brand">"{productInfo.name}"</span> projects.
+            Build faster with pre-built constants, utilities, types, and
+            moderation tools.
           </p>
 
           <div className="group relative mx-auto inline-flex cursor-pointer flex-col items-center gap-3 md:flex-row">
-            <div className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 p-1 pr-3 font-mono text-sm shadow-[0_0_40px_rgba(99,102,241,0.15)] transition-all group-hover:border-cyan-500/50 group-hover:shadow-[0_0_60px_rgba(99,102,241,0.25)]">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 p-1 pr-3 font-mono text-sm shadow-[0_0_40px_rgba(204,51,85,0.15)] transition-all group-hover:border-brand/50 group-hover:shadow-[0_0_60px_rgba(204,51,85,0.25)]">
               <button
                 className="flex items-center gap-2 rounded-md bg-slate-800 px-3 py-2 text-slate-200 transition-colors hover:bg-slate-700"
                 onClick={handleCopy}
                 type="button"
               >
-                <span className="text-cyan-400">$</span>
+                <span className="text-brand">$</span>
                 <span>
                   {copied ? " Copied!" : " bun add @hobenakicoffee/libraries"}
                 </span>
@@ -126,11 +126,11 @@ const App = () => {
               <span className="text-slate-500">{copied ? "✓" : "›"}</span>
             </div>
             <a
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 font-mono text-sm text-white transition-all hover:bg-indigo-600/90"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-3 font-mono text-sm text-white transition-all hover:bg-brand/90"
               href="/docs/"
             >
               <span>Documentation</span>
-              <span className="text-indigo-500">→</span>
+              <span className="text-brand">→</span>
             </a>
           </div>
         </div>
@@ -151,9 +151,9 @@ const App = () => {
                 key={exp.path}
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <div className="absolute inset-0 bg-linear-to-r from-cyan-500/0 to-indigo-500/0 opacity-0 transition-opacity group-hover:from-cyan-500/[0.03] group-hover:to-indigo-500/[0.03] group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-linear-to-r from-brand/0 to-brand/0 opacity-0 transition-opacity group-hover:from-brand/[0.03] group-hover:to-brand/[0.03] group-hover:opacity-100" />
                 <div className="relative">
-                  <span className="text-cyan-400 text-xs">
+                  <span className="text-brand text-xs">
                     @hobenakicoffee/libraries
                   </span>
                   <span className="text-slate-500 text-xs">{exp.path}</span>
