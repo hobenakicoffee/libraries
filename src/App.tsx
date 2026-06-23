@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { productInfo } from "@/constants/legal";
+import logoSvg from "/favicon.svg";
 
 declare const __LATEST_VERSION__: string;
 
@@ -58,7 +59,13 @@ const App = () => {
       <header className="relative z-10 flex items-center justify-between px-6 py-4 md:px-8">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 bg-slate-900 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-            <span className="font-bold font-mono text-cyan-400 text-lg">H</span>
+            <img
+              alt=""
+              className="h-6 w-6"
+              height={24}
+              src={logoSvg}
+              width={24}
+            />
           </div>
           <div>
             <h1 className="font-mono font-semibold text-slate-100 text-sm tracking-tight">
@@ -137,7 +144,9 @@ const App = () => {
               <a
                 className="group relative overflow-hidden rounded-lg border border-slate-800 bg-slate-900/50 p-3 font-mono transition-all hover:border-slate-600"
                 href={
-                  exp.path === "/docs" ? exp.path : `/docs${exp.path}/overview`
+                  exp.path === "/docs"
+                    ? "/docs/"
+                    : `/docs/libraries${exp.path}/`
                 }
                 key={exp.path}
                 style={{ animationDelay: `${i * 50}ms` }}

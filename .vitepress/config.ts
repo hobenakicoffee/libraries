@@ -19,11 +19,57 @@ export default withMermaid(
     description:
       "A framework-agnostic TypeScript package providing shared constants, utilities, types, and moderation tools.",
 
+    head: [
+      ["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
+      ["link", { rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+      [
+        "meta",
+        {
+          property: "og:title",
+          content: "@hobenakicoffee/libraries",
+        },
+      ],
+      [
+        "meta",
+        {
+          property: "og:description",
+          content:
+            "A framework-agnostic TypeScript package providing shared constants, utilities, types, and moderation tools.",
+        },
+      ],
+      ["meta", { property: "og:image", content: "/opengraph.png" }],
+      [
+        "meta",
+        {
+          property: "og:url",
+          content: "https://developer.hobenakicoffee.com/docs/",
+        },
+      ],
+      ["meta", { name: "twitter:card", content: "summary_large_image" }],
+      [
+        "meta",
+        {
+          name: "twitter:title",
+          content: "@hobenakicoffee/libraries",
+        },
+      ],
+      [
+        "meta",
+        {
+          name: "twitter:description",
+          content:
+            "A framework-agnostic TypeScript package providing shared constants, utilities, types, and moderation tools.",
+        },
+      ],
+      ["meta", { name: "theme-color", content: "#0a0c10" }],
+    ],
+
     sitemap: {
       hostname: "https://developer.hobenakicoffee.com/docs/",
     },
 
     themeConfig: {
+      logo: "logo-full.svg",
       nav: [
         { text: "Home", link: "https://developer.hobenakicoffee.com" },
         { text: "Getting Started", link: "/getting-started" },
