@@ -809,13 +809,13 @@ Stores digital product download files. **Raw paths are never sent to clients.** 
 Validates a `shop_download_tokens` row and redirects the client to a short-lived signed URL for the file in `shop-product-files`. No auth header required — the token is the credential.
 
 **Flow:**
-1. Look up `token` in `shop_download_tokens` (service role)
-2. Check `expires_at > now()` — 410 if expired
-3. Check `download_count < max_downloads` — 403 if exceeded
-4. Atomically increment `download_count` (UPDATE with `lt` guard against race)
-5. Resolve `storage_path` from `shop_product_files`
-6. `storage.createSignedUrl(storage_path, 60)` — 60-second expiry
-7. Return `302` redirect to the signed URL
+1. Call `redeem_shop_download_token(p_token)` (service role) — a single `SECURITY DEFINER` RPC that:
+   - looks up `token` in `shop_download_tokens`
+   - checks `expires_at > now()`
+   - atomically checks-and-increments `download_count` in one `UPDATE ... WHERE download_count < max_downloads` statement (see [SEC-09 fix](./rpc-reference#download-shop-file) — this replaced a racy separate select-then-update)
+   - resolves `storage_path` from `shop_product_files`
+2. `storage.createSignedUrl(storage_path, 60)` — 60-second expiry
+3. Return `302` redirect to the signed URL
 
 **Error responses:**
 

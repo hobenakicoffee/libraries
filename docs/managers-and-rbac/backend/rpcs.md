@@ -22,7 +22,9 @@ public.moderate_user(
 returns jsonb
 ```
 
-Granted to `service_role` only (not `authenticated`) — callers must go through your backend/edge function, which forwards the manager's JWT claims via `request.jwt.claims` so `authorize_manager()` still resolves correctly.
+::: warning
+**Security fix (SEC-10, 2026-06-24):** `EXECUTE` is now granted to `authenticated` directly (previously `service_role` only, which made the function unreachable since `service_role` has no `manager_role` JWT claim for `authorize_manager()` to check). Managers call this directly with their own session — no backend/edge function relay needed.
+:::
 
 ### Permission gates
 
@@ -89,13 +91,19 @@ select public.moderate_user('user-uuid', p_is_founder_discount := true);
 
 Advances a withdrawal request through its lifecycle. Enforces the valid status transitions and sets the appropriate timestamps.
 
+::: warning
+**Security fix (SEC-10, 2026-06-24):** `EXECUTE` is now granted to `authenticated` directly (previously `service_role` only, which made the function unreachable). Managers call this directly with their own session.
+:::
+
 ### Signature
 
 ```sql
 public.process_withdrawal(
-  p_withdrawal_id uuid,
-  p_new_status    public.withdrawal_status,
-  p_admin_note    text default null
+  p_withdrawal_id  uuid,
+  p_new_status     public.withdrawal_status,
+  p_admin_note     text    default null,
+  p_failure_reason text    default null,
+  p_fee            numeric default null
 )
 returns jsonb
 ```
@@ -103,11 +111,11 @@ returns jsonb
 ### Allowed transitions
 
 ```
-requested → approved         (requires payouts.approve)
-approved  → processing       (requires payouts.process)
+requested  → approved        (requires payouts.approve)
+approved   → processing      (requires payouts.process)
 processing → paid            (requires payouts.process)
-any        → rejected        (requires payouts.process)
-any        → failed          (requires payouts.process)
+non-terminal → rejected      (requires payouts.process)
+non-terminal → failed        (requires payouts.process)
 ```
 
 | `p_new_status` | Permission required |
@@ -116,7 +124,9 @@ any        → failed          (requires payouts.process)
 | `'processing'`, `'paid'`, `'rejected'`, `'failed'` | `payouts.process` |
 | anything else | Returns `INVALID_STATUS` |
 
-The function does **not** enforce the sequencing of transitions (e.g. you can move from `requested` directly to `processing` if you have `payouts.process`). If strict sequencing is needed, add it at the application layer.
+::: warning
+**Security fix (SEC-07, 2026-06-24):** the withdrawal row is now locked with `SELECT ... FOR UPDATE` before any status change, and a state-machine guard strictly enforces `requested → approved → processing → paid`. `rejected`/`failed` are reachable from any non-terminal state, but **no transitions are allowed out of a terminal status** (`paid`/`rejected`/`failed` — these now return `ALREADY_TERMINAL`). Calling twice with `'failed'`/`'rejected'` no longer double-credits the wallet or drives `locked_balance` negative.
+:::
 
 ### Timestamps set automatically
 
@@ -135,6 +145,8 @@ The function does **not** enforce the sequencing of transitions (e.g. you can mo
 { "success": false, "error": "UNAUTHORIZED" }
 { "success": false, "error": "NOT_FOUND" }
 { "success": false, "error": "INVALID_STATUS" }
+{ "success": false, "error": "ALREADY_TERMINAL", "current_status": "paid" }
+{ "success": false, "error": "INVALID_TRANSITION", "current_status": "requested" }
 ```
 
 ### Examples
@@ -183,7 +195,11 @@ public.flag_transaction_disputed(
 returns jsonb
 ```
 
-Requires `transactions.refund`. Granted to `service_role` only. Sets `transactions.is_disputed`, and stamps (or clears, when `p_is_disputed := false`) `dispute_noted_at`/`dispute_noted_by`.
+Requires `transactions.refund`. Sets `transactions.is_disputed`, and stamps (or clears, when `p_is_disputed := false`) `dispute_noted_at`/`dispute_noted_by`.
+
+::: warning
+**Security fix (SEC-10, 2026-06-24):** `EXECUTE` is now granted to `authenticated` (previously `service_role` only, which made the function unreachable). Managers call this directly with their own session.
+:::
 
 ### Return values
 
@@ -222,7 +238,11 @@ public.admin_process_refund(
 returns jsonb
 ```
 
-Requires `transactions.refund`. Granted to `service_role` only. Rejects any transition away from an already-finalised (`rejected`/`completed`) refund.
+Requires `transactions.refund`. Rejects any transition away from an already-finalised (`rejected`/`completed`) refund.
+
+::: warning
+**Security fix (SEC-10, 2026-06-24):** `EXECUTE` is now granted to `authenticated` (previously `service_role` only, which made the function unreachable). Managers call this directly with their own session.
+:::
 
 ### Return values
 
@@ -245,6 +265,40 @@ select public.admin_process_refund('refund-uuid', 'completed', 25.00);
 ```
 
 See [Refunds](../../payments-and-memberships/backend/refunds.md) for the full table/RLS/lifecycle reference, including the user-facing `request_refund` RPC.
+
+---
+
+## `create_manager`
+
+Creates a new manager account (`auth.users` + `managers` + `manager_user_roles` rows) and assigns it a role.
+
+### Signature
+
+```sql
+public.create_manager(
+  manager_email      text,
+  manager_full_name  text,
+  manager_role       public.manager_role,
+  manager_department text default null
+)
+returns uuid
+```
+
+Requires `managers.create` — **except** when called via `service_role`, which bypasses the check. This is the one manager RPC with a deliberate bootstrap exception: a brand-new project has zero managers, so no JWT carrying the `managers.create` claim can exist yet to create the first one. Once at least one manager exists, subsequent managers are normally created by an existing manager calling this with their own JWT.
+
+::: warning
+**Security fix (SEC-11, 2026-06-24):** previously this function trusted the `EXECUTE` grant alone with no internal permission check — anyone able to reach it (now or after a future grant change) could mint admin accounts. It now explicitly checks `authorize_manager('managers.create')` for any non-`service_role` caller.
+:::
+
+### Examples
+
+```sql
+-- Bootstrap the first manager (service_role)
+select public.create_manager('admin@hobenakicoffee.com', 'Platform Admin', 'super_admin');
+
+-- An existing manager with managers.create creates another
+select public.create_manager('finance@hobenakicoffee.com', 'Finance Lead', 'finance_manager', 'Finance');
+```
 
 ---
 

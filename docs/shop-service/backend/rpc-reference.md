@@ -186,7 +186,11 @@ These Deno-based Supabase Edge Functions handle operations that require service-
 GET /functions/v1/download-shop-file?token=<64-char-token>
 ```
 
-No `Authorization` header required. Validates the token from `shop_download_tokens`, atomically increments `download_count`, and redirects the client to a 60-second signed URL in the private `shop-product-files` bucket.
+No `Authorization` header required. Calls the `redeem_shop_download_token()` RPC (service role), which validates the token and atomically increments `download_count` in a single `UPDATE ... WHERE download_count < max_downloads` statement, then redirects the client to a 60-second signed URL in the private `shop-product-files` bucket.
+
+::: warning
+**Security fix (SEC-09, 2026-06-24):** the edge function previously did a separate `SELECT` then `UPDATE` with a `.lt()` guard — under N concurrent requests, all of them could read the same pre-increment `download_count` and all pass the guard, serving more downloads than `max_downloads`. The check-and-increment is now one atomic SQL statement inside `redeem_shop_download_token()`.
+:::
 
 **Responses:**
 

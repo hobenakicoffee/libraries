@@ -56,14 +56,13 @@ When a withdrawal is rejected or fails:
 
 | Operation | Policy | Who |
 |---|---|---|
-| `SELECT` | `Users can view their own wallet` | Owner (`profile_id = auth.uid()`) |
-| `SELECT` | `Managers can view all wallets` | `transactions.view` permission |
-| `INSERT` | `Users can create their own wallet` | Owner only |
-| `UPDATE` | `System can update wallet balance` | Owner (service role bypasses RLS for payments) |
-| `DELETE` | — | Not allowed |
+| `SELECT` | `Users and managers can view wallets` | Owner (`profile_id = auth.uid()`) or `transactions.view` permission |
+| `INSERT` | — | Not allowed for `authenticated`/`anon` |
+| `UPDATE` | — | Not allowed for `authenticated`/`anon` |
+| `DELETE` | — | Not allowed for `authenticated`/`anon` |
 
 ::: warning
-Client code should never directly `UPDATE` the wallet `balance`. All balance mutations happen inside payment RPCs running as service role. The RLS `UPDATE` policy exists only as a fallback guard.
+**Security fix (SEC-02, 2026-06-24):** wallets used to carry an owner-writable `INSERT`/`UPDATE` policy with no balance constraint, letting an authenticated client set their own `balance` directly and then withdraw it. Those policies have been removed entirely; `insert/update/delete` is now revoked from `authenticated`/`anon` at the grant level (defense in depth, not just RLS). All balance mutations go exclusively through `SECURITY DEFINER` RPCs (`handle_successful_payment`, `request_withdrawal`, `process_withdrawal`), which bypass RLS as the function owner regardless of the table grants above.
 :::
 
 ---

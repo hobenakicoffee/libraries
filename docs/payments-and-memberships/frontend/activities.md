@@ -257,28 +257,25 @@ useEffect(() => {
 
 ## Dismissing a notification
 
+::: warning
+**Security fix (SEC-15, 2026-06-24):** direct `UPDATE` on `activities` is revoked entirely now — dismissing goes through the `dismiss_activity()` / `dismiss_all_activities()` RPCs instead, which only ever touch `is_dismissed`.
+:::
+
 ```ts
 export async function dismissActivity(activityId: string) {
-  const { error } = await supabase
-    .from('activities')
-    .update({ is_dismissed: true })
-    .eq('id', activityId)
+  const { error } = await supabase.rpc('dismiss_activity', {
+    p_activity_id: activityId,
+  })
 
   if (error) throw error
 }
 
 export async function dismissAllNotifications() {
-  const { error } = await supabase
-    .from('activities')
-    .update({ is_dismissed: true })
-    .eq('visibility', 'private')
-    .eq('is_dismissed', false)
+  const { error } = await supabase.rpc('dismiss_all_activities')
 
   if (error) throw error
 }
 ```
-
-Note: you cannot set `is_dismissed` back to `false` — the database policy prevents this.
 
 ---
 

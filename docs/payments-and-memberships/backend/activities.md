@@ -325,27 +325,27 @@ Written by `cancel_cod_order_item` to the buyer's feed
 | `SELECT` | `anon` | **Blocked** — `revoke all from anon` |
 | `SELECT` | `authenticated` | `visibility = 'public'` OR `user_profile_id = auth.uid()` |
 | `INSERT` | `authenticated` | **Blocked** (`with check (false)`) — backend only |
-| `UPDATE` | `authenticated` | Only `is_dismissed` on own rows, and only to `true` |
+| `UPDATE` | `authenticated`/`anon` | **Blocked entirely** — `revoke update` (see below) |
 | `DELETE` | `authenticated` | **Blocked** |
 
 ::: warning Immutable by design
-Activities are never deleted or modified by clients. Once created, the only user action is dismissing a notification via `is_dismissed = true`. This preserves the audit trail.
+Activities are never deleted or modified by clients. Once created, the only user action is dismissing a notification via the `dismiss_activity()`/`dismiss_all_activities()` RPCs. This preserves the audit trail.
+:::
+
+::: warning
+**Security fix (SEC-15, 2026-06-24):** the previous `UPDATE` policy used a `WITH CHECK` that only constrained `is_dismissed = true`, but did **not** freeze any other column — a user could mutate `metadata`/`amount` in the same request as dismissing. The policy has been replaced with `revoke update on public.activities from authenticated, anon;` plus two new RPCs.
 :::
 
 ---
 
 ## Dismissing a Notification
 
-A user can mark an activity as dismissed (read):
+A user dismisses one activity via `dismiss_activity()`, or all of their own via `dismiss_all_activities()`. Both are `SECURITY DEFINER`, scoped to `user_profile_id = auth.uid()`, and only ever write `is_dismissed = true` — no other column is reachable through either RPC:
 
 ```sql
-update public.activities
-set is_dismissed = true
-where id = $1
-  and user_profile_id = auth.uid();
+select public.dismiss_activity('activity-uuid');
+select public.dismiss_all_activities();
 ```
-
-The `WITH CHECK` constraint on the update policy prevents setting `is_dismissed` back to `false` — a notification can only be dismissed, not un-dismissed.
 
 ---
 

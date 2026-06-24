@@ -17,7 +17,7 @@ All functions use `SECURITY DEFINER` and `SET search_path = ''`. The empty searc
 | `get_newsletter_stats(p_profile_id, p_from, p_to)` | Authenticated (author) | `TABLE(...)` | 3-card stat summary for Creator Studio |
 | `get_post_analytics(p_post_id, p_from, p_to)` | Authenticated (author) | `TABLE(...)` | Per-post analytics for the dialog |
 | `get_posts_page(p_profile_id, p_status, ...)` | Authenticated (author) | `TABLE(...)` | Paginated post list for Creator Studio |
-| `get_creator_newsletter_posts(p_creator_profile_id, ...)` | **Anon + Authenticated** | `TABLE(...)` | Public browse of one creator's posts (profile card) |
+| `get_creator_newsletter_posts(p_creator_profile_id, ...)` | **Authenticated only** | `TABLE(...)` | Public browse of one creator's posts (profile card) |
 | `get_reader_feed(p_filter, p_limit, p_cursor, ...)` | **Authenticated only** | `TABLE(...)` | Interaction-based personal feed (liked/owned/subscribed) |
 | `purchase_newsletter_post(...)` | **Service role only** | `jsonb` | Post purchase after payment confirmed |
 | `purchase_newsletter_membership(...)` | **Service role only** | `jsonb` | Membership purchase after payment confirmed |
@@ -349,9 +349,12 @@ RETURNS TABLE (
 )
 ```
 
-**Callable by anon and authenticated.** Powers creator profile cards — shows all published public posts for a specific creator regardless of who is viewing.
+**Callable by authenticated only.** Powers creator profile cards — shows all published public posts for a specific creator regardless of who is viewing.
 
-- `is_liked` is always `false` for unauthenticated callers; computed for authenticated viewers.
+::: warning
+**Security fix (SEC-12, 2026-06-24):** `EXECUTE` was previously granted to `anon` as well, but marketing's SSR public posts list always calls this via the service-role key, not anon — no anon-key caller depended on it. The anon grant has been revoked.
+:::
+
 - `has_access` and `access_badge` are computed contextually for the viewer.
 - No interaction required — this is a pure browse function.
 

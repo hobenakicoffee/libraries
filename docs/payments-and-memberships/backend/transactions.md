@@ -2,6 +2,10 @@
 
 The `transactions` table is the financial ledger. It is **user-centric**: every payment creates two rows — one for the supporter (debit) and one for the creator (credit). Each user sees only their own rows via RLS.
 
+::: warning
+**Perf/consistency fix (PERF-05, 2026-06-24):** `balance_after` was previously `bigint` while every other money column in the schema is `numeric(12,2)`, silently truncating any fractional taka in the balance snapshot. It's now `numeric(12,2)` for consistency (existing rows were cast in place via `ALTER COLUMN ... USING balance_after::numeric(12,2)`).
+:::
+
 ---
 
 ## Table Definition
@@ -29,7 +33,7 @@ create table public.transactions (
   provider                public.provider_enum,
   provider_transaction_id varchar,
   reference_id            uuid                              unique,
-  balance_after           bigint                            not null check (balance_after >= 0),
+  balance_after           numeric(12,2)                     not null check (balance_after >= 0),
   wallet_id               uuid                              references public.wallets(id) on delete set null,
 
   metadata                jsonb                             not null default '{}'::jsonb,
@@ -62,7 +66,7 @@ create table public.transactions (
 | `provider` | `provider_enum` | Payment provider used |
 | `provider_transaction_id` | `varchar` | Provider's own transaction reference |
 | `reference_id` | `uuid` | Unique business reference; links to activity rows |
-| `balance_after` | `bigint` | Wallet balance snapshot after this transaction |
+| `balance_after` | `numeric(12,2)` | Wallet balance snapshot after this transaction |
 | `wallet_id` | `uuid` | FK → `wallets.id`; null for external provider transactions |
 | `metadata` | `jsonb` | Extensible extra data (`role`, `supporter_id`, etc.) |
 | `is_disputed` | `bool` | Set by `flag_transaction_disputed()` when the payment gateway reports a chargeback/dispute |
@@ -140,7 +144,11 @@ create or replace function public.flag_transaction_disputed(
 returns jsonb
 ```
 
-Sets `is_disputed`, and stamps (or clears) `dispute_noted_at`/`dispute_noted_by` to the acting manager. Pass `p_is_disputed := false` to clear a flag set in error. Granted to `service_role` only — see [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#flag_transaction_disputed).
+Sets `is_disputed`, and stamps (or clears) `dispute_noted_at`/`dispute_noted_by` to the acting manager. Pass `p_is_disputed := false` to clear a flag set in error.
+
+::: warning
+**Security fix (SEC-10, 2026-06-24):** `EXECUTE` is now granted to `authenticated` (previously `service_role` only, which made the function unreachable since `service_role` has no `manager_role` JWT claim for `authorize_manager()` to check). Managers call this directly with their own session. See [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#flag_transaction_disputed).
+:::
 
 ```sql
 -- Flag a chargeback reported by the gateway

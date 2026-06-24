@@ -158,18 +158,26 @@ select * from request_withdrawal(500.00, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
 
 | Operation | Policy | Who |
 |---|---|---|
-| `SELECT` | `Users can view their own withdrawal requests` | Owner (`profile_id = auth.uid()`) |
-| `SELECT` | `Managers can view all withdrawal requests` | `payouts.approve` OR `payouts.process` |
-| `INSERT` | `Users can create their own withdrawal requests` | Owner only — use `request_withdrawal` RPC |
-| `UPDATE` | `System can update withdrawal requests` | Owner (effectively service-role only) |
-| `UPDATE` | `Managers can update withdrawal requests` | `payouts.approve` OR `payouts.process` |
-| `DELETE` | — | Not allowed |
+| `SELECT` | `Users and managers can view withdrawal requests` | Owner (`profile_id = auth.uid()`) or `payouts.approve`/`payouts.process` |
+| `INSERT` | — | Not allowed for `authenticated`/`anon` |
+| `UPDATE` | — | Not allowed for `authenticated`/`anon` |
+| `DELETE` | — | Not allowed for `authenticated`/`anon` |
+
+::: warning
+**Security fix (SEC-03, 2026-06-24):** withdrawal_requests used to carry owner-writable `INSERT` and `UPDATE` policies, letting a client insert a withdrawal row without locking the wallet balance, or change its own `status`/`amount`/`net_amount` directly — desyncing wallet vs. withdrawal state. Those policies have been removed entirely; `insert/update/delete` is now revoked from `authenticated`/`anon` at the grant level. All creates go through `request_withdrawal()`/`retry_withdrawal()`; all status changes go through `process_withdrawal()` (manager-only).
+:::
 
 ---
 
 ## `process_withdrawal` RPC (manager only)
 
-Finance managers advance withdrawal requests through the lifecycle using this RPC. Direct table UPDATE is allowed by RLS but the RPC should always be preferred — it sets `processed_at`/`completed_at` correctly and enforces permission granularity.
+Finance managers advance withdrawal requests through the lifecycle using this RPC. Direct table `UPDATE` is no longer possible at all (see RLS table above) — this RPC is the only path.
+
+::: warning
+**Security fixes (SEC-07/SEC-10, 2026-06-24):**
+- The row is now locked with `SELECT ... FOR UPDATE` before any status change, and a state-machine guard enforces `requested → approved → processing → paid`, with `rejected`/`failed` reachable from any non-terminal state and **no transitions out of a terminal status** (`paid`/`rejected`/`failed`). This prevents double-crediting the wallet from a repeated/concurrent call.
+- `EXECUTE` is now granted to `authenticated` (previously `service_role` only, which made the function unreachable since it has no `manager_role` JWT claim). Managers call this directly with their own session; the internal `authorize_manager()` checks below still gate access.
+:::
 
 ### Signature
 

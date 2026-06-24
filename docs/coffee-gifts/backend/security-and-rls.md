@@ -46,27 +46,15 @@ This policy is intentional — gift feeds on creator profile pages are public.
 
 ### INSERT — Creating Gifts
 
-Both authenticated and anonymous sessions may insert, but with different constraints:
+::: warning
+**Security fix (SEC-08, 2026-06-24):** the previous direct `INSERT` policy let an authenticated user attribute gift rows to themselves without any payment actually occurring (e.g. a creator inserting gifts as their own social-proof, inflating `get_creator_coffee_gifts_stats`). That policy has been **removed entirely**; `insert` is now revoked from `authenticated`/`anon` at the grant level. All gifts (authenticated or anonymous) are written exclusively via `perform_coffee_gift()` (service role).
+:::
 
 ```sql
-CREATE POLICY "Users can insert coffee gifts"
-ON public.coffee_gifts
-FOR INSERT
-TO authenticated, anon
-WITH CHECK (
-  -- Authenticated: must be one of the parties
-  ((select auth.role()) = 'authenticated' AND (
-    supporter_profile_id = (select auth.uid())
-    OR creator_profile_id = (select auth.uid())
-  ))
-  -- Anonymous: supporter_profile_id must be null (truly anonymous)
-  OR ((select auth.role()) = 'anon' AND supporter_profile_id IS NULL)
-);
+revoke insert on public.coffee_gifts from authenticated, anon;
 ```
 
-::: warning Important
-In practice, **clients should never call this insert directly**. All writes should go through `perform_coffee_gift` (service role). The insert policy exists as a safety net for any direct inserts that might slip through, not as a primary access path.
-:::
+`coffee_count` also now has an upper bound (`check (coffee_count > 0 and coffee_count <= 100)`) in addition to the lower bound, since `perform_coffee_gift()` is the only insert path and a sane ceiling prevents a single row from claiming an absurd gift count.
 
 ### UPDATE — Blocked
 
@@ -101,7 +89,7 @@ USING (false);
 | Operation | Authenticated | Anonymous (anon) |
 |---|---|---|
 | SELECT | ✅ All gifts | ✅ All gifts |
-| INSERT | ✅ If party to the gift | ✅ If `supporter_profile_id IS NULL` |
+| INSERT | ❌ service-role only (`perform_coffee_gift()`) | ❌ service-role only |
 | UPDATE | ❌ Always blocked | ❌ No policy (blocked by default) |
 | DELETE | ❌ Always blocked | ❌ No policy (blocked by default) |
 
@@ -134,17 +122,19 @@ For `perform_coffee_gift` specifically, this is required because:
 - It inserts into `coffee_gifts` using a trusted server-side path that bypasses the client-facing insert policy
 - It delegates to `handle_successful_payment` which directly updates `wallets` and inserts into `transactions` — tables that clients cannot write to directly
 
-### The `auth.uid() IS NULL` guard
+### The service-role guard
 
 `handle_successful_payment` contains an explicit additional guard:
 
 ```sql
-if auth.uid() is not null then
+if auth.role() <> 'service_role' then
   raise exception 'Not allowed!';
 end if;
 ```
 
-This means the function can **only** be called from a context where there is no authenticated session — i.e., the service role. Even if someone were to call it directly via the Supabase client, the guard would reject it.
+::: warning
+**Security fix (SEC-16, 2026-06-24):** this previously checked `auth.uid() is not null`, which is a fragile proxy for "service role" — any context without a user JWT (e.g. `pg_cron`, a future internal caller) would also pass. It now checks `auth.role() = 'service_role'` directly, the same pattern already used in `kyc.sql`.
+:::
 
 ### `SET search_path = ''`
 

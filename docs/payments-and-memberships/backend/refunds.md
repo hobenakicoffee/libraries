@@ -128,7 +128,11 @@ create or replace function public.admin_process_refund(
 returns jsonb
 ```
 
-Rejects any transition away from an already-finalised (`rejected`/`completed`) refund. Granted to `service_role` only — see [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#admin_process_refund).
+Rejects any transition away from an already-finalised (`rejected`/`completed`) refund.
+
+::: warning
+**Security fix (SEC-10, 2026-06-24):** `EXECUTE` is now granted to `authenticated` (previously `service_role` only, which made the function unreachable since `service_role` has no `manager_role` JWT claim for `authorize_manager()` to check). Managers call this directly with their own session. See [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#admin_process_refund).
+:::
 
 ### Return values
 
