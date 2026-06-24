@@ -126,6 +126,21 @@ stateDiagram-v2
 
 ---
 
+## `refund_status_enum`
+
+Defined in `supabase/schemas/refunds.sql` (the one exception to "all custom types live in `common.sql`" — it's scoped to the `refunds` table only).
+
+| Value | Meaning |
+|---|---|
+| `requested` | Created via `request_refund`, awaiting manager action |
+| `approved` | Manager approved; refund is in progress out-of-band |
+| `rejected` | Manager rejected; terminal state |
+| `completed` | Manager confirmed the gateway reversal happened; terminal state |
+
+See [Refunds](./refunds) for the full lifecycle.
+
+---
+
 ## `visibility_enum`
 
 Controls who can see an activity row.

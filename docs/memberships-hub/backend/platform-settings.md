@@ -24,6 +24,12 @@ Values are `jsonb` to support scalars (`"50"`), arrays, and objects. All current
 | `platform_fee_percentage` | `10` | Platform fee (%) deducted from all creator payouts. Applied to gifts, subscriptions, and one-time purchases. |
 | `default_coffee_price` | `20` | Default price per coffee unit in BDT. Used as the fallback when a creator has not set a custom coffee price. |
 | `max_gift_amount` | `1000000` | Maximum single gift amount in BDT (1 million). Enforced at transaction validation time. |
+| `withdrawal_daily_limit` | `0` | Max total BDT a creator can withdraw per calendar day. `0` = unlimited. Checked by `request_withdrawal()`; only non-`rejected`/`failed` requests count toward the window. |
+| `withdrawal_monthly_limit` | `0` | Max total BDT a creator can withdraw per calendar month. `0` = unlimited. Checked by `request_withdrawal()`. |
+
+::: warning
+Unlike the feed/boost settings below, `withdrawal_daily_limit`/`withdrawal_monthly_limit` (and the rest of the Financial group) are **not** client-readable — `platform_settings` has `revoke all ... from anon, authenticated`. Read them via `get_platform_setting()` from a `SECURITY DEFINER` RPC, or from your backend with the service role key.
+:::
 
 ### Feed & Boost
 

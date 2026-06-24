@@ -10,6 +10,7 @@ This section documents the full financial layer of HobeNakiCoffee: how money flo
 | Wallets | [Wallets](./wallets) |
 | Payout Methods | [Payout Methods](./payout-methods) |
 | Transactions | [Transactions](./transactions) |
+| Refunds | [Refunds](./refunds) |
 | Withdrawal Requests | [Withdrawal Requests](./withdrawal-requests) |
 | Activities | [Activities](./activities) |
 | Memberships | [Memberships](./memberships) |
@@ -72,6 +73,8 @@ erDiagram
 
     transactions ||--o{ activities : "drives"
     transactions ||--o{ profile_memberships : "purchase record"
+    transactions ||--o{ refunds : "refunded by"
+    profiles ||--o{ refunds : "requests"
 
     membership_plans ||--o{ profile_memberships : "defines"
     profile_memberships ||--o{ membership_notifications : "dedup log"
@@ -100,6 +103,7 @@ erDiagram
 | `wallets` | ✗ | SELECT, INSERT, UPDATE | Full |
 | `payout_methods` | ✗ | Full CRUD | Full |
 | `transactions` | ✗ | SELECT | Full |
+| `refunds` | ✗ | SELECT (own/counterparty); INSERT/UPDATE via RPC only | Full |
 | `withdrawal_requests` | ✗ | SELECT, INSERT | Full |
 | `activities` | ✗ (use `get_creator_public_activities` RPC) | SELECT (own + public), UPDATE `is_dismissed` | Full |
 | `membership_plans` | SELECT (active only) | Full CRUD (own) | Full |

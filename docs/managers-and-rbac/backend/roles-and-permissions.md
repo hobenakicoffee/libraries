@@ -61,10 +61,10 @@ All 28 permissions. Can manage other manager accounts, approve/reject/delete any
 Focuses on content quality. Can view, approve, update, and delete newsletter posts, shop categories, and shop products (including drafts). Can view user details and analytics. Can read support tickets and service request queues. Can toggle a user's `allow_gifting` and `allow_subscriptions` flags via `moderate_user`.
 
 ### `support_manager`
-Handles user-facing issues. Can suspend and reactivate user pages, manage user services (view + update), view transactions for dispute context, and fully manage the support ticket queue.
+Handles user-facing issues. Can suspend and reactivate user pages via `moderate_user` (which records `suspension_reason`/`suspended_at`/`suspended_by` for audit purposes), manage user services (view + update), view transactions for dispute context, and fully manage the support ticket queue.
 
 ### `finance_manager`
-Restricted to financial operations. Can read all transactions, wallets, withdrawal requests, and payout methods. Approves and processes withdrawals via `process_withdrawal`. Can refund transactions. No content or user moderation access beyond viewing user details.
+Restricted to financial operations. Can read all transactions, wallets, withdrawal requests, and payout methods. Approves and processes withdrawals via `process_withdrawal`. Can refund transactions via `admin_process_refund` and flag gateway chargebacks via `flag_transaction_disputed` (both gated by `transactions.refund`). No content or user moderation access beyond viewing user details.
 
 ### `developer_manager`
 Platform tooling focus. Full CRUD on developer accounts, approves/rejects service requests, and marks them implemented. Can view the manager list (read-only) and service request queue.

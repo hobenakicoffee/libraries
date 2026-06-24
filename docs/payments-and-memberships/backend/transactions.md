@@ -33,6 +33,11 @@ create table public.transactions (
   wallet_id               uuid                              references public.wallets(id) on delete set null,
 
   metadata                jsonb                             not null default '{}'::jsonb,
+
+  is_disputed             bool                              not null default false,
+  dispute_noted_at        timestamptz,
+  dispute_noted_by        uuid                              references public.profiles(id) on delete set null,
+
   created_at              timestamptz                       not null default now(),
   updated_at              timestamptz                       not null default now()
 );
@@ -60,6 +65,9 @@ create table public.transactions (
 | `balance_after` | `bigint` | Wallet balance snapshot after this transaction |
 | `wallet_id` | `uuid` | FK → `wallets.id`; null for external provider transactions |
 | `metadata` | `jsonb` | Extensible extra data (`role`, `supporter_id`, etc.) |
+| `is_disputed` | `bool` | Set by `flag_transaction_disputed()` when the payment gateway reports a chargeback/dispute |
+| `dispute_noted_at` | `timestamptz` | When staff flagged the dispute (null when not disputed) |
+| `dispute_noted_by` | `uuid` | FK → `profiles.id`; the manager who flagged it (`ON DELETE SET NULL`) |
 
 ---
 
@@ -112,6 +120,41 @@ The `metadata` column stores role context and any service-specific data passed f
 ```json
 { "description": "Withdrawal request submitted" }
 ```
+
+---
+
+## Chargebacks / Disputes vs. Refunds
+
+`is_disputed` is distinct from the [`refunds`](./refunds) table:
+
+- **Dispute (chargeback):** initiated by the supporter's **bank or MFS provider** against the payment gateway, outside the platform. There is no gateway webhook integration yet — staff set `is_disputed = true` manually via `flag_transaction_disputed()` once the gateway reports it.
+- **Refund:** initiated **on-platform** by the supporter or creator via `request_refund()`, and resolved by a manager via `admin_process_refund()`. See the [Refunds](./refunds) page.
+
+### `flag_transaction_disputed` (manager only — `transactions.refund`)
+
+```sql
+create or replace function public.flag_transaction_disputed(
+  p_transaction_id uuid,
+  p_is_disputed    boolean default true
+)
+returns jsonb
+```
+
+Sets `is_disputed`, and stamps (or clears) `dispute_noted_at`/`dispute_noted_by` to the acting manager. Pass `p_is_disputed := false` to clear a flag set in error. Granted to `service_role` only — see [Manager RPCs](../../managers-and-rbac/backend/rpcs.md#flag_transaction_disputed).
+
+```sql
+-- Flag a chargeback reported by the gateway
+select public.flag_transaction_disputed('transaction-uuid');
+
+-- Clear a flag set in error
+select public.flag_transaction_disputed('transaction-uuid', false);
+```
+
+| Return | Meaning |
+|---|---|
+| `{ "success": true, "transaction_id": ..., "is_disputed": true }` | Flag updated |
+| `{ "success": false, "error": "UNAUTHORIZED" }` | Caller lacks `transactions.refund` |
+| `{ "success": false, "error": "NOT_FOUND" }` | No transaction with that id |
 
 ---
 

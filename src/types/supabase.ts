@@ -1878,15 +1878,18 @@ export type Database = {
       };
       profiles: {
         Row: {
+          accepted_creator_agreement_at: string | null;
           allow_gifting: boolean | null;
           allow_subscriptions: boolean | null;
           avatar_url: string | null;
           banner_url: string | null;
+          bin_number: string | null;
           bio: string | null;
           categories: string[] | null;
           coaching_tip: Json | null;
           coaching_tip_generated_at: string | null;
           created_at: string | null;
+          creator_agreement_version: string | null;
           display_name: string | null;
           email_notifications_enabled: boolean;
           first_service_name: string | null;
@@ -1908,22 +1911,30 @@ export type Database = {
           popularity_score: number | null;
           role: Database["public"]["Enums"]["user_role"];
           social_links: Json | null;
+          suspended_at: string | null;
+          suspended_by: string | null;
+          suspension_reason: string | null;
           thank_you_items: Json | null;
           theme: Json | null;
+          tin_number: string | null;
           total_supporter_count: number | null;
           updated_at: string | null;
           username: string;
+          vat_registered: boolean;
         };
         Insert: {
+          accepted_creator_agreement_at?: string | null;
           allow_gifting?: boolean | null;
           allow_subscriptions?: boolean | null;
           avatar_url?: string | null;
           banner_url?: string | null;
+          bin_number?: string | null;
           bio?: string | null;
           categories?: string[] | null;
           coaching_tip?: Json | null;
           coaching_tip_generated_at?: string | null;
           created_at?: string | null;
+          creator_agreement_version?: string | null;
           display_name?: string | null;
           email_notifications_enabled?: boolean;
           first_service_name?: string | null;
@@ -1945,22 +1956,30 @@ export type Database = {
           popularity_score?: number | null;
           role?: Database["public"]["Enums"]["user_role"];
           social_links?: Json | null;
+          suspended_at?: string | null;
+          suspended_by?: string | null;
+          suspension_reason?: string | null;
           thank_you_items?: Json | null;
           theme?: Json | null;
+          tin_number?: string | null;
           total_supporter_count?: number | null;
           updated_at?: string | null;
           username: string;
+          vat_registered?: boolean;
         };
         Update: {
+          accepted_creator_agreement_at?: string | null;
           allow_gifting?: boolean | null;
           allow_subscriptions?: boolean | null;
           avatar_url?: string | null;
           banner_url?: string | null;
+          bin_number?: string | null;
           bio?: string | null;
           categories?: string[] | null;
           coaching_tip?: Json | null;
           coaching_tip_generated_at?: string | null;
           created_at?: string | null;
+          creator_agreement_version?: string | null;
           display_name?: string | null;
           email_notifications_enabled?: boolean;
           first_service_name?: string | null;
@@ -1982,13 +2001,90 @@ export type Database = {
           popularity_score?: number | null;
           role?: Database["public"]["Enums"]["user_role"];
           social_links?: Json | null;
+          suspended_at?: string | null;
+          suspended_by?: string | null;
+          suspension_reason?: string | null;
           thank_you_items?: Json | null;
           theme?: Json | null;
+          tin_number?: string | null;
           total_supporter_count?: number | null;
           updated_at?: string | null;
           username?: string;
+          vat_registered?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "profiles_suspended_by_fkey";
+            columns: ["suspended_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      refunds: {
+        Row: {
+          amount: number;
+          created_at: string;
+          id: string;
+          platform_fee_refunded: number;
+          processed_at: string | null;
+          processed_by: string | null;
+          reason: string;
+          requested_by_profile_id: string;
+          status: Database["public"]["Enums"]["refund_status_enum"];
+          transaction_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          amount: number;
+          created_at?: string;
+          id?: string;
+          platform_fee_refunded?: number;
+          processed_at?: string | null;
+          processed_by?: string | null;
+          reason: string;
+          requested_by_profile_id: string;
+          status?: Database["public"]["Enums"]["refund_status_enum"];
+          transaction_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          amount?: number;
+          created_at?: string;
+          id?: string;
+          platform_fee_refunded?: number;
+          processed_at?: string | null;
+          processed_by?: string | null;
+          reason?: string;
+          requested_by_profile_id?: string;
+          status?: Database["public"]["Enums"]["refund_status_enum"];
+          transaction_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "refunds_processed_by_fkey";
+            columns: ["processed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "refunds_requested_by_profile_id_fkey";
+            columns: ["requested_by_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "refunds_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       reviews: {
         Row: {
@@ -2995,7 +3091,10 @@ export type Database = {
           created_at: string;
           creator_profile_id: string | null;
           direction: Database["public"]["Enums"]["transaction_direction_enum"];
+          dispute_noted_at: string | null;
+          dispute_noted_by: string | null;
           id: string;
+          is_disputed: boolean;
           metadata: Json;
           net_amount: number;
           platform_fee: number;
@@ -3017,7 +3116,10 @@ export type Database = {
           created_at?: string;
           creator_profile_id?: string | null;
           direction: Database["public"]["Enums"]["transaction_direction_enum"];
+          dispute_noted_at?: string | null;
+          dispute_noted_by?: string | null;
           id?: string;
+          is_disputed?: boolean;
           metadata?: Json;
           net_amount: number;
           platform_fee?: number;
@@ -3039,7 +3141,10 @@ export type Database = {
           created_at?: string;
           creator_profile_id?: string | null;
           direction?: Database["public"]["Enums"]["transaction_direction_enum"];
+          dispute_noted_at?: string | null;
+          dispute_noted_by?: string | null;
           id?: string;
+          is_disputed?: boolean;
           metadata?: Json;
           net_amount?: number;
           platform_fee?: number;
@@ -3065,6 +3170,13 @@ export type Database = {
           {
             foreignKeyName: "transactions_creator_profile_id_fkey";
             columns: ["creator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transactions_dispute_noted_by_fkey";
+            columns: ["dispute_noted_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
@@ -3403,6 +3515,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_creator_agreement: { Args: { p_version: string }; Returns: Json };
       activate_creator_platform_subscription: {
         Args: {
           p_creator_profile_id: string;
@@ -3456,6 +3569,14 @@ export type Database = {
       };
       admin_grant_creator_subscription: {
         Args: { p_months?: number; p_plan_id: number; p_profile_id: string };
+        Returns: Json;
+      };
+      admin_process_refund: {
+        Args: {
+          p_new_status: Database["public"]["Enums"]["refund_status_enum"];
+          p_platform_fee_refunded?: number;
+          p_refund_id: string;
+        };
         Returns: Json;
       };
       admin_reject_kyc: {
@@ -3575,6 +3696,10 @@ export type Database = {
       delete_user_address: { Args: { p_address_id: string }; Returns: Json };
       dispatch_pending_email_notifications: { Args: never; Returns: undefined };
       drop_old_partitions: { Args: never; Returns: undefined };
+      flag_transaction_disputed: {
+        Args: { p_is_disputed?: boolean; p_transaction_id: string };
+        Returns: Json;
+      };
       follow_user: { Args: { target_user_id: string }; Returns: undefined };
       get_active_supporters_stats: {
         Args: { p_from?: string; p_to?: string };
@@ -4143,6 +4268,7 @@ export type Database = {
           p_allow_subs?: boolean;
           p_is_founder_discount?: boolean;
           p_is_page_active?: boolean;
+          p_suspension_reason?: string;
           p_user_id: string;
         };
         Returns: Json;
@@ -4257,6 +4383,10 @@ export type Database = {
       };
       reorder_shop_products: {
         Args: { p_product_ids: string[] };
+        Returns: Json;
+      };
+      request_refund: {
+        Args: { p_amount?: number; p_reason: string; p_transaction_id: string };
         Returns: Json;
       };
       request_withdrawal: {
@@ -4593,6 +4723,7 @@ export type Database = {
         | "withdraw_release"
         | "withdraw_complete"
         | "manual_adjustment";
+      refund_status_enum: "requested" | "approved" | "rejected" | "completed";
       report_category:
         | "bullying_or_harassment"
         | "illegal_activity"
@@ -4890,6 +5021,7 @@ export const Constants = {
         "withdraw_complete",
         "manual_adjustment",
       ],
+      refund_status_enum: ["requested", "approved", "rejected", "completed"],
       report_category: [
         "bullying_or_harassment",
         "illegal_activity",

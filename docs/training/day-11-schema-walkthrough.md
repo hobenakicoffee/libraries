@@ -47,6 +47,7 @@ init (extensions)
         → transactions (depends on wallets, profiles)
           → payments (depends on transactions)
           → withdrawal_requests (depends on wallets)
+          → refunds (depends on transactions, profiles)
       → activities (depends on profiles)
       → memberships (depends on profiles)
       → follows (depends on profiles)
@@ -98,6 +99,11 @@ Every other table eventually connects back to `profiles`. Understanding this tab
 | Stats (cached) | `follower_count`, `following_count`, `total_supporter_count` | Denormalized for performance |
 | Computed | `popularity_score` | Generated always, used for explore sort |
 | KYC | `is_kyc_verified`, `is_verified`, `kyc_verified_at` | Identity verification |
+| Creator agreement | `accepted_creator_agreement_at`, `creator_agreement_version` | Versioned acceptance, set by `accept_creator_agreement()` |
+| Suspension audit trail | `suspension_reason`, `suspended_at`, `suspended_by` | Set/cleared by `moderate_user()`; `is_page_active` remains the actual on/off switch |
+| Tax (self-reported) | `tin_number`, `bin_number`, `vat_registered` | NBR recordkeeping only; not enforced at transaction time |
+
+**Why a separate suspension audit trail?** `is_page_active = false` already disables the page, but it doesn't say *why* or *who did it*. `suspension_reason`/`suspended_at`/`suspended_by` give support staff a history without needing a separate audit-log table — `moderate_user()` stamps all three together and clears them on reactivation.
 
 **Why are counts cached?** Computing `COUNT(*) FROM follows WHERE following_id = profile_id` on every page load would be slow. Instead, triggers on the `follows` and `supporters` tables increment/decrement these counters atomically — the result is always correct and instant to read.
 
@@ -108,7 +114,8 @@ Every other table eventually connects back to `profiles`. Understanding this tab
 **Key functions:**
 - `is_admin()` — checks `role = 'admin'` for the current user
 - `handle_new_user()` — creates the profile row on first signup
-- `moderate_user()` — manager RPC to suspend/enable users/content
+- `moderate_user()` — manager RPC (service_role only) to suspend/enable users/content; stamps the suspension audit trail
+- `accept_creator_agreement(p_version)` — authenticated creator records acceptance of the Creator Agreement at a given version
 
 ---
 

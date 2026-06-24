@@ -107,14 +107,30 @@ returns uuid  -- the new withdrawal_requests.id
 ### What it does
 
 1. Authenticates the caller via `auth.uid()`.
-2. Validates the amount is positive and `≥ 500 BDT` (minimum withdrawal).
-3. Locks the wallet row (`FOR UPDATE`) to prevent concurrent withdrawals.
-4. Checks `balance >= p_amount`.
-5. Validates the payout method belongs to the user and is active.
-6. Updates the wallet: `balance -= p_amount`, `locked_balance += p_amount`.
-7. Inserts the `withdrawal_requests` row with `status = 'requested'` and a copy of the payout details as `payout_snapshot`.
-8. Inserts a `transactions` row with `direction = 'debit'`, `status = 'pending'`, `reference_type = 'withdraw_lock'`.
-9. Returns the new `withdrawal_requests.id`.
+2. Takes a per-user advisory lock (`pg_advisory_xact_lock(hashtext('withdrawal_requests:' || user_id))`) so two concurrent requests from the same user can't both pass the daily/monthly limit check below.
+3. Validates the amount is positive and `≥ 500 BDT` (minimum withdrawal).
+4. Checks the daily and monthly withdrawal limits (see below).
+5. Locks the wallet row (`FOR UPDATE`) to prevent concurrent withdrawals.
+6. Checks `balance >= p_amount`.
+7. Validates the payout method belongs to the user and is active.
+8. Updates the wallet: `balance -= p_amount`, `locked_balance += p_amount`.
+9. Inserts the `withdrawal_requests` row with `status = 'requested'` and a copy of the payout details as `payout_snapshot`.
+10. Inserts a `transactions` row with `direction = 'debit'`, `status = 'pending'`, `reference_type = 'withdraw_lock'`.
+11. Returns the new `withdrawal_requests.id`.
+
+### Daily / monthly withdrawal limits
+
+Configured via [`platform_settings`](../../memberships-hub/backend/platform-settings.md): `withdrawal_daily_limit` and `withdrawal_monthly_limit`. Both default to `0`, meaning **unlimited**.
+
+When a limit is `> 0`, `request_withdrawal` sums the user's `withdrawal_requests.amount` for the current calendar day/month — **excluding** `rejected` and `failed` rows — and rejects the new request if `existing_sum + p_amount` would exceed the limit:
+
+```sql
+where profile_id = v_user_id
+  and status not in ('rejected', 'failed')
+  and requested_at >= date_trunc('day', now())    -- or date_trunc('month', now()) for the monthly check
+```
+
+Both checks raise with `errcode = 'P0001'` and a `detail` describing the configured limit, same as the other business-rule errors below.
 
 ### Calling it (service role or authenticated user)
 
@@ -129,6 +145,8 @@ select * from request_withdrawal(500.00, 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
 | `Not authenticated` | `auth.uid()` is null |
 | `Invalid withdrawal amount` | `p_amount <= 0` |
 | `Minimum withdrawal is 500` | Amount below minimum |
+| `DAILY_WITHDRAWAL_LIMIT_EXCEEDED` | Today's requested total + `p_amount` would exceed `withdrawal_daily_limit` |
+| `MONTHLY_WITHDRAWAL_LIMIT_EXCEEDED` | This month's requested total + `p_amount` would exceed `withdrawal_monthly_limit` |
 | `Wallet not found` | User has no wallet |
 | `Insufficient balance` | `balance < p_amount` |
 | `Invalid payout method` | Method not found, not owned, or inactive |
@@ -302,6 +320,7 @@ returns table (
 ## Business Rules
 
 - **Minimum withdrawal:** 500 BDT. Configured as `v_min_withdraw := 500` inside the RPC — update that constant if the minimum changes.
+- **Daily/monthly withdrawal limits:** configured via `platform_settings.withdrawal_daily_limit` / `withdrawal_monthly_limit` (`0` = unlimited). Only non-`rejected`/`failed` requests count toward the window. Enforced inside `request_withdrawal`, serialized per-user with a `pg_advisory_xact_lock` to prevent two concurrent requests from both passing the check.
 - **Fee (TDB tax):** Withholding tax recorded on the `withdrawal_requests` row at payout time. When an admin marks a withdrawal as `paid`, the frontend sends a `p_fee` calculated at **10% of `amount`** (configurable via the `WITHDRAWAL_TAX_FEE_RATE` constant). The `process_withdrawal` RPC then updates `fee` and recalculates `net_amount = amount − fee`. Admins can override the fee in the dialog before confirming; empty yields no change to the stored fee.
 - **`payout_method_id` is `ON DELETE SET NULL`**: deleting a payout method sets the column to null instead of blocking deletion. The immutable copy is preserved in `payout_snapshot`.
 - **`superseded_by`**: set when a failed withdrawal is retried. The original row links to the new request, forming a retry chain. `get_withdrawal_requests_page` excludes superseded rows.

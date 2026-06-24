@@ -319,6 +319,10 @@ export default withMermaid(
                     link: "/payments-and-memberships/backend/transactions",
                   },
                   {
+                    text: "Refunds",
+                    link: "/payments-and-memberships/backend/refunds",
+                  },
+                  {
                     text: "Withdrawal Requests",
                     link: "/payments-and-memberships/backend/withdrawal-requests",
                   },
