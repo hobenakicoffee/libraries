@@ -4587,6 +4587,39 @@ export type Database = {
           total_spent: number;
         }[];
       };
+      get_supporters_with_profiles: {
+        Args: {
+          p_from_date?: string;
+          p_limit?: number;
+          p_offset?: number;
+          p_search?: string;
+          p_to_date?: string;
+          p_type?: string;
+        };
+        Returns: {
+          conversation_id: string;
+          created_at: string;
+          creator_id: string;
+          first_supported_at: string;
+          id: string;
+          identity_hash: string;
+          is_monthly: boolean;
+          last_supported_at: string;
+          last_supported_service: string;
+          metadata: Json;
+          name: string;
+          profile_avatar_url: string;
+          profile_display_name: string;
+          profile_id: string;
+          profile_username: string;
+          social_platform: Database["public"]["Enums"]["supporter_platform_enum"];
+          support_count: number;
+          total_amount: number;
+          total_count: number;
+          updated_at: string;
+          user_profile_id: string;
+        }[];
+      };
       get_total_supports_count: {
         Args: { p_creator_id: string; p_from_date: string; p_to_date: string };
         Returns: number;

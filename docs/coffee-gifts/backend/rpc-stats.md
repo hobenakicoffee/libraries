@@ -179,3 +179,68 @@ Both functions are declared `SECURITY DEFINER` and `STABLE` (no writes):
 - They do **not** use `auth.uid()` internally — the caller passes the profile ID explicitly.
 - Your backend must validate that the requesting user is allowed to query the given profile ID before calling these RPCs.
 - Both functions set `search_path = ''` to prevent search-path injection attacks.
+
+---
+
+## `get_supporters_with_profiles`
+
+Defined in `supporters.sql` (not `coffee_gifts.sql` like the two functions above). Powers the **Supporters page list** — the creator's full, searchable, paginated list of everyone who has supported them.
+
+Unlike the stats RPCs above, this function takes **no profile-id parameter**: it is always scoped internally to `creator_id = auth.uid()`, so the caller cannot request another creator's supporters.
+
+### Signature
+
+```sql
+CREATE OR REPLACE FUNCTION public.get_supporters_with_profiles(
+  p_search    varchar default null,
+  p_from_date timestamptz default null,
+  p_to_date   timestamptz default null,
+  p_type      varchar default null,
+  p_limit     int default 12,
+  p_offset    int default 0
+)
+RETURNS TABLE (
+  id, user_profile_id, creator_id, name, social_platform,
+  first_supported_at, last_supported_at, total_amount, support_count,
+  last_supported_service, is_monthly, conversation_id, identity_hash,
+  metadata, created_at, updated_at,
+  profile_id, profile_username, profile_display_name, profile_avatar_url,
+  total_count
+)
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `p_search` | `varchar` | `null` | Case-insensitive `ilike` match against `supporters.name`. |
+| `p_from_date` / `p_to_date` | `timestamptz` | `null` | Filters on `last_supported_at`. |
+| `p_type` | `varchar` | `null` | `'monthly'`, `'one_time'`, or `'all'`/`null` for no filter. |
+| `p_limit` / `p_offset` | `int` | `12` / `0` | Pagination. |
+
+### Return Columns
+
+All columns from `public.supporters`, plus the supporter's public profile fields (`profile_id`, `profile_username`, `profile_display_name`, `profile_avatar_url`) joined in from `public.public_profiles` — avoiding a second client-side query or embedding the RLS-restricted base `profiles` table. `total_count` is a window-function (`count(*) over()`) count of the full matching set, independent of `p_limit`/`p_offset`, so the client can paginate without a separate count query.
+
+### Example Usage
+
+```typescript
+const { data, error } = await supabase.rpc('get_supporters_with_profiles', {
+  p_search: 'maria',
+  p_type: 'monthly',
+  p_limit: 12,
+  p_offset: 0,
+});
+
+console.log(data[0].profile_username);  // joined from public_profiles
+console.log(data[0].total_count);       // total matching rows, ignoring p_limit
+```
+
+### Security
+
+`SECURITY DEFINER`, `STABLE`, `search_path = ''`. Scoped to `creator_id = (select auth.uid())` — `p_search`/`p_type`/the date range are filters only, never an identity parameter, so no creator can query another creator's supporters.
+
+```sql
+revoke execute on function public.get_supporters_with_profiles(varchar, timestamptz, timestamptz, varchar, int, int) from public, anon;
+grant execute on function public.get_supporters_with_profiles(varchar, timestamptz, timestamptz, varchar, int, int) to authenticated;
+```
