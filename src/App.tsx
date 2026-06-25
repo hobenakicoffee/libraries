@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { productInfo } from "@/constants/legal";
+import SchemaViewer from "@/SchemaViewer";
 import logoSvg from "/favicon.svg";
 
 declare const __LATEST_VERSION__: string;
@@ -39,7 +40,10 @@ const EXPORTS = [
   { path: "/docs", name: "docs", desc: "Documentation & guides" },
 ];
 
+type Page = "home" | "schema";
+
 const App = () => {
+  const [page, setPage] = useState<Page>("home");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -47,6 +51,10 @@ const App = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (page === "schema") {
+    return <SchemaViewer onBack={() => setPage("home")} />;
+  }
 
   return (
     <div className="min-dvh relative flex flex-col overflow-hidden bg-[#0a0c10] text-slate-200">
@@ -76,9 +84,18 @@ const App = () => {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-900/50 px-2 py-1 font-mono text-slate-400 text-xs">
-          <span className="h-2 w-2 rounded-full bg-green-500" />
-          TypeScript
+        <div className="flex items-center gap-3">
+          <button
+            className="cursor-pointer rounded-md border border-slate-700 bg-slate-900/50 px-3 py-1.5 font-mono text-slate-400 text-xs transition-colors hover:border-slate-500 hover:text-slate-200"
+            onClick={() => setPage("schema")}
+            type="button"
+          >
+            schema
+          </button>
+          <div className="flex items-center gap-2 rounded-md border border-slate-800 bg-slate-900/50 px-2 py-1 font-mono text-slate-400 text-xs">
+            <span className="h-2 w-2 rounded-full bg-green-500" />
+            TypeScript
+          </div>
         </div>
       </header>
 

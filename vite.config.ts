@@ -3,6 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
+import { supabaseSchemaPlugin } from "./plugins/vite-plugin-supabase-schema";
 
 async function getLatestVersion() {
   const res = await fetch(
@@ -29,6 +30,7 @@ export default defineConfig(async () => {
       }),
       react(),
       tailwindcss(),
+      supabaseSchemaPlugin(),
     ],
     build: {
       rollupOptions: {
