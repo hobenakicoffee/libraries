@@ -5,6 +5,48 @@ const common = [
   { text: "Go back", link: "/getting-started" },
   { text: "Home", link: "https://developer.hobenakicoffee.com" },
 ];
+
+const appFrontend = [
+  { text: "App Architecture", link: "/app-architecture/frontend/" },
+  { text: "Auth", link: "/auth/frontend/" },
+  { text: "Onboarding", link: "/onboarding/frontend/" },
+  { text: "Settings", link: "/settings/frontend/" },
+  { text: "Profile", link: "/profile/frontend/" },
+  { text: "Services Hub", link: "/services-hub/frontend/" },
+  { text: "Creator Agreement", link: "/creator-agreement/frontend/" },
+  { text: "Supporters", link: "/supporters/frontend/" },
+  { text: "Notifications", link: "/notifications/frontend/" },
+  { text: "Electron Desktop", link: "/electron-desktop/frontend/" },
+  { text: "Common Components", link: "/common-components/frontend/" },
+  { text: "Custom Hooks", link: "/custom-hooks/frontend/" },
+  { text: "Services Layer", link: "/services-layer/frontend/" },
+  { text: "Error Handling", link: "/error-handling/frontend/" },
+  { text: "Image Upload", link: "/image-upload/frontend/" },
+];
+
+const marketingFrontend = [
+  { text: "Architecture", link: "/marketing/architecture/" },
+  { text: "Routes", link: "/marketing/routes/" },
+  { text: "Actions", link: "/marketing/actions/" },
+  { text: "Auth", link: "/marketing/auth/" },
+  { text: "Creator Pages", link: "/marketing/creator-pages/" },
+  { text: "Monetization", link: "/marketing/monetization/" },
+  { text: "Social Features", link: "/marketing/social/" },
+  { text: "Infrastructure", link: "/marketing/infrastructure/" },
+];
+
+const backendRef = [
+  { text: "Common Types & Enums", link: "/common/backend/" },
+  { text: "Edge Functions", link: "/edge-functions/backend/" },
+  { text: "Email Notifications", link: "/email-notifications/backend/" },
+  { text: "Infrastructure", link: "/infrastructure/backend/" },
+  { text: "Messaging", link: "/messaging/backend/" },
+  { text: "Platform Settings", link: "/platform-settings/backend/" },
+  { text: "Profiles", link: "/profiles/backend/" },
+  { text: "User Services", link: "/user-services/backend/" },
+  { text: "Supabase Backend (Master Index)", link: "/supabase-backend" },
+];
+
 export default withMermaid(
   defineConfig({
     mermaid: {
@@ -73,6 +115,8 @@ export default withMermaid(
       nav: [
         { text: "Home", link: "https://developer.hobenakicoffee.com" },
         { text: "Getting Started", link: "/getting-started" },
+        { text: "Frontend", link: "/frontend/" },
+        { text: "Backend", link: "/supabase-backend" },
       ],
 
       footer: {
@@ -95,8 +139,40 @@ export default withMermaid(
               { text: "Home", link: "https://developer.hobenakicoffee.com" },
               { text: "Getting Started", link: "/getting-started" },
               { text: "Libraries", link: "/libraries/" },
-              { text: "Coffee Gifts", link: "/coffee-gifts/frontend/" },
-              { text: "Shop Service", link: "/shop-service/frontend/index" },
+              { text: "Frontend Overview", link: "/frontend/" },
+              {
+                text: "Supabase Backend (Master Index)",
+                link: "/supabase-backend",
+              },
+            ],
+          },
+          {
+            text: "App (React SPA)",
+            collapsed: false,
+            items: appFrontend,
+          },
+          {
+            text: "Marketing (Astro SSR)",
+            collapsed: false,
+            items: marketingFrontend,
+          },
+          {
+            text: "Backend Reference",
+            collapsed: false,
+            items: backendRef,
+          },
+          {
+            text: "Features",
+            collapsed: false,
+            items: [
+              {
+                text: "Coffee Gifts",
+                link: "/coffee-gifts/frontend/",
+              },
+              {
+                text: "Shop Service",
+                link: "/shop-service/frontend/index",
+              },
               {
                 text: "Memberships Hub",
                 link: "/memberships-hub/frontend/index",
@@ -137,13 +213,161 @@ export default withMermaid(
                 text: "Wishlist Signups",
                 link: "/wishlist/",
               },
+            ],
+          },
+          {
+            text: "Developer Training",
+            link: "/training/day-01-sql-basics",
+          },
+        ],
+
+        "/frontend/": [
+          ...common,
+          { text: "Frontend Overview", link: "/frontend/" },
+          {
+            text: "App (React SPA)",
+            collapsed: false,
+            items: appFrontend,
+          },
+          {
+            text: "Marketing (Astro SSR)",
+            collapsed: false,
+            items: marketingFrontend,
+          },
+        ],
+
+        "/app-architecture/frontend/": [...common, ...appFrontend],
+        "/auth/frontend/": [...common, ...appFrontend],
+        "/onboarding/frontend/": [...common, ...appFrontend],
+        "/settings/frontend/": [...common, ...appFrontend],
+        "/profile/frontend/": [...common, ...appFrontend],
+        "/services-hub/frontend/": [...common, ...appFrontend],
+        "/creator-agreement/frontend/": [...common, ...appFrontend],
+        "/supporters/frontend/": [...common, ...appFrontend],
+        "/notifications/frontend/": [...common, ...appFrontend],
+        "/electron-desktop/frontend/": [...common, ...appFrontend],
+        "/common-components/frontend/": [...common, ...appFrontend],
+        "/custom-hooks/frontend/": [...common, ...appFrontend],
+        "/services-layer/frontend/": [...common, ...appFrontend],
+        "/error-handling/frontend/": [...common, ...appFrontend],
+        "/image-upload/frontend/": [...common, ...appFrontend],
+
+        "/marketing/": [
+          ...common,
+          { text: "Marketing Overview", link: "/marketing/architecture/" },
+          {
+            text: "Marketing (Astro SSR)",
+            collapsed: false,
+            items: marketingFrontend,
+          },
+        ],
+
+        "/common/backend/": [...common, ...backendRef],
+        "/email-notifications/backend/": [...common, ...backendRef],
+        "/messaging/backend/": [...common, ...backendRef],
+        "/platform-settings/backend/": [...common, ...backendRef],
+        "/profiles/backend/": [...common, ...backendRef],
+        "/user-services/backend/": [...common, ...backendRef],
+
+        "/supporters/backend/": [...common, ...backendRef],
+        "/edge-functions/backend/": [
+          ...common,
+          {
+            text: "Backend Reference",
+            items: [
+              { text: "Common Types & Enums", link: "/common/backend/" },
               {
-                text: "Developer Training",
-                link: "/training/day-01-sql-basics",
+                text: "Edge Functions",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/edge-functions/backend/" },
+                  {
+                    text: "Middleware",
+                    link: "/edge-functions/backend/middleware",
+                  },
+                  {
+                    text: "create-kyc-session",
+                    link: "/edge-functions/backend/create-kyc-session",
+                  },
+                  {
+                    text: "delete-user",
+                    link: "/edge-functions/backend/delete-user",
+                  },
+                  {
+                    text: "ai-editor-chat",
+                    link: "/edge-functions/backend/ai-editor-chat",
+                  },
+                  {
+                    text: "moderate-content",
+                    link: "/edge-functions/backend/moderate-content",
+                  },
+                  {
+                    text: "download-shop-file",
+                    link: "/edge-functions/backend/download-shop-file",
+                  },
+                  {
+                    text: "export-shop-products",
+                    link: "/edge-functions/backend/export-shop-products",
+                  },
+                ],
+              },
+              {
+                text: "Email Notifications",
+                link: "/email-notifications/backend/",
+              },
+              { text: "Infrastructure", link: "/infrastructure/backend/" },
+              { text: "Messaging", link: "/messaging/backend/" },
+              {
+                text: "Platform Settings",
+                link: "/platform-settings/backend/",
+              },
+              { text: "Profiles", link: "/profiles/backend/" },
+              { text: "User Services", link: "/user-services/backend/" },
+              {
+                text: "Supabase Backend (Master Index)",
+                link: "/supabase-backend",
               },
             ],
           },
         ],
+
+        "/infrastructure/backend/": [
+          ...common,
+          {
+            text: "Backend Reference",
+            items: [
+              { text: "Common Types & Enums", link: "/common/backend/" },
+              { text: "Edge Functions", link: "/edge-functions/backend/" },
+              {
+                text: "Email Notifications",
+                link: "/email-notifications/backend/",
+              },
+              {
+                text: "Infrastructure",
+                collapsed: false,
+                items: [
+                  { text: "Overview", link: "/infrastructure/backend/" },
+                  {
+                    text: "BD Geo Data",
+                    link: "/infrastructure/backend/geo-data",
+                  },
+                ],
+              },
+              { text: "Messaging", link: "/messaging/backend/" },
+              {
+                text: "Platform Settings",
+                link: "/platform-settings/backend/",
+              },
+              { text: "Profiles", link: "/profiles/backend/" },
+              { text: "User Services", link: "/user-services/backend/" },
+              {
+                text: "Supabase Backend (Master Index)",
+                link: "/supabase-backend",
+              },
+            ],
+          },
+        ],
+
         "/libraries/": [
           ...common,
           { text: "Overview", link: "/libraries/" },
@@ -200,6 +424,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/coffee-gifts/": [
           ...common,
           {
@@ -255,6 +480,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/payments-and-memberships/": [
           ...common,
           {
@@ -343,6 +569,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/shop-service/": [
           ...common,
           {
@@ -425,6 +652,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/newsletter-service/": [
           ...common,
           {
@@ -491,6 +719,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/explore/": [
           ...common,
           {
@@ -517,6 +746,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/feed-discovery/": [
           ...common,
           {
@@ -567,6 +797,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/managers-and-rbac/": [
           ...common,
           {
@@ -597,6 +828,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/reports/": [
           ...common,
           {
@@ -610,16 +842,25 @@ export default withMermaid(
               {
                 text: "Backend",
                 collapsed: false,
-                items: [{ text: "Overview", link: "/reports/backend/" }],
+                items: [
+                  { text: "Overview", link: "/reports/backend/" },
+                  { text: "Schema", link: "/reports/backend/schema" },
+                ],
               },
             ],
           },
         ],
+
         "/notifications/": [
           ...common,
           {
             text: "Notifications",
             items: [
+              {
+                text: "Frontend",
+                collapsed: false,
+                items: [{ text: "Overview", link: "/notifications/frontend/" }],
+              },
               {
                 text: "Backend",
                 collapsed: false,
@@ -628,6 +869,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/kyc/": [
           ...common,
           {
@@ -643,11 +885,12 @@ export default withMermaid(
               {
                 text: "Backend",
                 collapsed: false,
-                items: [{ text: "Overview", link: "/kyc/" }],
+                items: [{ text: "Overview", link: "/kyc/backend/" }],
               },
             ],
           },
         ],
+
         "/memberships-hub/": [
           ...common,
           {
@@ -704,6 +947,7 @@ export default withMermaid(
             ],
           },
         ],
+
         "/training/": [
           ...common,
           {
