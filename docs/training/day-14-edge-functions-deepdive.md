@@ -108,7 +108,42 @@ AI-generated shop theme/branding suggestions based on the creator's profile/cate
 Runs content (post text, etc.) through moderation checks — likely combines `_shared/utils/moderation.ts` (bad word filtering) with an external moderation API.
 
 ### `polish-post`
-AI-assisted text polishing/rewriting for newsletter posts.
+AI-assisted text polishing and editorial review for blog posts. Supports two modes and nine content types.
+
+**Modes** (`mode?: "polish" | "review"`, default `"polish"`):
+- `polish` — Rewrites/improves the requested fields (title, excerpt, tags, content) and returns JSON.
+- `review` — Returns a `{ todos: [...] }` array of editorial suggestions with `field`, `message`, and `severity` (`"warning"` | `"error"`).
+
+**Content types** (`contentType?: string`, default `"blog"`):
+
+| `contentType` | Spelling | Word choice | Structure | Content/facts |
+|---|---|---|---|---|
+| `blog` | Fix | Improve | Suggest | Suggest gaps |
+| `tutorial` | Fix | Improve | Suggest | Suggest gaps |
+| `review` | Fix | Improve | Preserve | Preserve verdict |
+| `opinion` | Fix | Improve | Preserve | Preserve argument |
+| `travel` | Fix | Improve | Preserve | Preserve experiences |
+| `story` | Fix | Preserve | Preserve | Preserve entirely |
+| `poetry` | Fix | Preserve | Preserve | Preserve entirely |
+| `historical` | Fix | Preserve | Preserve | Preserve entirely |
+| `news` | Fix | Preserve | Preserve | Preserve entirely |
+
+**Bangla language support**: The prompts include explicit rules for standard written Bangla (প্রমিত বাংলা) — common spelling errors (কারন→কারণ), non-standard verb forms (হইছে→হয়েছে, চলতেছিল→চলছিল), word choice (অনেক→খুব for intensity), and পূর্ণচ্ছেদ (।) punctuation.
+
+**Dialogue auto-detection**: For all content types, quoted speech and reported dialogue (text after বললো, said, replied, etc.) are automatically identified. Inside dialogue, only spelling errors are flagged — colloquial grammar and dialectal forms are intentional and preserved.
+
+**Request shape**:
+```typescript
+{
+  content: string                // required
+  mode?: "polish" | "review"    // default "polish"
+  contentType?: "blog" | "story" | "poetry" | "historical" | "news" | "review" | "opinion" | "tutorial" | "travel"  // default "blog"
+  fields?: ("title"|"excerpt"|"tags"|"content")[]  // polish mode; omit for all fields
+  title?: string                 // review mode required
+  excerpt?: string               // review mode optional
+  tags?: string[]                // review mode optional
+}
+```
 
 ### `submit-kyc`
 Final submission of KYC data after document upload — validates and records the submission for manager review.

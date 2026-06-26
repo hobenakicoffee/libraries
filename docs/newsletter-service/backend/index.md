@@ -28,12 +28,14 @@ flowchart TD
         EPurchasePost["purchase-post"]
         EJoinMembership["join-membership"]
         EPaymentGW["Payment Gateway\n(SSLCommerz / ShurjoPay)"]
+        EPolishPost["polish-post\n(AI polish & review)"]
     end
 
     FE -->|supabase-js| REST
     REST --> Auth
     REST --> PG
     FE -->|image upload| Storage
+    FE -->|AI polish / review| EPolishPost
     EdgeFunctions --> PG
     EPaymentGW --> EPurchasePost
     EPaymentGW --> EJoinMembership
@@ -104,6 +106,41 @@ The newsletter service depends on these modules being migrated first:
 | **Part 3 — Analytics** | `newsletter_post_analytics_daily` |
 | **Part 4 — RPCs** | `check_newsletter_post_access`, `create_newsletter_draft`, `unpublish_newsletter_post`, `toggle_newsletter_post_like`, `gift_newsletter_post`, `record_newsletter_post_click`, `record_newsletter_post_view`, `get_newsletter_stats`, `get_post_analytics`, `get_posts_page`, `get_reader_feed`, `purchase_newsletter_post`, `purchase_newsletter_membership` |
 | **Storage** | `post-images` bucket + `cleanup_orphaned_post_images()` cron job |
+| **AI** | `polish-post` edge function — AI polish and editorial review |
+
+## AI Features — `polish-post` Edge Function
+
+The `polish-post` edge function provides two AI-powered writing tools in the editor. It is called directly from the frontend via `fetch` (not via `supabase-js`) using the user's session JWT.
+
+### Modes
+
+**`polish`** — Rewrites/improves one or more fields and returns the improved values as JSON.
+
+**`review`** — Returns an array of editorial suggestions (`todos`) the author can act on before publishing. Each todo has a `field`, a human-readable `message` (written in the post's language), and a `severity` of `"warning"` or `"error"`.
+
+### Content Types
+
+The `contentType` field controls how much editorial latitude the AI takes. Pass this from the editor's content-type selector:
+
+| `contentType` | Spelling/Grammar | Word choice | Structure | Content/facts |
+|---|---|---|---|---|
+| `"blog"` (default) | Fix | Improve | Suggest | Suggest gaps |
+| `"tutorial"` | Fix | Improve | Suggest | Suggest gaps |
+| `"review"` | Fix | Improve | Preserve | Preserve verdict |
+| `"opinion"` | Fix | Improve | Preserve | Preserve argument |
+| `"travel"` | Fix | Improve | Preserve | Preserve experiences |
+| `"story"` | Fix | Preserve | Preserve | Preserve entirely |
+| `"poetry"` | Fix | Preserve | Preserve | Preserve entirely |
+| `"historical"` | Fix | Preserve | Preserve | Preserve entirely |
+| `"news"` | Fix | Preserve | Preserve | Preserve entirely |
+
+### Bangla Language Support
+
+The prompts include explicit rules for standard written Bangla (প্রমিত বাংলা): common spelling errors, non-standard verb forms (হইছে→হয়েছে), word choice (অনেক→খুব for intensity), and পূর্ণচ্ছেদ (।) punctuation. Review messages for Bangla posts are returned in Bangla.
+
+### Dialogue Preservation
+
+For all content types, quoted speech and reported dialogue (text following speech verbs like বললো, said, replied) are auto-detected. Inside dialogue, only spelling errors are flagged — colloquial grammar and dialectal forms are left intact.
 
 ---
 

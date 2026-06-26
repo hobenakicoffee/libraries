@@ -301,4 +301,104 @@ const { error } = await supabase
 
 ---
 
+## AI Polish & Review
+
+The post editor exposes two AI-assisted writing tools powered by the `polish-post` edge function. Both require the user's session JWT — call via `fetch` using the Supabase Functions URL.
+
+### Content Type Selector
+
+Add a dropdown in the editor toolbar so the author can describe what they're writing. The selection is passed as `contentType` on every AI call. Store it in post metadata (local state is fine — it doesn't need to be persisted to the DB).
+
+```ts
+type ContentType =
+  | 'blog' | 'story' | 'poetry' | 'historical'
+  | 'news' | 'review' | 'opinion' | 'tutorial' | 'travel'
+```
+
+### Polish Mode
+
+Rewrites one or more fields and returns the improved values. Save a `source = 'ai_polish'` version snapshot **before** calling so the author can undo.
+
+```ts
+async function polishPost(fields: ('title' | 'excerpt' | 'tags' | 'content')[]) {
+  const { data: { session } } = await supabase.auth.getSession()
+
+  const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/polish-post`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session?.access_token}`,
+    },
+    body: JSON.stringify({
+      mode: 'polish',
+      contentType,          // from the content-type selector
+      content: post.content,
+      fields,
+    }),
+  })
+
+  const { data } = await res.json()
+  // data may contain: { title?, excerpt?, tags?, content? }
+  return data
+}
+```
+
+### Review Mode
+
+Returns a list of editorial todos before the author publishes. Display them in a sidebar or modal so the author can decide which to act on.
+
+```ts
+async function reviewPost() {
+  const { data: { session } } = await supabase.auth.getSession()
+
+  const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/polish-post`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session?.access_token}`,
+    },
+    body: JSON.stringify({
+      mode: 'review',
+      contentType,          // from the content-type selector
+      content: post.content,
+      title:   post.title,
+      excerpt: post.excerpt ?? undefined,
+      tags:    post.tags ?? undefined,
+    }),
+  })
+
+  const { data } = await res.json()
+  // data.todos: Array<{ field: string, message: string, severity: 'warning' | 'error' }>
+  return data.todos
+}
+```
+
+### Rendering Todos
+
+```svelte
+{#each todos as todo}
+  <div class={todo.severity === 'error' ? 'todo-error' : 'todo-warning'}>
+    <span class="field-badge">{todo.field}</span>
+    <p>{todo.message}</p>
+  </div>
+{/each}
+
+{#if todos.length === 0}
+  <p>✓ Post looks ready to publish.</p>
+{/if}
+```
+
+`severity: "error"` items block publishing (empty title, placeholder content). `severity: "warning"` items are advisory.
+
+### Error Handling
+
+| HTTP status | Meaning |
+|---|---|
+| `400` | Missing required field or invalid `contentType` — show validation message |
+| `401` | Session expired — re-authenticate |
+| `429` | AI rate limit hit — show "try again in a moment" |
+| `500` | AI response parsing failed — show generic error |
+
+---
+
 **Next:** [Payments — Buying Posts & Memberships](./payments.md)

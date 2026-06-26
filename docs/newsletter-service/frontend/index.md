@@ -19,6 +19,8 @@ The Newsletter Service powers two distinct UI surfaces:
 - Per-post analytics dialog (views, clicks, sales, conversion rate, revenue chart)
 - Newsletter settings (title, description, membership pricing)
 - Stat cards (total views, subscribers, revenue)
+- AI Polish — rewrites title, excerpt, tags, or full content via the `polish-post` edge function
+- AI Review — returns editorial todos (spelling, grammar, structure) before publishing; content-type aware (blog, story, poetry, historical, news, review, opinion, tutorial, travel)
 
 ## Client Setup
 
