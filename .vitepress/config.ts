@@ -35,6 +35,17 @@ const marketingFrontend = [
   { text: "Infrastructure", link: "/marketing/infrastructure/" },
 ];
 
+const marketingProductBriefs = [
+  { text: "Overview", link: "/marketing/product-briefs/" },
+  { text: "Product Overview", link: "/marketing/product-briefs/overview" },
+  { text: "Features", link: "/marketing/product-briefs/features" },
+  { text: "User Journeys", link: "/marketing/product-briefs/user-journeys" },
+  { text: "Platform Pages", link: "/marketing/product-briefs/platform-pages" },
+  { text: "Copy Guide", link: "/marketing/product-briefs/copy-guide" },
+  { text: "Trust Signals", link: "/marketing/product-briefs/trust-signals" },
+  { text: "Open Questions", link: "/marketing/product-briefs/open-questions" },
+];
+
 const backendRef = [
   { text: "Common Types & Enums", link: "/common/backend/" },
   { text: "Edge Functions", link: "/edge-functions/backend/" },
@@ -157,6 +168,11 @@ export default withMermaid(
             items: marketingFrontend,
           },
           {
+            text: "Marketing Product Briefs",
+            collapsed: false,
+            items: marketingProductBriefs,
+          },
+          {
             text: "Backend Reference",
             collapsed: false,
             items: backendRef,
@@ -234,6 +250,11 @@ export default withMermaid(
             collapsed: false,
             items: marketingFrontend,
           },
+          {
+            text: "Marketing Product Briefs",
+            collapsed: false,
+            items: marketingProductBriefs,
+          },
         ],
 
         "/app-architecture/frontend/": [...common, ...appFrontend],
@@ -259,6 +280,21 @@ export default withMermaid(
             text: "Marketing (Astro SSR)",
             collapsed: false,
             items: marketingFrontend,
+          },
+          {
+            text: "Marketing Product Briefs",
+            collapsed: false,
+            items: marketingProductBriefs,
+          },
+        ],
+
+        "/marketing/product-briefs/": [
+          ...common,
+          { text: "Marketing Overview", link: "/marketing/architecture/" },
+          {
+            text: "Marketing Product Briefs",
+            collapsed: false,
+            items: marketingProductBriefs,
           },
         ],
 
