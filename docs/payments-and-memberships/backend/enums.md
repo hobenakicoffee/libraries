@@ -141,6 +141,22 @@ See [Refunds](./refunds) for the full lifecycle.
 
 ---
 
+## `payment_session_status_enum`
+
+Defined in `supabase/schemas/payments.sql` (scoped to the `payment_sessions` table only, like `refund_status_enum` above).
+
+| Value | Meaning |
+|---|---|
+| `pending` | Session staged, awaiting gateway confirmation |
+| `completed` | IPN validated the payment and the on-success RPC succeeded |
+| `failed` | Validation failed, amount mismatch, or the on-success RPC errored |
+| `cancelled` | Customer cancelled at the gateway |
+| `expired` | Still `pending` past `expires_at`; swept by `expire_stale_payment_sessions()` |
+
+See [Payment Functions](./payment-functions#payment_sessions) for the full staging-table lifecycle.
+
+---
+
 ## `visibility_enum`
 
 Controls who can see an activity row.

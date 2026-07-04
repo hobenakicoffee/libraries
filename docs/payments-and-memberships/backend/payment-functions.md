@@ -256,3 +256,46 @@ This means:
 ::: danger
 Do not grant `EXECUTE` on `handle_successful_payment` or `process_service_payment` to the `authenticated` or `anon` roles. The service role guard is a defence-in-depth measure, not a replacement for correct grants.
 :::
+
+---
+
+## `payment_sessions`
+
+Staging table between "customer clicked pay" and "money actually moved", for external gateway checkouts (SSLCommerz today). Covers `gift`, `newsletter_post`, `newsletter_membership`, and `platform_subscription`. For `shop_order` it is a thin bridge row only — the authoritative order state still lives in `shop_orders`/`shop_order_items`.
+
+A row moves `pending -> completed` only after an IPN handler validates payment with the gateway's Order Validation API and successfully calls the relevant on-success RPC (`perform_coffee_gift`, `purchase_newsletter_post`, `purchase_newsletter_membership`, `activate_creator_platform_subscription`, or `handle_shop_payment_success`). A client-side success callback or `success_url` alone must never flip this to `completed`.
+
+`amount` is `numeric(12,2)` — wider than the `numeric(10,2)` used elsewhere in this file — because the platform-wide bound enforced at the Edge Function layer is 10–999,999,999 BDT, which exceeds what `numeric(10,2)` (max 99,999,999.99) can hold.
+
+RLS is enabled with no client-facing policies — service role only, written by Edge Functions. Status is exposed to clients solely through `get_payment_session_status`.
+
+### `payment_session_status_enum`
+
+`'pending' | 'completed' | 'failed' | 'cancelled' | 'expired'`
+
+### `get_payment_session_status(p_tran_id varchar)`
+
+```sql
+create or replace function public.get_payment_session_status(p_tran_id varchar)
+returns table (
+  status public.payment_session_status_enum,
+  service_type varchar,
+  amount numeric,
+  error text
+)
+```
+
+Granted to `anon` and `authenticated`. `tran_id` is an unguessable, UUID-derived string — knowledge of it is treated as a bearer token, the same pattern as `identity_hash` for anonymous supporters. Do not add a policy or function that lets a caller enumerate sessions by any other key.
+
+### `expire_stale_payment_sessions()`
+
+```sql
+create or replace function public.expire_stale_payment_sessions()
+returns integer
+```
+
+Marks `payment_sessions` rows `expired` when they are still `pending` past `expires_at` (default 1 hour after creation). Revoked from `public`, `anon`, and `authenticated` — only the scheduled job below calls it. Returns the number of rows expired.
+
+Scheduled via `pg_cron` once daily at `'0 0 * * *'` (00:00 UTC = 6:00 AM Asia/Dhaka), registered in `supabase/seeds/1.init.ts` as `expire-stale-payment-sessions`.
+
+For the full checkout architecture — the `sslcommerz-init`/`sslcommerz-ipn` Edge Functions, the Easy Checkout popup flow, and the per-`service_type` dispatch table — see `backend/docs/sslcommerz-integration-guide.md`.

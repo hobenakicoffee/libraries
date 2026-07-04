@@ -1333,30 +1333,6 @@ export type Database = {
           },
         ];
       };
-      messages_2026_05: {
-        Row: {
-          content: string;
-          conversation_id: string;
-          created_at: string;
-          id: number;
-          sender_id: string;
-        };
-        Insert: {
-          content: string;
-          conversation_id: string;
-          created_at?: string;
-          id?: number;
-          sender_id: string;
-        };
-        Update: {
-          content?: string;
-          conversation_id?: string;
-          created_at?: string;
-          id?: number;
-          sender_id?: string;
-        };
-        Relationships: [];
-      };
       messages_2026_06: {
         Row: {
           content: string;
@@ -1836,6 +1812,95 @@ export type Database = {
           {
             foreignKeyName: "notification_types_email_updated_by_fkey";
             columns: ["email_updated_by"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      payment_sessions: {
+        Row: {
+          amount: number;
+          bank_tran_id: string | null;
+          created_at: string;
+          creator_profile_id: string | null;
+          currency: string;
+          error: string | null;
+          expires_at: string;
+          gateway_response: Json | null;
+          id: string;
+          payload: Json;
+          rpc_result: Json | null;
+          service_type: string;
+          status: Database["public"]["Enums"]["payment_session_status_enum"];
+          supporter_profile_id: string | null;
+          tran_id: string;
+          updated_at: string;
+          val_id: string | null;
+        };
+        Insert: {
+          amount: number;
+          bank_tran_id?: string | null;
+          created_at?: string;
+          creator_profile_id?: string | null;
+          currency?: string;
+          error?: string | null;
+          expires_at?: string;
+          gateway_response?: Json | null;
+          id?: string;
+          payload: Json;
+          rpc_result?: Json | null;
+          service_type: string;
+          status?: Database["public"]["Enums"]["payment_session_status_enum"];
+          supporter_profile_id?: string | null;
+          tran_id: string;
+          updated_at?: string;
+          val_id?: string | null;
+        };
+        Update: {
+          amount?: number;
+          bank_tran_id?: string | null;
+          created_at?: string;
+          creator_profile_id?: string | null;
+          currency?: string;
+          error?: string | null;
+          expires_at?: string;
+          gateway_response?: Json | null;
+          id?: string;
+          payload?: Json;
+          rpc_result?: Json | null;
+          service_type?: string;
+          status?: Database["public"]["Enums"]["payment_session_status_enum"];
+          supporter_profile_id?: string | null;
+          tran_id?: string;
+          updated_at?: string;
+          val_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_sessions_creator_profile_id_fkey";
+            columns: ["creator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_sessions_creator_profile_id_fkey";
+            columns: ["creator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_sessions_supporter_profile_id_fkey";
+            columns: ["supporter_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_sessions_supporter_profile_id_fkey";
+            columns: ["supporter_profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
             referencedColumns: ["id"];
@@ -4208,6 +4273,7 @@ export type Database = {
       dismiss_all_activities: { Args: never; Returns: undefined };
       dispatch_pending_email_notifications: { Args: never; Returns: undefined };
       drop_old_partitions: { Args: never; Returns: undefined };
+      expire_stale_payment_sessions: { Args: never; Returns: number };
       flag_transaction_disputed: {
         Args: { p_is_disputed?: boolean; p_transaction_id: string };
         Returns: Json;
@@ -4441,6 +4507,15 @@ export type Database = {
       get_own_role: {
         Args: never;
         Returns: Database["public"]["Enums"]["user_role"];
+      };
+      get_payment_session_status: {
+        Args: { p_tran_id: string };
+        Returns: {
+          amount: number;
+          error: string;
+          service_type: string;
+          status: Database["public"]["Enums"]["payment_session_status_enum"];
+        }[];
       };
       get_platform_setting: { Args: { p_key: string }; Returns: number };
       get_platform_setting_jsonb: { Args: { p_key: string }; Returns: Json };
@@ -5242,6 +5317,12 @@ export type Database = {
         | "expired"
         | "paused"
         | "past_due";
+      payment_session_status_enum:
+        | "pending"
+        | "completed"
+        | "failed"
+        | "cancelled"
+        | "expired";
       payment_status_enum:
         | "pending"
         | "processing"
@@ -5535,6 +5616,13 @@ export const Constants = {
         "expired",
         "paused",
         "past_due",
+      ],
+      payment_session_status_enum: [
+        "pending",
+        "completed",
+        "failed",
+        "cancelled",
+        "expired",
       ],
       payment_status_enum: [
         "pending",
