@@ -128,7 +128,8 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 | RPC | Auth | Returns |
 |---|---|---|
 | `initiate_shop_checkout(p_items, p_address_id?, p_buyer_notes?, p_payment_method?)` | authenticated | `{ success, order_id, order_number, totals... }` |
-| `handle_shop_payment_success(p_order_id, p_transaction_reference_id)` | service role | `{ success, download_tokens, notification fields... }` |
+| `get_shop_order_for_payment(p_order_id)` | authenticated | `{ success, subtotal, shipping_total }` |
+| `handle_shop_payment_success(p_order_id, p_transaction_reference_id, p_amount)` | service role | `{ success, download_tokens, notification fields... }` |
 
 ---
 
@@ -232,7 +233,9 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | `VARIANT_NOT_FOUND` | Cart item references unknown variant |
 | `ADDRESS_NOT_FOUND` | Checkout address not found for this buyer |
 | `PROFILE_NOT_FOUND` | `get_shop_policies` / `get_shop_by_username` username not found |
-| `ORDER_NOT_FOUND` | `handle_shop_payment_success` order not found |
+| `ORDER_NOT_FOUND` | `handle_shop_payment_success` / `get_shop_order_for_payment` order not found |
+| `NOT_ORDER_OWNER` | `get_shop_order_for_payment` called by a profile that isn't the order's buyer |
+| `ALREADY_PAID` | `get_shop_order_for_payment` called on an order that already has a `transaction_reference_id` |
 
 ### Conflicts
 | Code | Meaning |
@@ -262,6 +265,7 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | `CANNOT_BUY_OWN_PRODUCT` | Buyer and seller are the same profile |
 | `INSUFFICIENT_STOCK` + `product_id, available` | Requested quantity exceeds stock |
 | `SHIPPING_ADDRESS_REQUIRED` | Physical items in cart but no `p_address_id` |
+| `AMOUNT_MISMATCH` | `handle_shop_payment_success` — `p_amount` (the amount actually charged) doesn't equal the order's `subtotal + shipping_total` |
 
 ### COD rules
 | Code | Meaning |
@@ -270,7 +274,7 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | `MIXED_COD_AND_NON_COD` + `product_id` | Item with `cod_enabled = false` in a COD cart |
 | `SELLER_COD_BLOCKED` + `eligibility` | Seller fails eligibility check at checkout |
 | `NOT_COD_ORDER` | COD RPC called on an online order |
-| `COD_ORDER_INVALID_PATH` | `handle_shop_payment_success` called on a COD order |
+| `COD_ORDER_INVALID_PATH` | `handle_shop_payment_success` / `get_shop_order_for_payment` called on a COD order |
 | `CANCELLATION_REASON_REQUIRED` | `cancel_cod_order_item` called without a reason |
 | `ALREADY_SETTLED` | Item already has `cod_settled_at` set |
 

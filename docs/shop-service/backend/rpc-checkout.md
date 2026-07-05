@@ -29,7 +29,7 @@ flowchart LR
 Q --> R[confirm_cod_cash]
 ```
 
-Two RPCs handle the money side of the shop: `initiate_shop_checkout` creates the order, and `handle_shop_payment_success` finalises it for online payments. COD orders skip the second step entirely.
+Three RPCs handle the money side of the shop: `initiate_shop_checkout` creates the order, `get_shop_order_for_payment` hands the marketing app the order's real total right before it opens an SSLCommerz session (so the charged amount is never client-supplied), and `handle_shop_payment_success` finalises the order for online payments — re-validating that the amount actually charged matches the order's real total before doing anything else. COD orders skip the last two steps entirely.
 
 ## Public read RPCs (called before checkout)
 
@@ -225,12 +225,43 @@ For online orders, the frontend takes `order_number`, creates an SSLCommerz sess
 
 ---
 
+## `get_shop_order_for_payment`
+
+```sql
+public.get_shop_order_for_payment(p_order_id uuid) → jsonb
+```
+
+Called by the marketing app's `initiatePayment` action before starting an SSLCommerz session, so the charged amount is always the order's real stored total — never a client-supplied value.
+
+### What it does
+
+1. Fetches the order by `p_order_id`.
+2. Confirms the caller is the order's buyer (`NOT_ORDER_OWNER` otherwise).
+3. Rejects COD orders (`COD_ORDER_INVALID_PATH`) — they never go through SSLCommerz.
+4. Rejects orders that already have a `transaction_reference_id` (`ALREADY_PAID`).
+5. Returns the order's real `subtotal`/`shipping_total` for the caller to build the SSLCommerz session amount from.
+
+### Response
+
+```json
+{
+  "success": true,
+  "subtotal": 1700.00,
+  "shipping_total": 120.00
+}
+```
+
+**Errors:** `ORDER_NOT_FOUND`, `NOT_ORDER_OWNER`, `COD_ORDER_INVALID_PATH`, `ALREADY_PAID`
+
+---
+
 ## `handle_shop_payment_success`
 
 ```sql
 public.handle_shop_payment_success(
   p_order_id                 uuid,
-  p_transaction_reference_id uuid
+  p_transaction_reference_id uuid,
+  p_amount                   numeric(10,2)
 ) → jsonb
 ```
 
@@ -240,16 +271,18 @@ Called by the SSLCommerz IPN Edge Function after payment is confirmed. **Never c
 
 1. **Idempotency check** — if `transaction_reference_id` is already set on the order, returns `{ "idempotent": true }` immediately. Safe to call multiple times from the IPN webhook.
 
-2. **Links transaction** — sets `shop_orders.transaction_reference_id`
+2. **Authoritative amount check** — raises `AMOUNT_MISMATCH` if `p_amount` (the amount actually charged via SSLCommerz) doesn't equal the order's `subtotal + shipping_total`. This runs before any fulfillment side-effect, so a mismatch aborts cleanly instead of fulfilling at the wrong price.
 
-3. **Per-item branching:**
+3. **Links transaction** — sets `shop_orders.transaction_reference_id`
+
+4. **Per-item branching:**
 
    | Item type | Actions |
    |---|---|
    | Digital | Creates download tokens for each file, marks status `fulfilled`, increments `sales_count` |
    | Physical | Marks status `processing` |
 
-4. **Decrements stock** — for both digital and physical items
+5. **Decrements stock** — for both digital and physical items
 
 ### Download token creation
 
@@ -288,5 +321,7 @@ select
 ```
 
 The Edge Function uses `buyer_profile_id` and `seller_profile_id` to dispatch in-app and email notifications.
+
+**Errors:** `ORDER_NOT_FOUND`, `COD_ORDER_INVALID_PATH`, `AMOUNT_MISMATCH` (raised as a Postgres exception, not returned as `success: false` — the IPN handler's `rpcError` branch marks the payment session `failed` for manual reconciliation)
 
 **Errors:** `ORDER_NOT_FOUND`, `COD_ORDER_INVALID_PATH`

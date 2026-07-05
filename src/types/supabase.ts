@@ -4661,6 +4661,10 @@ export type Database = {
         Args: { p_featured_limit?: number; p_username: string };
         Returns: Json;
       };
+      get_shop_order_for_payment: {
+        Args: { p_order_id: string };
+        Returns: Json;
+      };
       get_shop_overview: { Args: never; Returns: Json };
       get_shop_policies: { Args: { p_username: string }; Returns: Json };
       get_shop_products: {
@@ -4827,7 +4831,11 @@ export type Database = {
         Returns: string;
       };
       handle_shop_payment_success: {
-        Args: { p_order_id: string; p_transaction_reference_id: string };
+        Args: {
+          p_amount: number;
+          p_order_id: string;
+          p_transaction_reference_id: string;
+        };
         Returns: Json;
       };
       handle_successful_payment: {
