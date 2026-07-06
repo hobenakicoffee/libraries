@@ -2360,6 +2360,11 @@ export type Database = {
         Row: {
           amount: number;
           created_at: string;
+          gateway_confirmed_at: string | null;
+          gateway_initiated_at: string | null;
+          gateway_refund_ref_id: string | null;
+          gateway_response: Json | null;
+          gateway_status: Database["public"]["Enums"]["refund_gateway_status_enum"];
           id: string;
           platform_fee_refunded: number;
           processed_at: string | null;
@@ -2373,6 +2378,11 @@ export type Database = {
         Insert: {
           amount: number;
           created_at?: string;
+          gateway_confirmed_at?: string | null;
+          gateway_initiated_at?: string | null;
+          gateway_refund_ref_id?: string | null;
+          gateway_response?: Json | null;
+          gateway_status?: Database["public"]["Enums"]["refund_gateway_status_enum"];
           id?: string;
           platform_fee_refunded?: number;
           processed_at?: string | null;
@@ -2386,6 +2396,11 @@ export type Database = {
         Update: {
           amount?: number;
           created_at?: string;
+          gateway_confirmed_at?: string | null;
+          gateway_initiated_at?: string | null;
+          gateway_refund_ref_id?: string | null;
+          gateway_response?: Json | null;
+          gateway_status?: Database["public"]["Enums"]["refund_gateway_status_enum"];
           id?: string;
           platform_fee_refunded?: number;
           processed_at?: string | null;
@@ -4154,6 +4169,16 @@ export type Database = {
         };
         Returns: Json;
       };
+      admin_record_gateway_refund_result: {
+        Args: {
+          p_gateway_refund_ref_id?: string;
+          p_gateway_response?: Json;
+          p_gateway_status: Database["public"]["Enums"]["refund_gateway_status_enum"];
+          p_platform_fee_refunded?: number;
+          p_refund_id: string;
+        };
+        Returns: Json;
+      };
       admin_reject_kyc: {
         Args: {
           p_admin_notes?: string;
@@ -4272,6 +4297,10 @@ export type Database = {
       dismiss_activity: { Args: { p_activity_id: string }; Returns: undefined };
       dismiss_all_activities: { Args: never; Returns: undefined };
       dispatch_pending_email_notifications: { Args: never; Returns: undefined };
+      dispatch_pending_refund_reconciliation: {
+        Args: never;
+        Returns: undefined;
+      };
       drop_old_partitions: { Args: never; Returns: undefined };
       expire_stale_payment_sessions: { Args: never; Returns: number };
       flag_transaction_disputed: {
@@ -5366,6 +5395,12 @@ export type Database = {
         | "withdraw_release"
         | "withdraw_complete"
         | "manual_adjustment";
+      refund_gateway_status_enum:
+        | "not_applicable"
+        | "pending"
+        | "processing"
+        | "refunded"
+        | "failed";
       refund_status_enum: "requested" | "approved" | "rejected" | "completed";
       report_category:
         | "bullying_or_harassment"
@@ -5670,6 +5705,13 @@ export const Constants = {
         "withdraw_release",
         "withdraw_complete",
         "manual_adjustment",
+      ],
+      refund_gateway_status_enum: [
+        "not_applicable",
+        "pending",
+        "processing",
+        "refunded",
+        "failed",
       ],
       refund_status_enum: ["requested", "approved", "rejected", "completed"],
       report_category: [

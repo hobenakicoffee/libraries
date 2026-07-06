@@ -2,7 +2,7 @@
 
 The `refunds` table tracks supporter/creator-initiated refund requests against a completed transaction. It is distinct from chargebacks/disputes (`transactions.is_disputed`) — see [Chargebacks / Disputes vs. Refunds](./transactions#chargebacks-disputes-vs-refunds).
 
-Refunds do **not** move wallet funds automatically. Support manually reverses the underlying payment gateway charge out-of-band today; this table is the system of record for what was promised/approved/completed.
+Refunds do **not** move wallet funds automatically. For transactions paid via `provider = 'SSLCommerz'`, an approved refund is reversed at the gateway automatically — see [Gateway automation](#gateway-automation-sslcommerz) below. For every other provider (e.g. wallet-funded `HobeNakiCoffee` transactions), support still reverses the charge out-of-band and completes it manually via `admin_process_refund`. This table is the system of record for what was promised/approved/completed either way.
 
 ---
 
@@ -23,6 +23,12 @@ create table public.refunds (
   processed_by            uuid                      references public.profiles(id) on delete set null,
   processed_at            timestamptz,
 
+  gateway_status          public.refund_gateway_status_enum not null default 'not_applicable',
+  gateway_refund_ref_id   varchar(50),
+  gateway_response        jsonb,
+  gateway_initiated_at    timestamptz,
+  gateway_confirmed_at    timestamptz,
+
   created_at              timestamptz               not null default now(),
   updated_at              timestamptz               not null default now()
 );
@@ -38,18 +44,23 @@ create table public.refunds (
 | `status` | `refund_status_enum` | `requested` → `approved`/`rejected` → `completed` |
 | `reason` | `text` | Required free-text reason supplied by the requester |
 | `amount` | `numeric(10,2)` | Amount requested to be refunded; must not exceed the original transaction's `amount` |
-| `platform_fee_refunded` | `numeric(10,2)` | Set when a manager completes the refund; how much of the platform's fee was also given back |
-| `processed_by` | `uuid` | FK → `profiles.id`; the manager who last actioned the refund (`ON DELETE SET NULL`) |
-| `processed_at` | `timestamptz` | When `admin_process_refund` last ran on this row |
+| `platform_fee_refunded` | `numeric(10,2)` | Set when a manager (or the gateway, on auto-completion) completes the refund; how much of the platform's fee was also given back |
+| `processed_by` | `uuid` | FK → `profiles.id`; the manager who last actioned the refund (`ON DELETE SET NULL`). `null` when the refund auto-completed via gateway confirmation |
+| `processed_at` | `timestamptz` | When `admin_process_refund` (or `admin_record_gateway_refund_result`) last finalised this row |
+| `gateway_status` | `refund_gateway_status_enum` | SSLCommerz gateway lifecycle, independent of `status`. `not_applicable` for non-SSLCommerz transactions |
+| `gateway_refund_ref_id` | `varchar(50)` | SSLCommerz's `refund_ref_id`, returned by `initiateRefund()` and used to poll status |
+| `gateway_response` | `jsonb` | Raw response from the last `initiateRefund`/status-query call, for audit |
+| `gateway_initiated_at` | `timestamptz` | Set the first time `gateway_status` leaves `not_applicable`/`pending` |
+| `gateway_confirmed_at` | `timestamptz` | Set when `gateway_status` reaches a terminal state (`refunded`/`failed`) |
 
 ### `refund_status_enum`
 
 | Value | Meaning |
 |---|---|
 | `requested` | Created via `request_refund`, awaiting manager action |
-| `approved` | Manager approved; refund is in progress out-of-band |
+| `approved` | Manager approved; refund is in progress (out-of-band, or at the gateway for SSLCommerz) |
 | `rejected` | Manager rejected; terminal state |
-| `completed` | Manager confirmed the gateway reversal happened; terminal state |
+| `completed` | Refund confirmed done — either a manager's manual completion, or automatic once the gateway reports `refunded`; terminal state |
 
 ```mermaid
 stateDiagram-v2
@@ -59,6 +70,26 @@ stateDiagram-v2
     approved --> completed
     rejected --> [*]
     completed --> [*]
+```
+
+### `refund_gateway_status_enum`
+
+Tracks the SSLCommerz side of a refund independently of `status` above.
+
+| Value | Meaning |
+|---|---|
+| `not_applicable` | Default; used for non-SSLCommerz transactions (manual path) |
+| `pending` | SSLCommerz-provider refund approved but not yet sent to the gateway |
+| `processing` | `sslcommerz-refund` successfully initiated the refund at the gateway; awaiting confirmation |
+| `refunded` | Gateway confirmed the refund — `admin_record_gateway_refund_result` flips `status` to `completed` |
+| `failed` | Gateway rejected the refund, or reported `cancelled` on a status poll |
+
+```mermaid
+stateDiagram-v2
+    [*] --> not_applicable
+    not_applicable --> processing: sslcommerz-refund initiates
+    processing --> refunded: gateway confirms
+    processing --> failed: gateway rejects/cancels
 ```
 
 ---
@@ -157,6 +188,49 @@ select public.admin_process_refund('refund-uuid', 'completed', 25.00);
 
 ---
 
+## Gateway automation (SSLCommerz)
+
+For transactions paid via `provider = 'SSLCommerz'`, `transactions.provider_transaction_id` already stores SSLCommerz's `bank_tran_id` (set in `sslcommerz-ipn`'s dispatch call — see [Payments](./payments.md)). Once a manager approves a refund (`admin_process_refund(..., 'approved')`), the gateway side is automated instead of manual:
+
+1. **`sslcommerz-refund` edge function** (manager-invoked, JWT-verified): looks up the refund's transaction, confirms `provider = 'SSLCommerz'` and `status = 'approved'`, then calls SSLCommerz's real refund API (`initiateRefund()` in `_shared/sslcommerz/client.ts`) with `bank_tran_id`, `refund_amount`, and `refund_remarks` (the refund's `reason`). Records the outcome via `admin_record_gateway_refund_result` — `gateway_status` becomes `processing` on success or `failed` otherwise.
+2. **`dispatch_pending_refund_reconciliation()`** (pg_cron, every 15 minutes): batches refunds stuck in `gateway_status = 'processing'` and posts them via `pg_net` to the **`sslcommerz-refund-status`** edge function (same `X-Dispatch-Secret` pattern as `dispatch_pending_email_notifications` in `email_notifications.sql` — reuses the same Vault secrets, no additional setup needed).
+3. **`sslcommerz-refund-status` edge function** (dispatch-secret protected): polls SSLCommerz's refund-status endpoint (`getRefundStatus()`) for each pending refund and records the result — `refunded` flips `gateway_status` to `refunded` (which also completes the refund), `processing` is a no-op refresh, and `cancelled`/anything else maps to `failed`.
+
+Non-SSLCommerz refunds are unaffected — `gateway_status` stays `not_applicable` and `admin_process_refund` remains the only way to move them through `approved`/`rejected`/`completed`.
+
+::: warning
+**Blocked on an operational step:** SSLCommerz requires the production server's public IP to be registered with them before `initiateRefund`/`getRefundStatus` will succeed against the live API. Until that's done, `sslcommerz-refund` will surface `APIConnect: INACTIVE`/`INVALID_REQUEST` as a `gateway_status = 'failed'` result rather than crashing, so this is safe to have deployed ahead of registration.
+:::
+
+### `admin_record_gateway_refund_result` RPC (service role only)
+
+Called by `sslcommerz-refund` and `sslcommerz-refund-status` to record the outcome of a call to SSLCommerz's refund API. Not reachable by managers directly — the gateway call itself happens in the edge functions, since plpgsql cannot make HTTP requests.
+
+### Signature
+
+```sql
+create or replace function public.admin_record_gateway_refund_result(
+  p_refund_id              uuid,
+  p_gateway_status         public.refund_gateway_status_enum,
+  p_gateway_refund_ref_id  varchar default null,
+  p_gateway_response       jsonb default null,
+  p_platform_fee_refunded  numeric default 0
+)
+returns jsonb
+```
+
+Sets `gateway_status`/`gateway_refund_ref_id`/`gateway_response`, stamps `gateway_initiated_at`/`gateway_confirmed_at` as appropriate, and — only when `p_gateway_status = 'refunded'` — flips `status` to `completed` and records `platform_fee_refunded`/`processed_at`, mirroring what `admin_process_refund` does for the manual path. Rejects transitions on an already-finalised (`rejected`/`completed`) refund, same as `admin_process_refund`.
+
+### Return values
+
+```json
+{ "success": true, "refund_id": "...", "gateway_status": "processing" }
+{ "success": false, "error": "NOT_FOUND" }
+{ "success": false, "error": "ALREADY_FINALISED" }
+```
+
+---
+
 ## Row Level Security
 
 | Operation | Policy |
@@ -175,3 +249,4 @@ select public.admin_process_refund('refund-uuid', 'completed', 25.00);
 | `idx_refunds_transaction_id` | `transaction_id` | Look up refunds for a transaction |
 | `idx_refunds_requested_by` | `requested_by_profile_id` | List a user's refund requests |
 | `idx_refunds_status` | `status` | Admin queue filtering |
+| `idx_refunds_gateway_status` | `gateway_status` | Reconciliation job's polling query (`gateway_status = 'processing'`) |
