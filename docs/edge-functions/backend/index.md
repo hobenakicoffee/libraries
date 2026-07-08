@@ -25,7 +25,7 @@ The client sends an HTTP request to `https://{project}.supabase.co/functions/v1/
 |---|---|---|---|---|
 | `ai-editor-chat` | POST | Yes | `ai` | OpenAI streaming chat for the AI editor assistant |
 | `create-kyc-session` | POST | Yes | `strict` | Creates a KYC verification session with magic link auth |
-| `delete-user` | POST | Yes | `strict` | Permanently deletes a user account and sends win-back email |
+| `delete-user` | POST | Yes | `strict` | Closes a user account (anonymize-in-place; financial records retained) and sends win-back email |
 | `download-shop-file` | GET | No (token auth) | none | One-time token-based secure file download |
 | `export-shop-products` | POST | Yes | `strict` | CSV export of creator's shop products with filters |
 | `moderate-content` | POST | Yes | `ai` | Content moderation via OpenAI + local profanity filter |

@@ -205,14 +205,16 @@ create table public.kyc_sessions (
 
 Permanent audit record per verification attempt. Storage paths stored here — never raw URLs.
 
+`nid_number`/`nid_front_path`/`nid_back_path`/`selfie_path` are nullable: `submit-kyc` always populates them, but `close_account()` (see `edge-functions/backend/delete-user.md`) nulls all four out on account closure — deleting the underlying Storage objects and purging the raw PII/biometric data — while keeping the row itself (`status`, timestamps, `consent_given_at`/`consent_ip`, `reviewed_by`) as a compliance stub proving verification happened, without retaining the ID data indefinitely.
+
 | Column | Type | Notes |
 |---|---|---|
 | `id` | `bigint generated always as identity PK` | |
 | `profile_id` | `uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE` | |
-| `nid_number` | `varchar(17) NOT NULL` | Bangladesh NID: 10 or 17 digits |
-| `nid_front_path` | `text NOT NULL` | Storage path — never raw URL |
-| `nid_back_path` | `text NOT NULL` | Storage path |
-| `selfie_path` | `text NOT NULL` | Storage path |
+| `nid_number` | `varchar(17)` | Bangladesh NID: 10 or 17 digits. Nulled by `close_account()` on account closure. |
+| `nid_front_path` | `text` | Storage path — never raw URL. Nulled by `close_account()` on account closure. |
+| `nid_back_path` | `text` | Storage path. Nulled by `close_account()` on account closure. |
+| `selfie_path` | `text` | Storage path. Nulled by `close_account()` on account closure. |
 | `status` | `kyc_status_enum NOT NULL DEFAULT 'pending'` | |
 | `reviewed_by` | `uuid REFERENCES profiles(id) ON DELETE SET NULL` | manager who acted |
 | `reviewed_at` | `timestamptz` | |
@@ -228,10 +230,10 @@ Permanent audit record per verification attempt. Storage paths stored here — n
 create table public.kyc_submissions (
   id               bigint generated always as identity primary key,
   profile_id       uuid not null references public.profiles (id) on delete cascade,
-  nid_number       varchar(17) not null,
-  nid_front_path   text not null,
-  nid_back_path    text not null,
-  selfie_path      text not null,
+  nid_number       varchar(17),
+  nid_front_path   text,
+  nid_back_path    text,
+  selfie_path      text,
   status           public.kyc_status_enum not null default 'pending',
   reviewed_by      uuid references public.profiles (id) on delete set null,
   reviewed_at      timestamptz,

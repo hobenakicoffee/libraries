@@ -7,7 +7,7 @@ The `coffee_gifts` table stores every **completed** coffee gift. A row is insert
 ```sql
 create table public.coffee_gifts (
   id                       uuid primary key default gen_random_uuid(),
-  creator_profile_id       uuid not null references public.profiles(id) on delete set null,
+  creator_profile_id       uuid references public.profiles(id) on delete set null,
   supporter_profile_id     uuid references public.profiles(id) on delete set null,
   supporter_name           varchar(100),
   supporter_platform       varchar(30),
@@ -26,7 +26,7 @@ create table public.coffee_gifts (
 | Column | Type | Nullable | Description |
 |---|---|---|---|
 | `id` | `uuid` | NO | Primary key, auto-generated |
-| `creator_profile_id` | `uuid` | NO | The creator who receives the gift. FK → `profiles.id`. Set to `NULL` if the profile is deleted (gift history is preserved). |
+| `creator_profile_id` | `uuid` | YES | The creator who receives the gift. FK → `profiles.id`. Set to `NULL` if the profile is deleted (gift history is preserved). |
 | `supporter_profile_id` | `uuid` | YES | The authenticated supporter. `NULL` means the gift was anonymous. FK → `profiles.id`. |
 | `supporter_name` | `varchar(100)` | YES | Display name snapshot at the time of the gift. Preserved even if the supporter later changes their name. |
 | `supporter_platform` | `varchar(30)` | YES | Social platform the supporter came from (e.g. `facebook`, `github`). |
@@ -40,9 +40,9 @@ create table public.coffee_gifts (
 
 ## Design Notes
 
-### Why is `creator_profile_id` `NOT NULL` but uses `on delete set null`?
+### Why is `creator_profile_id` nullable with `on delete set null`?
 
-The column is `NOT NULL` at insert time because every gift must have a creator. However, if the creator's profile is hard-deleted from the database, the column is set to `NULL` rather than cascading the deletion. This preserves the gift history for auditing and supporter attribution without requiring the creator to remain in the system.
+Every gift is inserted with a real creator, but the column is nullable so the `ON DELETE SET NULL` action is actually reachable if a profile is ever hard-deleted, preserving the gift history rather than raising a constraint violation. In practice, account closure (`close_account()`, see `edge-functions/backend/delete-user.md`) never deletes the `profiles` row — it anonymizes it in place — so this FK action doesn't currently fire in the account-closure flow; it exists as a safety net for any other path that might remove a profile row.
 
 ### Why is `supporter_profile_id` nullable?
 
@@ -62,7 +62,7 @@ A gift row must not be silently orphaned from its financial record. The `RESTRIC
 |---|---|---|
 | `coffee_gifts_pkey` | Primary key | `id` |
 | `coffee_gifts_coffee_count_check` | Check | `coffee_count > 0` |
-| FK on `creator_profile_id` | Foreign key | References `profiles(id)`, `ON DELETE SET NULL` |
+| FK on `creator_profile_id` (nullable) | Foreign key | References `profiles(id)`, `ON DELETE SET NULL` |
 | FK on `supporter_profile_id` | Foreign key | References `profiles(id)`, `ON DELETE SET NULL` |
 | FK on `transaction_reference_id` | Foreign key | References `transactions(reference_id)`, `ON DELETE RESTRICT` |
 

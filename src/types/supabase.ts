@@ -94,7 +94,7 @@ export type Database = {
         Row: {
           coffee_count: number;
           created_at: string;
-          creator_profile_id: string;
+          creator_profile_id: string | null;
           id: string;
           is_monthly: boolean;
           message: string | null;
@@ -108,7 +108,7 @@ export type Database = {
         Insert: {
           coffee_count: number;
           created_at?: string;
-          creator_profile_id: string;
+          creator_profile_id?: string | null;
           id?: string;
           is_monthly?: boolean;
           message?: string | null;
@@ -122,7 +122,7 @@ export type Database = {
         Update: {
           coffee_count?: number;
           created_at?: string;
-          creator_profile_id?: string;
+          creator_profile_id?: string | null;
           id?: string;
           is_monthly?: boolean;
           message?: string | null;
@@ -1019,14 +1019,14 @@ export type Database = {
           consent_ip: unknown;
           created_at: string;
           id: number;
-          nid_back_path: string;
-          nid_front_path: string;
-          nid_number: string;
+          nid_back_path: string | null;
+          nid_front_path: string | null;
+          nid_number: string | null;
           profile_id: string;
           rejection_reason: string | null;
           reviewed_at: string | null;
           reviewed_by: string | null;
-          selfie_path: string;
+          selfie_path: string | null;
           status: Database["public"]["Enums"]["kyc_status_enum"];
           updated_at: string;
         };
@@ -1037,14 +1037,14 @@ export type Database = {
           consent_ip?: unknown;
           created_at?: string;
           id?: never;
-          nid_back_path: string;
-          nid_front_path: string;
-          nid_number: string;
+          nid_back_path?: string | null;
+          nid_front_path?: string | null;
+          nid_number?: string | null;
           profile_id: string;
           rejection_reason?: string | null;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
-          selfie_path: string;
+          selfie_path?: string | null;
           status?: Database["public"]["Enums"]["kyc_status_enum"];
           updated_at?: string;
         };
@@ -1055,14 +1055,14 @@ export type Database = {
           consent_ip?: unknown;
           created_at?: string;
           id?: never;
-          nid_back_path?: string;
-          nid_front_path?: string;
-          nid_number?: string;
+          nid_back_path?: string | null;
+          nid_front_path?: string | null;
+          nid_number?: string | null;
           profile_id?: string;
           rejection_reason?: string | null;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
-          selfie_path?: string;
+          selfie_path?: string | null;
           status?: Database["public"]["Enums"]["kyc_status_enum"];
           updated_at?: string;
         };
@@ -4241,6 +4241,7 @@ export type Database = {
       cleanup_orphaned_post_images: { Args: never; Returns: undefined };
       cleanup_orphaned_shop_images: { Args: never; Returns: undefined };
       cleanup_orphaned_shop_product_files: { Args: never; Returns: undefined };
+      close_account: { Args: never; Returns: Json };
       confirm_cod_cash_received: {
         Args: { p_order_item_id: string };
         Returns: Json;
