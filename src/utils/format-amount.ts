@@ -1,6 +1,7 @@
 export function formatAmount(value: number) {
   const formatted = new Intl.NumberFormat(undefined, {
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(Math.abs(value));
 
   return `৳${formatted}`;
@@ -11,7 +12,8 @@ export function formatSignedAmount(
   direction: "debit" | "credit"
 ) {
   const formatted = new Intl.NumberFormat(undefined, {
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(Math.abs(value));
 
   const sign = direction === "debit" ? "-" : "+";
