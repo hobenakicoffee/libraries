@@ -121,6 +121,24 @@ export default withMermaid(
       hostname: "https://developer.hobenakicoffee.com/docs/",
     },
 
+    vite: {
+      build: {
+        // Doc pages are individually lazy-loaded chunks; large ones are
+        // pre-rendered Shiki code-block HTML (dual light/dark theme) or the
+        // local search index (grows with doc content, only fetched on
+        // search open) — not shared vendor bloat on initial page load.
+        chunkSizeWarningLimit: 2000,
+        rollupOptions: {
+          onwarn(warning, warn) {
+            // @vueuse/core ships misplaced /* #__PURE__ */ comments; Rollup
+            // just strips them (no functional impact), so silence the noise.
+            if (warning.code === "INVALID_ANNOTATION") return;
+            warn(warning);
+          },
+        },
+      },
+    },
+
     themeConfig: {
       logo: "logo-full.svg",
       nav: [

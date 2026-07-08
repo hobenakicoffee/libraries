@@ -190,7 +190,7 @@ select public.admin_process_refund('refund-uuid', 'completed', 25.00);
 
 ## Gateway automation (SSLCommerz)
 
-For transactions paid via `provider = 'SSLCommerz'`, `transactions.provider_transaction_id` already stores SSLCommerz's `bank_tran_id` (set in `sslcommerz-ipn`'s dispatch call — see [Payments](./payments.md)). Once a manager approves a refund (`admin_process_refund(..., 'approved')`), the gateway side is automated instead of manual:
+For transactions paid via `provider = 'SSLCommerz'`, `transactions.provider_transaction_id` already stores SSLCommerz's `bank_tran_id` (set in `sslcommerz-ipn`'s dispatch call — see [Payment Functions](./payment-functions.md)). Once a manager approves a refund (`admin_process_refund(..., 'approved')`), the gateway side is automated instead of manual:
 
 1. **`sslcommerz-refund` edge function** (manager-invoked, JWT-verified): looks up the refund's transaction, confirms `provider = 'SSLCommerz'` and `status = 'approved'`, then calls SSLCommerz's real refund API (`initiateRefund()` in `_shared/sslcommerz/client.ts`) with `bank_tran_id`, `refund_amount`, and `refund_remarks` (the refund's `reason`). Records the outcome via `admin_record_gateway_refund_result` — `gateway_status` becomes `processing` on success or `failed` otherwise.
 2. **`dispatch_pending_refund_reconciliation()`** (pg_cron, every 15 minutes): batches refunds stuck in `gateway_status = 'processing'` and posts them via `pg_net` to the **`sslcommerz-refund-status`** edge function (same `X-Dispatch-Secret` pattern as `dispatch_pending_email_notifications` in `email_notifications.sql` — reuses the same Vault secrets, no additional setup needed).
