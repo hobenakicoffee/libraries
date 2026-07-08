@@ -20,6 +20,7 @@ Key-value JSONB store for platform configuration.
 | `platform_fee_rate_newsletter_subscription` | `0.8` | 8% platform fee on newsletter subscriptions (value is 0.8 = 8%, not 80%) |
 | `platform_fee_rate_shop_digital` | `0.1` | 10% platform fee on digital shop items |
 | `platform_fee_rate_shop_physical` | `0.05` | 5% platform fee on physical shop items |
+| `founder_discount_fee_rate` | `0` | Platform fee rate applied to founder-discount creators (`is_founder_discount = true`) on all service types. `0` = free. Editable at runtime. |
 | `cod_wallet_floor` | `-500` | Min wallet balance before auto-deactivation |
 | `cod_settlement_max_days` | `30` | Max days for COD settlement |
 | `default_shipping_fee_inside_dhaka` | `85` | Default shipping fee inside Dhaka |
