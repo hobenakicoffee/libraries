@@ -80,6 +80,7 @@ flowchart LR
 {
   "type": "gift",
   "amount": 500,
+  "platform_fee": 25,
   "supporter_id": "uuid",
   "coffee_count": 3,
   "message": "Keep it up!"
@@ -92,6 +93,7 @@ flowchart LR
 {
   "type": "gift",
   "amount": 475,
+  "platform_fee": 25,
   "supporter_id": "uuid",
   "supporter_anonymous": false,
   "coffee_count": 3,
@@ -99,7 +101,7 @@ flowchart LR
 }
 ```
 
-Note: `amount` in the creator activity is the **net amount** (after platform fee). In the supporter activity it's the **gross amount**.
+Note: `amount` in the creator activity is the **net amount** (after platform fee). In the supporter activity it's the **gross amount**. `platform_fee` is the gross platform fee on the payment and is the same on both sides.
 
 ### Membership expiry notification (system)
 
