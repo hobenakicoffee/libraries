@@ -34,7 +34,7 @@ create type public.user_role as enum ('user', 'admin');
 | `allow_subscriptions` | `boolean` | `true` | Whether subscriptions are enabled |
 | `is_page_active` | `boolean` | `true` | Master on/off switch for public page |
 | `has_wallet_balance` | `boolean` | `false` | Whether profile has a wallet balance |
-| `is_founder_discount` | `boolean` | `false` | Founder 1,000 cohort perk — when true, `get_creator_effective_fee_rate()` returns the configured `founder_discount_fee_rate` (default 0) for all service types |
+| `is_founder_discount` | `boolean` | `false` | Founder 1,000 cohort perk — when true, `get_creator_effective_fee_rate()` returns the configured `founder_discount_fee_rate` (default 0.035) for all service types |
 | `email_notifications_enabled` | `boolean` | `true` | Master kill-switch for all email notifications |
 | `social_links` | `jsonb` | `'[]'` | Social link entries |
 | `thank_you_items` | `jsonb` | `'[]'` | Items shown after successful gifting |

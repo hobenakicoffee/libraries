@@ -17,7 +17,7 @@ Six functions power the platform subscription system. Two are internal helpers c
 
 ## `get_creator_effective_fee_rate`
 
-Returns the configured `founder_discount_fee_rate` (default `0`) for **every** service type when the creator's `profiles.is_founder_discount` flag is `true` — this check runs first and short-circuits before any subscription lookup (Founder 1,000 cohort perk, granted manually via `moderate_user`). The rate is read from `platform_settings` and editable at runtime, falling back to `0` if the key is absent.
+Returns the configured `founder_discount_fee_rate` (default `0.035`) for **every** service type when the creator's `profiles.is_founder_discount` flag is `true` — this check runs first and short-circuits before any subscription lookup (Founder 1,000 cohort perk, granted manually via `moderate_user`). The rate is read from `platform_settings` and editable at runtime, falling back to `0` if the key is absent.
 
 Otherwise, returns `0` when the creator has an active, in-period subscription for the requested service type **and both caps have not yet been reached** — neither the monthly transaction count cap nor the monthly amount cap. Otherwise returns the platform default percentage from `platform_settings`.
 
@@ -44,7 +44,7 @@ Both caps are AND conditions — the subscription benefit applies only when **ne
 | Active, both caps are `NULL` (Ultra tier) | `0` always |
 | No active subscription | platform default |
 | Subscription `period_end` passed | platform default |
-| `profiles.is_founder_discount = true` | configured `founder_discount_fee_rate` (default `0`), regardless of caps or subscription state |
+| `profiles.is_founder_discount = true` | configured `founder_discount_fee_rate` (default `0.035`), regardless of caps or subscription state |
 
 **Transactions never fail when a cap is exhausted.** The fee silently reverts to the platform default percentage; the service RPC continues normally.
 

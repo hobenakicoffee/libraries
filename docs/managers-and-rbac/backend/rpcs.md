@@ -75,7 +75,7 @@ select public.moderate_user(
   p_allow_subs     := false
 );
 
--- Grant the Founder 1,000 cohort perk (configured founder_discount_fee_rate, default 0%, on all service types)
+-- Grant the Founder 1,000 cohort perk (configured founder_discount_fee_rate, default 3.5% flat, on all service types)
 select public.moderate_user('user-uuid', p_is_founder_discount := true);
 ```
 
