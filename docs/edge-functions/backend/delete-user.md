@@ -141,10 +141,16 @@ GoTrue's `shouldSoftDelete = true` mode keeps the `auth.users` row/id intact (so
 
 ### Win-Back Email
 
-Unchanged: sent asynchronously after everything else succeeds, never blocks the response.
+Sent asynchronously after everything else succeeds, never blocks the response. Wrapped in `EdgeRuntime.waitUntil()` — without it, Supabase's edge runtime can recycle the isolate as soon as the response is returned, killing the in-flight `sendEmail()` call before it reaches Resend/SMTP. Fire-and-forget alone (`.then()/.catch()` with no `waitUntil`) is not sufficient to guarantee delivery.
 
 ```typescript
-sendEmail({ to: userEmail, subject, html }).catch(console.error);
+EdgeRuntime.waitUntil(
+  sendEmail({ to: userEmail, subject, html }).then((result2) => {
+    if (!result2.success) console.error("delete-user: win-back email failed:", result2.error);
+  }).catch((err) => {
+    console.error("delete-user: win-back email threw:", err);
+  }),
+);
 ```
 
 ## Errors

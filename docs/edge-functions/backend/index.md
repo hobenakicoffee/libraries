@@ -29,6 +29,7 @@ The client sends an HTTP request to `https://{project}.supabase.co/functions/v1/
 | `download-shop-file` | GET | No (token auth) | none | One-time token-based secure file download |
 | `export-shop-products` | POST | Yes | `strict` | CSV export of creator's shop products with filters |
 | `moderate-content` | POST | Yes | `ai` | Content moderation via OpenAI + local profanity filter |
+| `wishlist-signup` | POST | No | `public` | Pre-launch wishlist signup + founder-discount welcome email — see [Wishlist](../../wishlist/index) |
 
 ## Shared Infrastructure
 
