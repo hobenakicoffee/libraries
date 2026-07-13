@@ -966,6 +966,56 @@ export type Database = {
           },
         ];
       };
+      impersonation_sessions: {
+        Row: {
+          ended_at: string | null;
+          ended_by:
+            | Database["public"]["Enums"]["impersonation_ended_by"]
+            | null;
+          expires_at: string;
+          id: number;
+          manager_id: string;
+          reason: string;
+          started_at: string;
+          target_user_id: string;
+          ticket_reference: string | null;
+        };
+        Insert: {
+          ended_at?: string | null;
+          ended_by?:
+            | Database["public"]["Enums"]["impersonation_ended_by"]
+            | null;
+          expires_at: string;
+          id?: never;
+          manager_id: string;
+          reason: string;
+          started_at?: string;
+          target_user_id: string;
+          ticket_reference?: string | null;
+        };
+        Update: {
+          ended_at?: string | null;
+          ended_by?:
+            | Database["public"]["Enums"]["impersonation_ended_by"]
+            | null;
+          expires_at?: string;
+          id?: never;
+          manager_id?: string;
+          reason?: string;
+          started_at?: string;
+          target_user_id?: string;
+          ticket_reference?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "impersonation_sessions_manager_id_fkey";
+            columns: ["manager_id"];
+            isOneToOne: false;
+            referencedRelation: "managers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       kyc_sessions: {
         Row: {
           created_at: string;
@@ -5298,6 +5348,7 @@ export type Database = {
     };
     Enums: {
       access_grant_type_enum: "purchase" | "gift";
+      impersonation_ended_by: "manager" | "expiry" | "user_revoked";
       kyc_session_status_enum: "pending" | "opened" | "submitted" | "expired";
       kyc_status_enum:
         | "pending"
@@ -5333,7 +5384,8 @@ export type Database = {
         | "service_requests.view"
         | "service_requests.approve"
         | "service_requests.reject"
-        | "service_requests.mark_implemented";
+        | "service_requests.mark_implemented"
+        | "users.impersonate";
       manager_role:
         | "super_admin"
         | "content_manager"
@@ -5599,6 +5651,7 @@ export const Constants = {
   public: {
     Enums: {
       access_grant_type_enum: ["purchase", "gift"],
+      impersonation_ended_by: ["manager", "expiry", "user_revoked"],
       kyc_session_status_enum: ["pending", "opened", "submitted", "expired"],
       kyc_status_enum: [
         "pending",
@@ -5636,6 +5689,7 @@ export const Constants = {
         "service_requests.approve",
         "service_requests.reject",
         "service_requests.mark_implemented",
+        "users.impersonate",
       ],
       manager_role: [
         "super_admin",

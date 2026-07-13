@@ -30,6 +30,9 @@ The client sends an HTTP request to `https://{project}.supabase.co/functions/v1/
 | `export-shop-products` | POST | Yes | `strict` | CSV export of creator's shop products with filters |
 | `moderate-content` | POST | Yes | `ai` | Content moderation via OpenAI + local profanity filter |
 | `wishlist-signup` | POST | No | `public` | Pre-launch wishlist signup + founder-discount welcome email — see [Wishlist](../../wishlist/index) |
+| `impersonate-user` | POST | Yes (manual, not `withMiddleware`) | none | Manager-gated (`users.impersonate`): starts a "log in as this user" support session, mints a short-lived JWT, returns a one-time exchange code. See [Manager RBAC](../../managers-and-rbac/backend/index) and `docs/user-impersonation-implementation.md` in the backend repo. |
+| `impersonation-exchange` | POST | No (code is the credential) | none | Swaps the one-time code from `impersonate-user` for the minted JWT via Redis `GETDEL`, then burns it. |
+| `end-impersonation-session` | POST | Yes (manual, not `withMiddleware`) | none | Manager-only (v1): ends an impersonation session's audit row. Does not revoke an already-issued token. |
 
 ## Shared Infrastructure
 

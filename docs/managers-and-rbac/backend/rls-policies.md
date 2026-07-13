@@ -183,6 +183,19 @@ Support managers use this to enable or disable specific services (e.g., newslett
 
 ---
 
+### `impersonation_sessions`
+
+| Policy | Operation | Permission required |
+|---|---|---|
+| `Managers can view own sessions, viewers can view all` | SELECT | Self (`manager_id = auth.uid()`) OR `users.view_details` |
+
+No INSERT/UPDATE/DELETE policies for `authenticated`/`anon` — rows are written only by the
+`impersonate-user` / `end-impersonation-session` edge functions (service role) and a
+`pg_cron` job that marks lapsed sessions expired. See
+`docs/user-impersonation-implementation.md` in the backend repo.
+
+---
+
 ## Managers Tables
 
 ### `managers`

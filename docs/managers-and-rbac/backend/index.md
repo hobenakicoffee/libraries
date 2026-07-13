@@ -32,6 +32,7 @@ flowchart TD
 | `managers` | Profile data for manager accounts (linked 1:1 to `auth.users`) |
 | `manager_user_roles` | Maps each manager to exactly one role |
 | `manager_role_permissions` | Which permissions each role has — the source of truth |
+| `impersonation_sessions` | Audit/TTL record for manager "log in as user" support sessions, gated by `users.impersonate` |
 
 ---
 
