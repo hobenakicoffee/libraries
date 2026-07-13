@@ -15,6 +15,10 @@ const { data, error } = await supabase.rpc('check_newsletter_post_access', {
 const { has_access, access_reason } = data[0]
 ```
 
+## Access Survives Author Account Closure
+
+A purchased or gifted grant with no `expires_at` (or one still in the future) is permanent: `close_account()` (`account_closure.sql`, see [delete-user](../../edge-functions/backend/delete-user.md)) leaves such a post's `content`/`status` completely untouched even if the author closes their account, specifically because `check_newsletter_post_access()` denies non-owner access whenever `status <> 'published'` — archiving the post would otherwise silently break every valid grant on it. The author's profile is anonymized separately (`display_name → 'Deleted User'`), so the post surfaces as "by Deleted User" but stays fully readable. Only posts with no grant, or with exclusively expired grants, are hard-deleted on author closure.
+
 ## `access_reason` Values
 
 | Value | Meaning | Show paywall? |

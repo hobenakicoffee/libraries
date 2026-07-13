@@ -108,7 +108,7 @@ returns uuid  -- the new withdrawal_requests.id
 
 1. Authenticates the caller via `auth.uid()`.
 2. Takes a per-user advisory lock (`pg_advisory_xact_lock(hashtext('withdrawal_requests:' || user_id))`) so two concurrent requests from the same user can't both pass the daily/monthly limit check below.
-3. Validates the amount is positive and `≥ 500 BDT` (minimum withdrawal).
+3. Validates the amount is positive and `≥ 500 BDT` (minimum withdrawal). Below-minimum residual balances are not forfeited: [`close_account()`](../../edge-functions/backend/delete-user.md#below-minimum-residual-balance) has its own exception that auto-creates a manager-payable withdrawal for the full residual at account closure, bypassing this minimum (and the daily/monthly limits below).
 4. Checks the daily and monthly withdrawal limits (see below).
 5. Locks the wallet row (`FOR UPDATE`) to prevent concurrent withdrawals.
 6. Checks `balance >= p_amount`.

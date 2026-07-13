@@ -4,6 +4,8 @@ Closes a user account via **anonymize-in-place**, not a hard delete. `profiles.i
 
 Instead: `public.close_account()` scrubs PII on the `profiles` row in place (kept as a tombstone, so every financial FK stays valid unchanged) and hard-deletes pure social/content rows. The edge function then deletes the returned Storage objects and disables sign-in via GoTrue's native soft-delete (`auth.admin.deleteUser(id, true)`), which keeps `auth.users`/`profiles.id` intact while permanently revoking authentication (password, magic link, and any linked OAuth identity).
 
+A wallet `balance` below the withdrawal minimum (see [withdrawal-requests](../../payments-and-memberships/backend/withdrawal-requests.md)) does not block closure: `close_account()` auto-creates a `withdrawal_requests` row for the full residual so a manager can pay it out by hand. See [Below-Minimum Residual Balance](#below-minimum-residual-balance) below.
+
 ## Configuration
 
 | Property | Value |
@@ -33,8 +35,11 @@ sequenceDiagram
     EF->>RPC: rpc("close_account") — scoped to caller's JWT
     RPC->>DB: guards (wallet/withdrawal/orders/subscribers)
     alt any guard fails
-        RPC-->>EF: raise wallet_not_settled / withdrawal_in_progress / active_orders_exist / active_subscribers_exist
+        RPC-->>EF: raise locked_balance_exists / cod_debt_exists / wallet_balance_not_settled / withdrawal_in_progress / pending_orders_as_seller / pending_orders_as_buyer / active_subscribers_exist
         EF-->>C: 400 { error: "<code>", message }
+    else balance below withdrawal minimum
+        RPC->>DB: auto-create manager-payable withdrawal_requests row (snapshot payout method)
+        RPC->>DB: scrub profiles/kyc_submissions, hard-delete social rows
     else guards pass
         RPC->>DB: scrub profiles/kyc_submissions, hard-delete social rows
         RPC-->>EF: { avatar_path, banner_path, kyc_paths }
@@ -72,21 +77,24 @@ None. The authenticated user is identified via JWT claims (`claims.sub`), and `c
 
 ```json
 {
-  "error": "wallet_not_settled",
-  "message": "Withdraw your balance and settle any COD debt before closing your account."
+  "error": "wallet_balance_not_settled",
+  "message": "Withdraw your wallet balance before closing your account."
 }
 ```
 
-`error` is a stable, lowercase snake_case code the frontend can switch on for localization — matching the convention already used by `rate_limit_exceeded`, `unauthorized`, etc. Possible codes:
+`error` is a stable, lowercase snake_case code the frontend can switch on for localization — matching the convention already used by `rate_limit_exceeded`, `unauthorized`, etc. Each guard now raises its own distinct code (previously `wallet_not_settled` and `active_orders_exist` each merged multiple causes into one ambiguous message). Possible codes:
 
 | Code | Meaning |
 |---|---|
-| `wallet_not_settled` | `wallets.balance`, `locked_balance`, or `cod_debt` is non-zero |
+| `locked_balance_exists` | `locked_balance` is non-zero (tied up in another pending withdrawal) |
+| `cod_debt_exists` | `cod_debt` is non-zero (unpaid Cash on Delivery amount) |
+| `wallet_balance_not_settled` | `balance` is at/above the withdrawal minimum (currently ৳500 — must match `request_withdrawal()`'s minimum) |
 | `withdrawal_in_progress` | A `withdrawal_requests` row is `requested`/`approved`/`processing` |
-| `active_orders_exist` | A `shop_order_items` row (as buyer or seller) is not yet `fulfilled`/`delivered`/`cancelled`/`refunded` |
+| `pending_orders_as_seller` | A `shop_order_items` row where the caller is `seller_profile_id` is not yet `fulfilled`/`delivered`/`cancelled`/`refunded` — checked before the buyer-side guard, since an unresolved sale blocks someone else from receiving what they paid for |
+| `pending_orders_as_buyer` | A `shop_order_items` row where the caller is `buyer_profile_id` is not yet `fulfilled`/`delivered`/`cancelled`/`refunded` |
 | `active_subscribers_exist` | An owned `membership_plans` row still has an `active` `profile_memberships` subscriber |
 
-None of these guards auto-forfeit balances or auto-cancel obligations — the user must resolve them first, then retry.
+None of these guards auto-forfeit balances or auto-cancel obligations — the user must resolve them first, then retry. The one exception is a non-zero `balance` **below** the withdrawal minimum, which isn't a guard at all — see below.
 
 ## Implementation Details
 
@@ -113,13 +121,24 @@ const { data, error } = await supabaseAsCaller.rpc("close_account");
 ```
 
 Defined in `supabase/schemas/account_closure.sql`. In one transaction it:
-- Blocks entirely (see guard table above) if there's any unsettled wallet balance, in-flight withdrawal, non-terminal order, or active subscriber — no partial effects.
+- Blocks entirely (see guard table above) if there's `locked_balance`, `cod_debt`, an in-flight withdrawal, a `balance` at/above the withdrawal minimum, a non-terminal order as seller or buyer, or an active subscriber — no partial effects. The seller-side order guard is checked before the buyer-side one, so a user who is simultaneously an unresolved seller and buyer must resolve their outgoing sale first.
+- If `balance` is non-zero but below the withdrawal minimum, auto-creates the withdrawal instead of blocking — see [Below-Minimum Residual Balance](#below-minimum-residual-balance).
 - Captures `avatar_url`/`banner_url` from `profiles` and all non-null KYC document paths from `kyc_submissions` for later Storage cleanup (SQL never touches `storage.objects`).
 - Hard-deletes pure social/content rows: feed likes/comments/bookmarks/shares/items, follows, own messages/conversation participation, reviews, service requests, notification preferences, addresses, payout methods, KYC sessions, own-filed creator reports.
 - Deletes non-financial `activities` rows (`transaction_id is null`); keeps financial ones.
-- Hard-deletes newsletter posts / shop products only if no third-party purchase evidence exists (`post_access_grants` / `shop_order_items`); otherwise scrubs content and flips the existing soft-delete flag, since hard-deleting would cascade away another user's purchase record.
+- Hard-deletes shop products only if no order history exists (`shop_order_items`); otherwise scrubs cosmetic listing fields (description/images) and flips the existing soft-delete flag — the actual purchased deliverable (`shop_product_files`, physical shipment) is untouched either way.
+- Newsletter posts: hard-deleted only if no *currently-or-forever valid* `post_access_grants` row exists (`expires_at is null` or still in the future). A post with an active/permanent grant is left **completely untouched** — title, content, and status unchanged — because `check_newsletter_post_access()` denies non-owner access whenever a post's status isn't `published`, so archiving it would silently revoke a paying reader's already-purchased permanent access. Only the author's `profiles` row is anonymized (see below), so the post surfaces as "by Deleted User" but stays fully readable forever. A post whose only grant has already expired has no one relying on it and is hard-deleted like an ungranted post.
 - Purges `kyc_submissions` PII (`nid_number`, `nid_front_path`, `nid_back_path`, `selfie_path`) but keeps the row as a compliance stub (status, timestamps, consent fields).
 - Scrubs `profiles` PII in place (`display_name → 'Deleted User'`, avatar/banner/bio/social links/tax numbers cleared, `is_page_active`/`allow_gifting`/`allow_subscriptions` set false) — **the row is never deleted**.
+
+### Below-Minimum Residual Balance
+
+`request_withdrawal()` (see [withdrawal-requests](../../payments-and-memberships/backend/withdrawal-requests.md)) enforces a ৳500 minimum, so a user with e.g. ৳120 left is stuck: too little to withdraw normally, too much (non-zero) for the no-auto-forfeiture guard to let through. `close_account()` resolves this itself rather than requiring a manager to intervene first:
+
+- Only applies when `0 < balance < 500`. `balance >= 500` still raises `wallet_not_settled` — withdraw normally first via the real payout method / KYC / limit checks. `locked_balance > 0` or `cod_debt > 0` still blocks unconditionally (nothing to auto-resolve there). An in-flight withdrawal (`withdrawal_in_progress`) is still checked *before* this path runs, so it can't stack a second withdrawal.
+- Before `payout_methods` is hard-deleted later in the same transaction, the user's active payout method (`provider` + `details`) is snapshotted into the new `withdrawal_requests.payout_snapshot` (`{"manual": true, "reason": "account_closure_below_minimum", "snapshot_source": "payout_methods" | "none", "details": {...}}`), so a manager can still see how to pay the person by hand even after their profile is scrubbed and the account is closed. (Email is unaffected — it lives in `auth.users`, which `close_account()` never touches.)
+- The wallet is debited into `locked_balance` and a `withdrawal_requests` row is inserted with `payout_method_id = null` and `status = 'requested'`, exactly like `request_withdrawal()`'s lock/insert step, but bypassing the ৳500 minimum and the daily/monthly limit checks (this is a manager-payable exception path, not the self-serve flow those limits gate).
+- From there it's a normal `withdrawal_requests` row: a manager drives it through the existing `process_withdrawal()` lifecycle (`approved → processing → paid`, paid by hand off-platform) — no new status handling needed.
 
 ### Storage Cleanup
 
@@ -168,5 +187,5 @@ EdgeRuntime.waitUntil(
 - **Requires authentication**: `close_account()` only ever acts on `auth.uid()` — there is no way to close another user's account, and the function is revoked from `anon`/`public`.
 - **Strict rate limit**: 2 requests per 60 seconds.
 - **Never hard-deletes**: `profiles`/`auth.users` rows are always retained (anonymized), because deleting them would break every financial table's foreign key. This is a deliberate legal-retention design, not an oversight.
-- **No auto-forfeiture**: guards block closure rather than silently writing off a balance or cancelling an obligation on the user's behalf.
+- **No auto-forfeiture**: guards block closure rather than silently writing off a balance or cancelling an obligation on the user's behalf. The one exception is a below-minimum residual `balance`, which is auto-*withdrawn* (not forfeited) into a manager-payable `withdrawal_requests` row — the money is still owed and tracked, just paid out manually instead of through the self-serve minimum-enforced flow.
 - **Win-back email**: Provides a last touchpoint with the user, but does not prevent or delay the closure.
