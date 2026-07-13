@@ -4965,6 +4965,7 @@ export type Database = {
         Returns: boolean;
       };
       is_following: { Args: { target_user_id: string }; Returns: boolean };
+      is_impersonated: { Args: never; Returns: boolean };
       is_manager: { Args: { user_email: string }; Returns: boolean };
       link_supporter_conversation: {
         Args: { p_conversation_id: string; p_supporter_id: string };
@@ -5348,7 +5349,11 @@ export type Database = {
     };
     Enums: {
       access_grant_type_enum: "purchase" | "gift";
-      impersonation_ended_by: "manager" | "expiry" | "user_revoked";
+      impersonation_ended_by:
+        | "manager"
+        | "expiry"
+        | "user_revoked"
+        | "issue_failed";
       kyc_session_status_enum: "pending" | "opened" | "submitted" | "expired";
       kyc_status_enum:
         | "pending"
@@ -5651,7 +5656,12 @@ export const Constants = {
   public: {
     Enums: {
       access_grant_type_enum: ["purchase", "gift"],
-      impersonation_ended_by: ["manager", "expiry", "user_revoked"],
+      impersonation_ended_by: [
+        "manager",
+        "expiry",
+        "user_revoked",
+        "issue_failed",
+      ],
       kyc_session_status_enum: ["pending", "opened", "submitted", "expired"],
       kyc_status_enum: [
         "pending",

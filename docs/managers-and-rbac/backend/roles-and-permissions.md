@@ -103,7 +103,10 @@ that adds it.
 Audit/TTL table for manager "log in as this user" support sessions — not itself part of the
 permission system, but gated by `users.impersonate` and closely related. Columns: `manager_id`
 (fk `managers`), `target_user_id` (fk `auth.users`), `reason`, `ticket_reference`,
-`started_at`/`expires_at`/`ended_at`/`ended_by` (`manager` / `expiry` / `user_revoked`). RLS:
+`started_at`/`expires_at`/`ended_at`/`ended_by` (`manager` / `expiry` / `user_revoked` /
+`issue_failed` — the last one added when `impersonate-user` fails to mint the JWT or store
+the exchange code after the session row is already committed, so the row doesn't linger
+looking active with no code ever issued). RLS:
 a manager sees their own rows; `users.view_details` holders see all; no direct client writes
 (inserted/updated only by the `impersonate-user` / `end-impersonation-session` edge functions
 and an hourly-scale `pg_cron` job that marks lapsed sessions `ended_by = 'expiry'`). See
@@ -112,11 +115,17 @@ in the backend repo for the full design, including why ending a session row does
 an already-minted JWT.
 
 **Guards.** Every impersonation-minted JWT carries an `impersonated_by` claim. Money-moving
-RPCs (`request_withdrawal`, `retry_withdrawal`, `process_withdrawal`, `request_refund`,
-`admin_process_refund`, `flag_transaction_disputed`, `close_account`,
-`accept_creator_agreement`) and the `payout_methods` write policies check
-`auth.jwt() ->> 'impersonated_by' is null` and reject the action if it's set — a support
-session can view but never move money or change payout details. `profiles` updates are
-deliberately left unguarded (managers may edit profile fields on the user's behalf). See §1
-of `docs/user-impersonation-implementation.md` for the full guarded-path list and the guard
-idiom.
+and identity-sensitive RPCs (`request_withdrawal`, `retry_withdrawal`, `process_withdrawal`,
+`request_refund`, `admin_process_refund`, `flag_transaction_disputed`, `close_account`,
+`accept_creator_agreement`, `initiate_shop_checkout`, `moderate_user`, `send_message`,
+`mark_conversation_as_read`, `get_or_create_direct_conversation`, `get_conversations`,
+`get_messages`) and the `payout_methods` write policies check `public.is_impersonated()`
+(a `managers.sql` helper wrapping `auth.jwt() ->> 'impersonated_by' is not null`) and reject
+the action if it's set — a support session can view but never move money, message as the
+user, or change payout details; the two messaging read RPCs are guarded too so a session
+can't read the impersonated user's private DMs either. `profiles` updates are deliberately
+left unguarded (managers may edit profile fields on the user's behalf). The
+`initiate_shop_checkout`/`moderate_user`/messaging guards were added in a follow-up review
+round after the initial guard set shipped without them — see the R1 (blocklist fragility)
+note in `docs/user-impersonation-implementation.md` §1/§9. See that doc's §1 for the full
+guarded-path list and the guard idiom.
