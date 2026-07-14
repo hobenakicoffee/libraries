@@ -4971,6 +4971,20 @@ export type Database = {
         Args: { p_conversation_id: string; p_supporter_id: string };
         Returns: undefined;
       };
+      list_my_sessions: {
+        Args: never;
+        Returns: {
+          aal: string;
+          created_at: string;
+          id: string;
+          ip: unknown;
+          is_current: boolean;
+          not_after: string;
+          refreshed_at: string;
+          updated_at: string;
+          user_agent: string;
+        }[];
+      };
       mark_conversation_as_read: {
         Args: { p_conversation_id: string };
         Returns: undefined;
@@ -5123,6 +5137,8 @@ export type Database = {
         };
         Returns: string;
       };
+      revoke_my_session: { Args: { p_session_id: string }; Returns: undefined };
+      revoke_other_sessions: { Args: never; Returns: number };
       search_feed: {
         Args: { p_cursor_id?: number; p_limit?: number; p_query: string };
         Returns: {
