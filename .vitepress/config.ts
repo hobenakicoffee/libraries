@@ -54,6 +54,7 @@ const backendRef = [
   { text: "Messaging", link: "/messaging/backend/" },
   { text: "Platform Settings", link: "/platform-settings/backend/" },
   { text: "Profiles", link: "/profiles/backend/" },
+  { text: "Settings", link: "/settings/backend/" },
   { text: "User Services", link: "/user-services/backend/" },
   { text: "Supabase Backend (Master Index)", link: "/supabase-backend" },
 ];
@@ -321,6 +322,7 @@ export default withMermaid(
         "/messaging/backend/": [...common, ...backendRef],
         "/platform-settings/backend/": [...common, ...backendRef],
         "/profiles/backend/": [...common, ...backendRef],
+        "/settings/backend/": [...common, ...backendRef],
         "/user-services/backend/": [...common, ...backendRef],
 
         "/supporters/backend/": [...common, ...backendRef],

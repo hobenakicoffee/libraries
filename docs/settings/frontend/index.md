@@ -73,6 +73,20 @@ Route: `settings/verification/`
 - Link to start ID verification process
 - See [KYC Frontend](/kyc/frontend/) for details
 
+### Active Sessions
+
+Route: `settings/active-sessions/` (or wherever this gets added under the settings route group)
+
+- List of the user's active sessions/devices (IP, device/browser parsed from `user_agent`,
+  last active, a "this device" badge)
+- Per-row "Revoke" action, plus a single "Log out other devices" action
+- Uses the normal app Supabase client directly via `supabase.rpc(...)` — no special client
+  setup, unlike the impersonation flow
+- Revoking the current device's own session should immediately trigger a local
+  `supabase.auth.signOut({ scope: "local" })` and redirect to login
+- See [Settings Backend](/settings/backend/) for the RPC reference and the
+  revocation-is-not-instant caveat that must be reflected in the UI copy
+
 ## Data & Mutations
 
 Settings use the `ProfileProvider` context for reading profile data and `useUpdateProfile` hook for mutations, which handle cache invalidation automatically.

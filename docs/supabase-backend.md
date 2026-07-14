@@ -40,6 +40,11 @@ Every `.sql` file in `supabase/schemas/` is loaded declaratively in the order sp
 | 28 | `feed.sql` | Public discovery feed, interactions, ranking, search | [Feed Discovery](./feed-discovery/backend/index) |
 | 29 | `reviews.sql` | Shop product reviews | [Reviews](./reviews/backend/index) |
 | 30 | `wishlist.sql` | Product wishlist | [Wishlist](./wishlist/index) |
+| 31 | `user_sessions.sql` | List/revoke own GoTrue sessions (active devices) | [Settings Backend](./settings/backend/index) |
+
+Note: this table doesn't yet track every schema file added after the initial 30 (e.g.
+`account_closure.sql`, `impersonation_sessions.sql`) — `user_sessions.sql` is listed here as
+the most recent addition, not as a full re-audit of the gap.
 
 ---
 
@@ -227,3 +232,4 @@ See [Infrastructure docs](./infrastructure/backend/index#seed-data) for details.
 - [Reviews Backend](./reviews/backend/index) — Shop product reviews
 - [Notifications](./notifications/index) — Notification types, preferences, unsubscribe
 - [Wishlist](./wishlist/index) — Product wishlist system
+- [Settings Backend](./settings/backend/index) — User sessions (list/revoke active devices)
