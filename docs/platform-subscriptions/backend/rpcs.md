@@ -365,6 +365,35 @@ function public.process_creator_subscription_expiry() returns void
 
 Hard cutoff: subscriptions expired more than 1 day ago are never notified (prevents spamming creators of long-expired subs on first run after a gap).
 
+### Activity Shape
+
+Each notification inserts a private `activities` row with `role='system'` and a
+**fixed** `service_type='platform_subscription'` — regardless of which service the
+underlying plan is for (`gift`, `newsletter_onetime`, `newsletter_subscription`,
+`shop_digital`, `shop_physical`). This matches `activate_creator_platform_subscription`'s
+`activated` activity rows, so frontend consumers can dispatch on
+`role === 'system' && metadata.subscription_id` without needing to special-case every
+possible plan service type.
+
+```json
+{
+  "role": "system",
+  "service_type": "platform_subscription",
+  "visibility": "private",
+  "metadata": {
+    "notification_type": "1_day",
+    "plan_name": "Digital Shop Ultra",
+    "service_type": "shop_digital",
+    "period_end": "2026-07-16T13:39:32.473726+00:00",
+    "subscription_id": 189
+  }
+}
+```
+
+Note `metadata.service_type` here is the *plan's* underlying service (informational,
+used for message interpolation) — it is distinct from the row's top-level
+`service_type`, which is always `platform_subscription`.
+
 ### Security
 
 - `SECURITY DEFINER`, `SET search_path = ''`

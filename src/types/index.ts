@@ -19,6 +19,7 @@ export type ActivityType =
   | "post_rejected"
   | "kyc_approved"
   | "kyc_resubmit_requested"
+  | "kyc_rejected"
   | "report_status_updated"
   | "post_status_updated"
   | "order_item_shipped"
@@ -54,6 +55,9 @@ export type ActivityMetadata = {
   plan_name?: string;
   service_type?: string;
   subscription_id?: string;
+  membership_id?: string;
+  creator_name?: string;
+  creator_username?: string;
   billing_cycle?: string;
   activity_type?: ActivityType;
   period_end?: string;
