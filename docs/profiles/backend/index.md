@@ -26,6 +26,7 @@ create type public.user_role as enum ('user', 'admin');
 | `role` | `user_role` | `'user'` | Access control role |
 | `theme` | `jsonb` | — | Profile theme (colors, fonts) |
 | `layout` | `jsonb` | — | Page builder layout |
+| `preferences` | `jsonb` | `'{}'` | User-controlled app preferences (e.g. language, theme mode); distinct from `theme`/`layout`, which are public page customization |
 | `onboarding_step` | `int` | `0` | Current onboarding step (0–5, 0 = not started) |
 | `onboarding_completed_at` | `timestamptz` | — | When onboarding was completed (100%) |
 | `has_first_service` | `boolean` | `false` | Whether user added their first service |

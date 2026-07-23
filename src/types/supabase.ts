@@ -2286,6 +2286,7 @@ export type Database = {
           onboarding_step: number | null;
           page_slug: string;
           popularity_score: number | null;
+          preferences: Json;
           role: Database["public"]["Enums"]["user_role"];
           social_links: Json | null;
           suspended_at: string | null;
@@ -2331,6 +2332,7 @@ export type Database = {
           onboarding_step?: number | null;
           page_slug: string;
           popularity_score?: number | null;
+          preferences?: Json;
           role?: Database["public"]["Enums"]["user_role"];
           social_links?: Json | null;
           suspended_at?: string | null;
@@ -2376,6 +2378,7 @@ export type Database = {
           onboarding_step?: number | null;
           page_slug?: string;
           popularity_score?: number | null;
+          preferences?: Json;
           role?: Database["public"]["Enums"]["user_role"];
           social_links?: Json | null;
           suspended_at?: string | null;
