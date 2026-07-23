@@ -209,7 +209,8 @@ auto-set `updated_at = now()`.
 ### `on_auth_user_created`
 
 After insert on `auth.users`, for each row — calls `handle_new_user()` to
-auto-create a profile row on signup.
+auto-create a profile row on signup. If the OAuth provider didn't supply an
+`avatar_url`, it also fires an async fallback-avatar request.
 
 ```sql
 create or replace function public.handle_new_user()
@@ -218,6 +219,9 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  v_base_url text;
+  v_secret_key text;
 begin
   insert into public.profiles (id, username, page_slug, role, full_name, avatar_url)
   values (
@@ -228,6 +232,26 @@ begin
     new.raw_user_meta_data->>'full_name',
     new.raw_user_meta_data->>'avatar_url'
   );
+
+  if new.raw_user_meta_data->>'avatar_url' is null then
+    select decrypted_secret into v_base_url
+    from vault.decrypted_secrets where name = 'edge_function_base_url';
+
+    select decrypted_secret into v_secret_key
+    from vault.decrypted_secrets where name = 'secret_key';
+
+    if v_base_url is not null and v_secret_key is not null then
+      perform net.http_post(
+        url     => v_base_url || '/generate-avatar',
+        headers => jsonb_build_object(
+          'Content-Type',      'application/json',
+          'X-Dispatch-Secret', v_secret_key
+        ),
+        body    => jsonb_build_object('profile_id', new.id)
+      );
+    end if;
+  end if;
+
   return new;
 end;
 $$;
@@ -237,6 +261,17 @@ create trigger on_auth_user_created
   for each row
   execute procedure public.handle_new_user();
 ```
+
+**Fallback avatar generation**: when a user signs up without an OAuth-supplied
+avatar (e.g. email/password signup), `handle_new_user()` fires an async
+`net.http_post` to the `generate-avatar` edge function
+(`supabase/functions/generate-avatar/index.ts`), authenticated the same way as
+`send-notification-emails` — a shared secret in the `X-Dispatch-Secret`
+header, verified via `verifyDispatchSecret()`. The function generates a
+deterministic Dicebear "Adventurer Neutral" SVG seeded by the profile id,
+uploads it to the `avatars` storage bucket, and updates `profiles.avatar_url`.
+This is fire-and-forget — a failure in avatar generation never blocks
+signup.
 
 ---
 
