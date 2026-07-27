@@ -67,7 +67,7 @@ create table public.transactions (
 | `provider` | `provider_enum` | Payment provider used |
 | `provider_transaction_id` | `varchar` | Provider's own transaction reference |
 | `reference_id` | `uuid` | Unique business reference; links to activity rows |
-| `invoice_number` | `bigint` | Sequential invoice number from `invoice_number_seq`. Only set on `service_type='platform_subscription'` rows; `NULL` everywhere else and on subscription rows predating the column. See [Invoice numbering](#invoice-numbering) |
+| `invoice_number` | `bigint` | Sequential invoice number from `invoice_number_seq`. Set on `platform_subscription` rows, `gift` rows, and `newsletter` rows that are a membership purchase (`metadata.plan_id` present); `NULL` everywhere else. See [Invoice numbering](#invoice-numbering) |
 | `balance_after` | `numeric(12,2)` | Wallet balance snapshot after this transaction |
 | `wallet_id` | `uuid` | FK → `wallets.id`; null for external provider transactions |
 | `metadata` | `jsonb` | Extensible extra data (`role`, `supporter_id`, etc.) |
@@ -181,15 +181,24 @@ select public.flag_transaction_disputed('transaction-uuid', false);
 
 ## Invoice numbering
 
-Platform subscription payments carry a real sequential invoice number so users
-can download a PDF invoice (BD VAT/tax). Everything else gets a receipt only.
+Some debit rows carry a real sequential invoice number so users can download a
+PDF invoice (BD VAT/tax); everything else gets a receipt only. Invoice numbers
+are assigned to:
+
+- `service_type='platform_subscription'` rows, inside
+  `activate_creator_platform_subscription()`.
+- `service_type='gift'` rows (coffee gifts), inside `handle_successful_payment()`.
+- `service_type='newsletter'` rows that are a **membership** purchase —
+  identified by `metadata.plan_id` being present — also inside
+  `handle_successful_payment()`. A one-time newsletter post purchase
+  (`purchase_newsletter_post()`) uses the same `service_type='newsletter'` but
+  carries no `plan_id`, so it does NOT get an invoice number; `plan_id` is the
+  only reliable discriminator between the two.
 
 - **Source:** `public.invoice_number_seq`, a plain sequence rather than an
-  identity column, because the number is assigned *conditionally* — only for
-  `service_type='platform_subscription'`, inside
-  `activate_creator_platform_subscription()`. The sequence is revoked from
-  `anon` and `authenticated`; only the SECURITY DEFINER function calls
-  `nextval()`.
+  identity column, because the number is assigned *conditionally*. The
+  sequence is revoked from `anon` and `authenticated`; only the two SECURITY
+  DEFINER functions above call `nextval()`.
 - **Rendered as** `INV-<number padded to 6>` — e.g. `INV-000123`. There is
   deliberately no year segment: a year prefix over a single global sequence is
   not contiguous within a year, which is the property tax regimes actually care
@@ -198,18 +207,26 @@ can download a PDF invoice (BD VAT/tax). Everything else gets a receipt only.
   skipped if the insert later fails. The call sits after all validation to keep
   that window small. Skips are acceptable under most VAT regimes; duplicates
   are not, which the partial unique index enforces.
-- **No backfill.** Subscription rows created before this column exists have
-  `invoice_number IS NULL` and are receipt-only; the document endpoint answers
-  `409 invoice_number_unassigned` for them.
+- **No backfill.** Rows created before this column (or before invoice
+  numbering was extended to gifts/memberships) have `invoice_number IS NULL`
+  and are receipt-only; the document endpoint answers `409
+  invoice_number_unassigned` for them.
 - **Comped subscriptions have no invoice** — `admin_grant_creator_subscription()`
   writes no transaction row at all.
+- **Anonymous coffee gifts have no invoice, receipt, or email at all.**
+  `handle_successful_payment()` only writes a debit transaction and activity
+  row when `p_supporter_profile_id` is not null; an anonymous (guest) gift
+  skips both entirely, and `supporters.sql` never captures an email address
+  for anonymous givers. There is no account or address to issue a document
+  to or notify.
 
 ### The `metadata.invoice` snapshot
 
 PDFs are rendered fresh on every request and never stored, so a naive
 implementation would reprint a *different* document years later as the company
-details or the user's display name changed. To avoid that,
-`activate_creator_platform_subscription()` freezes the invoice contents into
+details or the user's display name changed. To avoid that, the assigning
+function (`activate_creator_platform_subscription()` or
+`handle_successful_payment()`) freezes the invoice contents into
 `metadata->'invoice'` at assignment time:
 
 ```json

@@ -49,14 +49,13 @@ caller's header across concurrent requests on a warm isolate.
 | `200` | — | PDF bytes |
 | `400` | `invalid_transaction_id` | `transaction_id` is not a uuid |
 | `400` | `invalid_type` | `type` is not `invoice` or `receipt` |
-| `400` | `invoice_not_available` | Invoice requested for a non-`platform_subscription` row |
 | `400` | `document_not_available` | Row is `direction = 'credit'` — money the caller received, not paid |
 | `401` | `unauthorized` | Missing/invalid token |
 | `404` | `not_found` | Row does not exist **or** RLS filtered it out |
 | `405` | `method_not_allowed` | Not a `GET` |
 | `409` | `transaction_not_completed` | `status` is not `completed` |
 | `409` | `transaction_disputed` | Invoice requested for a row with `is_disputed = true` |
-| `409` | `invoice_number_unassigned` | Subscription row predating invoice numbering; use the receipt |
+| `409` | `invoice_number_unassigned` | Row has no `invoice_number` (not one of the eligible service types, or predates invoice numbering); use the receipt |
 | `500` | `internal_server_error` | Query or render failure |
 
 `404` rather than `403` for another user's row is intentional: the endpoint must
@@ -100,9 +99,10 @@ Where present, the frozen `metadata->'invoice'` snapshot is authoritative — se
 [Invoice numbering](../../payments-and-memberships/backend/transactions#invoice-numbering).
 Live `platform_settings` / `profiles` data is only a fallback.
 
-Only `platform_subscription` rows carry that snapshot, so for gifts, shop orders
-and newsletter purchases the seller block comes entirely from the fallback. It is
-read with `get_company_identity()` — see
+Only rows with a non-null `invoice_number` carry that snapshot — platform
+subscriptions, coffee gifts, and membership (newsletter plan) purchases — so
+for shop orders and one-time newsletter post purchases the seller block comes
+entirely from the fallback. It is read with `get_company_identity()` — see
 [platform settings](../../platform-settings/backend/index) — which is the one
 settings reader granted to `authenticated`, so the call stays on the same
 caller-scoped client and no service-role client is introduced. An error there is

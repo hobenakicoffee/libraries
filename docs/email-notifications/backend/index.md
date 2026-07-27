@@ -39,26 +39,73 @@ Placeholders are built per notification type by `buildPlaceholders()` in
 `supabase/functions/_shared/email-templates/placeholders.ts`. It receives only
 the source **activity's `metadata` jsonb** — `activities.reference_id` and
 `activities.transaction_id` are not selected and are therefore unavailable to a
-template unless copied into that jsonb by the writing RPC.
+template unless copied into that jsonb by the writing RPC. `buildPlaceholders()`
+also takes both `appBaseUrl` (the app domain) and `marketingBaseUrl` (the
+marketing site domain, which hosts the invoice/receipt page below) — the
+call site passes `APP_URL` and `MARKETING_URL` respectively.
 
-### `platform_subscription.activated`
+### Invoice/receipt deep links
+
+Three notification types deep-link to `${marketingBaseUrl}/invoices/<transaction_id>`
+— a cookie-authenticated page on the marketing site (`src/pages/invoices/[transactionId]/`)
+that shows a payment summary with Download Invoice/Receipt buttons. A plain
+`<a href>` to it works from an email because it relies on the browser's
+existing session cookie, not a Bearer token — unlike
+`generate-transaction-document` itself, which requires an `Authorization`
+header and therefore can never be linked to directly from an email.
+
+#### `platform_subscription.activated`
 
 | Placeholder | Source |
 |---|---|
 | `recipient_name` | recipient profile |
 | `plan_name` | `metadata.plan_name` |
 | `period_start` / `period_end` | `metadata.period_start` / `period_end` |
-| `cta_url` | `/settings/billing?transaction=<metadata.transaction_id>` |
+| `cta_url` | `${marketingBaseUrl}/invoices/<metadata.transaction_id>`, falling back to `${appBaseUrl}/settings/billing` if `transaction_id` is absent (pre-invoice-numbering rows) |
 
-`cta_url` deep-links to the paid row so the billing page can highlight it and
-offer the invoice PDF download. It cannot point at the
-`generate-transaction-document` endpoint directly, because an email link
-carries no `Authorization` header. Activities written before invoice numbering
-have no `transaction_id`, and fall back to a plain `/settings/billing` link.
+#### `gift.sent` (payer confirmation)
+
+Fires for the **debit** (supporter) side of a coffee gift — i.e. the person
+who paid, not `gift.received` (the creator who was paid).
+
+| Placeholder | Source |
+|---|---|
+| `recipient_name` | recipient profile |
+| `creator_name` | counterparty (creator) profile |
+| `coffee_count` | `metadata.coffee_count`, default 1 |
+| `amount` | `metadata.amount` |
+| `cta_url` | `${marketingBaseUrl}/invoices/<metadata.transaction_id>`, falling back to `${appBaseUrl}/activities` if `transaction_id` is absent |
+
+Anonymous (guest) gifts never reach this path at all: `handle_successful_payment()`
+only writes a debit transaction/activity row when the supporter is
+authenticated, so there is nothing to queue an email from and no address to
+send it to.
+
+#### `membership.subscribed` (payer confirmation)
+
+Fires for the **debit** (supporter) side of a membership (newsletter plan)
+purchase — the payer, not `membership.new_member` (the creator being
+subscribed to).
+
+| Placeholder | Source |
+|---|---|
+| `recipient_name` | recipient profile |
+| `creator_name` | counterparty (creator) profile |
+| `plan_name` | `metadata.plan_name` |
+| `amount` | `metadata.price_at_purchase` (falls back to `metadata.amount`) |
+| `cta_url` | `${marketingBaseUrl}/invoices/<metadata.transaction_id>`, falling back to `${appBaseUrl}/@<metadata.creator_username>` if `transaction_id` is absent |
+
+`resolve_activity_notification_key()` distinguishes a membership purchase from
+a one-time newsletter post purchase (both use `service_type='newsletter'`) via
+`metadata.plan_id` — only membership purchases carry it.
+
+`membership.new_member` (the pre-existing creator-side type) previously had
+**no resolver branch at all** and therefore never fired; this was fixed
+alongside the two new types above.
 
 > The email body HTML itself lives in the admin-editable `notification_types`
-> table, not in the repo. Surfacing an "Invoice" button using `{{cta_url}}` is a
-> content-ops change, not a code change.
+> table, not in the repo. Wording changes to these templates are a content-ops
+> change, not a code change.
 
 ## Related
 
