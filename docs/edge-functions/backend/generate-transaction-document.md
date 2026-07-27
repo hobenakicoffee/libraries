@@ -79,9 +79,9 @@ under review must not yield a clean tax invoice.
 
 ## Document contents
 
-Both documents share a header (platform name, document number, issue date,
-**From** / **Bill To**) and a payment footer (provider, masked gateway
-reference, status).
+Both documents share a header (the HobeNakiCoffee wordmark logo, document
+number, issue date, **From** / **Bill To**) and a payment footer (provider,
+masked gateway reference, status).
 
 - **Invoice** — document number `INV-<number padded to 6>`, one line item (plan
   name + billing period + amount), a **Total**, and either a VAT line or an
@@ -108,6 +108,16 @@ settings reader granted to `authenticated`, so the call stays on the same
 caller-scoped client and no service-role client is introduced. An error there is
 non-fatal: the function logs it and falls back to the hardcoded platform name,
 since a receipt without the address beats no receipt at all.
+
+## Logo
+
+The header draws the wordmark as an image rather than plain text, embedded via
+`pdf.embedPng()`. The asset at
+`generate-transaction-document/assets/logo-full.png` is a 480x107 downscale of
+`marketing/public/logo-full.png` — full resolution buys nothing at the ~22pt
+header height it renders at and would only bloat every document (the resized
+copy is ~27KB). It ships as a `static_files` asset alongside the Bengali font
+and is read once per isolate by the same `loadFonts()` helper.
 
 ## Fonts
 
