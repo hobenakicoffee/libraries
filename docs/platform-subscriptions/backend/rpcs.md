@@ -137,6 +137,8 @@ end if;
 
 Called by the Edge Function after the payment gateway confirms the prepaid monthly charge. Cancels any existing active subscription for the same service type, records a debit transaction, inserts a new active subscription row valid for 1 month, and inserts a private `activities` entry (`role='system'`, `service_type='platform_subscription'`) so the creator sees the activation in their activity feed.
 
+This is the **only** writer of `service_type='platform_subscription'` transaction rows, and therefore the only place invoice numbers are assigned — see [Invoice numbering](../../payments-and-memberships/backend/transactions#invoice-numbering). Note that `admin_grant_creator_subscription()` writes no transaction row at all, so comped subscriptions have neither a receipt nor an invoice.
+
 ### Signature
 
 ```sql
@@ -168,9 +170,10 @@ sequenceDiagram
     EF->>RPC: call (service role only)
     RPC->>DB: validate plan exists and is_active
     RPC->>DB: cancel existing active sub for same service_type
-    RPC->>DB: insert transactions row (service_type='platform_subscription', direction='debit')
+    RPC->>DB: nextval('invoice_number_seq') + build metadata->'invoice' snapshot
+    RPC->>DB: insert transactions row (service_type='platform_subscription', direction='debit', invoice_number)
     RPC->>DB: insert creator_platform_subscriptions row (status='active', period = now → now+1 month)
-    RPC->>DB: insert activities row (role='system', service_type='platform_subscription', visibility='private')
+    RPC->>DB: insert activities row (role='system', service_type='platform_subscription', visibility='private', metadata.transaction_id)
     RPC-->>EF: { success, subscription_id, service_type, period_start, period_end }
 ```
 
@@ -193,6 +196,36 @@ sequenceDiagram
 | `Not allowed` | Caller is authenticated (not service role). `auth.uid()` must be `NULL`. |
 | `PLAN_NOT_FOUND` | `p_plan_id` does not exist |
 | `PLAN_INACTIVE` | Plan exists but `is_active = false` |
+
+### Invoice number assignment
+
+`nextval('public.invoice_number_seq')` is called in step 3, immediately before
+the `transactions` insert and **after** all validation. Placing it in the
+`DECLARE` block instead would burn a number on every `PLAN_NOT_FOUND` /
+`PLAN_INACTIVE` raise, since `nextval()` is not transactional.
+
+That narrows the window but does not close it. `nextval()` still runs before the
+`transactions`, `creator_platform_subscriptions` and `activities` inserts, so
+anything failing after it — a `provider_transaction_id` conflict on a gateway
+retry, say — rolls those rows back while the sequence stays advanced. Invoice
+numbers are therefore **monotonic but not gapless**, which is accepted: closing
+the gap would mean a counter row taken `FOR UPDATE`, serialising every activation
+behind one lock. See
+[Invoice numbering](../../payments-and-memberships/backend/transactions#invoice-numbering).
+
+The function also freezes the rendered invoice's contents into
+`transactions.metadata->'invoice'` (seller identity read from
+`platform_settings`, bill-to identity from `profiles`, plus the line item), so
+that a PDF regenerated later reproduces the document as issued.
+
+### Activity metadata
+
+`activities.metadata` carries `transaction_id` (the `transactions.id`, captured
+via `RETURNING`) alongside the plan and period fields. The
+`platform_subscription.activated` email uses it to deep-link the billing page at
+`/settings/billing?transaction=<id>`. It must be the transaction id and not
+`reference_id` — those are different uuids, and the document endpoint keys on
+the former.
 
 ### Security
 

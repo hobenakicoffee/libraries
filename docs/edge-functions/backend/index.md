@@ -28,6 +28,7 @@ The client sends an HTTP request to `https://{project}.supabase.co/functions/v1/
 | `delete-user` | POST | Yes | `strict` | Closes a user account (anonymize-in-place; financial records retained) and sends win-back email |
 | `download-shop-file` | GET | No (token auth) | none | One-time token-based secure file download |
 | `export-shop-products` | POST | Yes | `strict` | CSV export of creator's shop products with filters |
+| `generate-transaction-document` | GET | Yes | `download` | Renders a PDF **receipt** for any transaction, or a PDF **invoice** for a numbered platform-subscription payment. Generated fresh per request, never stored |
 | `moderate-content` | POST | Yes | `ai` | Content moderation via OpenAI + local profanity filter |
 | `wishlist-signup` | POST | No | `public` | Pre-launch wishlist signup + founder-discount welcome email — see [Wishlist](../../wishlist/index) |
 | `impersonate-user` | POST | Yes (manual, not `withMiddleware`) | none | Manager-gated (`users.impersonate`): starts a "log in as this user" support session, mints a short-lived JWT, returns a one-time exchange code. See [Manager RBAC](../../managers-and-rbac/backend/index) and `docs/user-impersonation-implementation.md` in the backend repo. |
@@ -78,3 +79,4 @@ The `SUPABASE_SECRET_KEYS` environment variable is used to validate that request
 | [delete-user](./delete-user) | User account deletion |
 | [download-shop-file](./download-shop-file) | Secure one-time file download |
 | [export-shop-products](./export-shop-products) | CSV export of shop products |
+| [generate-transaction-document](./generate-transaction-document) | On-demand PDF invoices and receipts |

@@ -1431,6 +1431,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      messages_2026_09: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
       messages_default: {
         Row: {
           content: string;
@@ -3601,6 +3625,7 @@ export type Database = {
           dispute_noted_at: string | null;
           dispute_noted_by: string | null;
           id: string;
+          invoice_number: number | null;
           is_disputed: boolean;
           metadata: Json;
           net_amount: number;
@@ -3626,6 +3651,7 @@ export type Database = {
           dispute_noted_at?: string | null;
           dispute_noted_by?: string | null;
           id?: string;
+          invoice_number?: number | null;
           is_disputed?: boolean;
           metadata?: Json;
           net_amount: number;
@@ -3651,6 +3677,7 @@ export type Database = {
           dispute_noted_at?: string | null;
           dispute_noted_by?: string | null;
           id?: string;
+          invoice_number?: number | null;
           is_disputed?: boolean;
           metadata?: Json;
           net_amount?: number;
@@ -4373,6 +4400,7 @@ export type Database = {
         Args: { p_cursor?: string; p_limit?: number };
         Returns: Json;
       };
+      get_company_identity: { Args: never; Returns: Json };
       get_conversations: {
         Args: { p_limit?: number; p_offset?: number };
         Returns: {
@@ -4858,6 +4886,7 @@ export type Database = {
           created_at: string;
           direction: Database["public"]["Enums"]["transaction_direction_enum"];
           id: string;
+          invoice_number: number;
           metadata: Json;
           net_amount: number;
           platform_fee: number;

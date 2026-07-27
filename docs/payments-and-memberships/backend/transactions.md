@@ -33,6 +33,7 @@ create table public.transactions (
   provider                public.provider_enum,
   provider_transaction_id varchar,
   reference_id            uuid                              unique,
+  invoice_number          bigint,
   balance_after           numeric(12,2)                     not null check (balance_after >= 0),
   wallet_id               uuid                              references public.wallets(id) on delete set null,
 
@@ -66,6 +67,7 @@ create table public.transactions (
 | `provider` | `provider_enum` | Payment provider used |
 | `provider_transaction_id` | `varchar` | Provider's own transaction reference |
 | `reference_id` | `uuid` | Unique business reference; links to activity rows |
+| `invoice_number` | `bigint` | Sequential invoice number from `invoice_number_seq`. Only set on `service_type='platform_subscription'` rows; `NULL` everywhere else and on subscription rows predating the column. See [Invoice numbering](#invoice-numbering) |
 | `balance_after` | `numeric(12,2)` | Wallet balance snapshot after this transaction |
 | `wallet_id` | `uuid` | FK → `wallets.id`; null for external provider transactions |
 | `metadata` | `jsonb` | Extensible extra data (`role`, `supporter_id`, etc.) |
@@ -177,6 +179,54 @@ select public.flag_transaction_disputed('transaction-uuid', false);
 
 ---
 
+## Invoice numbering
+
+Platform subscription payments carry a real sequential invoice number so users
+can download a PDF invoice (BD VAT/tax). Everything else gets a receipt only.
+
+- **Source:** `public.invoice_number_seq`, a plain sequence rather than an
+  identity column, because the number is assigned *conditionally* — only for
+  `service_type='platform_subscription'`, inside
+  `activate_creator_platform_subscription()`. The sequence is revoked from
+  `anon` and `authenticated`; only the SECURITY DEFINER function calls
+  `nextval()`.
+- **Rendered as** `INV-<number padded to 6>` — e.g. `INV-000123`. There is
+  deliberately no year segment: a year prefix over a single global sequence is
+  not contiguous within a year, which is the property tax regimes actually care
+  about. The issue date is printed separately on the document.
+- **Gaps are possible.** `nextval()` is non-transactional, so a number is
+  skipped if the insert later fails. The call sits after all validation to keep
+  that window small. Skips are acceptable under most VAT regimes; duplicates
+  are not, which the partial unique index enforces.
+- **No backfill.** Subscription rows created before this column exists have
+  `invoice_number IS NULL` and are receipt-only; the document endpoint answers
+  `409 invoice_number_unassigned` for them.
+- **Comped subscriptions have no invoice** — `admin_grant_creator_subscription()`
+  writes no transaction row at all.
+
+### The `metadata.invoice` snapshot
+
+PDFs are rendered fresh on every request and never stored, so a naive
+implementation would reprint a *different* document years later as the company
+details or the user's display name changed. To avoid that,
+`activate_creator_platform_subscription()` freezes the invoice contents into
+`metadata->'invoice'` at assignment time:
+
+```json
+{
+  "number": 123,
+  "issued_at": "2026-07-26T10:00:00Z",
+  "seller":  { "legal_name": "...", "vat_bin": "...", "address": "..." },
+  "bill_to": { "name": "...", "username": "..." },
+  "line":    { "description": "...", "period_start": "...", "period_end": "...", "amount": 499 }
+}
+```
+
+The renderer prefers this snapshot and only falls back to live
+`platform_settings` / `profiles` data when it is absent.
+
+---
+
 ## Indexes
 
 | Index | Columns | Notes |
@@ -185,6 +235,7 @@ select public.flag_transaction_disputed('transaction-uuid', false);
 | `idx_transactions_user_created` | `(user_profile_id, created_at DESC)` | Paginated history |
 | `idx_transactions_user_amount_created` | `(user_profile_id, net_amount, created_at DESC)` | Amount-sorted pagination |
 | `idx_transactions_reference_id` | `reference_id` | Join to activities |
+| `idx_transactions_invoice_number` | `invoice_number` WHERE `invoice_number IS NOT NULL` | Partial unique — invoice numbers must never repeat |
 | `idx_transactions_provider_tx` | `(provider, provider_transaction_id)` | Idempotency / dedup |
 | `idx_transactions_direction_status` | `(direction, status)` WHERE `status='completed'` | Stats aggregations |
 | `idx_transactions_created_at` | `created_at DESC` | Time-range scans |
@@ -224,7 +275,8 @@ returns table (
   reference_type          public.reference_type_enum,
   provider                public.provider_enum,
   provider_transaction_id varchar,
-  direction               public.transaction_direction_enum
+  direction               public.transaction_direction_enum,
+  invoice_number          bigint
 )
 ```
 

@@ -33,6 +33,33 @@ Queue for outbound emails.
 3. Emails sent via Resend SMTP
 4. Status updated to `sent` or `failed`
 
+## Template placeholders
+
+Placeholders are built per notification type by `buildPlaceholders()` in
+`supabase/functions/_shared/email-templates/placeholders.ts`. It receives only
+the source **activity's `metadata` jsonb** — `activities.reference_id` and
+`activities.transaction_id` are not selected and are therefore unavailable to a
+template unless copied into that jsonb by the writing RPC.
+
+### `platform_subscription.activated`
+
+| Placeholder | Source |
+|---|---|
+| `recipient_name` | recipient profile |
+| `plan_name` | `metadata.plan_name` |
+| `period_start` / `period_end` | `metadata.period_start` / `period_end` |
+| `cta_url` | `/settings/billing?transaction=<metadata.transaction_id>` |
+
+`cta_url` deep-links to the paid row so the billing page can highlight it and
+offer the invoice PDF download. It cannot point at the
+`generate-transaction-document` endpoint directly, because an email link
+carries no `Authorization` header. Activities written before invoice numbering
+have no `transaction_id`, and fall back to a plain `/settings/billing` link.
+
+> The email body HTML itself lives in the admin-editable `notification_types`
+> table, not in the repo. Surfacing an "Invoice" button using `{{cta_url}}` is a
+> content-ops change, not a code change.
+
 ## Related
 
 - `notification_types` registry — defines available notification types
