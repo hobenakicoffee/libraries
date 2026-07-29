@@ -4,29 +4,47 @@ layout: home
 
 hero:
   name: "হবে নাকি Coffee? Library"
-  text: "A framework-agnostic TypeScript package."
-  tagline: Essential for our heavy ecosystem.
+  text: "Shared constants, utilities & types."
+  tagline: The framework-agnostic, tree-shakeable, zod-powered core package for every "হবে নাকি Coffee?" project — nine entry points, one source of truth.
+  image:
+    src: /banner.avif
+    alt: "হবে নাকি Coffee? Library"
   actions:
     - theme: brand
       text: Get Started
       link: /getting-started
     - theme: alt
-      text: Shamscorner LLC
-      link: https://shamscorner.com
+      text: Browse the Libraries
+      link: /libraries/
+    - theme: alt
+      text: GitHub
+      link: https://github.com/hobenakicoffee/libraries
 
 features:
-  - title: Constants
-    details: Payment types, statuses, platforms, visibility, service types, and Bangladesh geo data.
-  - title: Utilities
-    details: Format amounts, dates, validate phone numbers, social links, and more.
-  - title: TypeScript Types
-    details: Full Supabase database types and custom type definitions.
-  - title: Moderation
-    details: Profanity detection for English and Bengali with leetspeak normalization.
-  - title: URL State (nuqs)
-    details: Type-safe URL state parsers using zod for sorting, filtering, and date ranges.
-  - title: Scripts
-    details: Build utilities and environment encryption helpers.
+  - icon: "<svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='var(--vp-c-brand-1)' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><line x1='9' y1='3' x2='7' y2='21'/><line x1='17' y1='3' x2='15' y2='21'/><line x1='4' y1='9' x2='20' y2='9'/><line x1='3' y1='15' x2='19' y2='15'/></svg>"
+    title: Constants
+    details: Payment types & statuses, platforms, visibility, service types, notifications, and Bangladesh geo data.
+  - icon: "<svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='var(--vp-c-brand-1)' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><line x1='4' y1='6' x2='20' y2='6'/><circle cx='9' cy='6' r='2'/><line x1='4' y1='12' x2='20' y2='12'/><circle cx='15' cy='12' r='2'/><line x1='4' y1='18' x2='20' y2='18'/><circle cx='7' cy='18' r='2'/></svg>"
+    title: Utilities
+    details: Format amounts, dates, counts, and numbers; validate phone numbers; build social and product links.
+  - icon: "<svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='var(--vp-c-brand-1)' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3 L21 8 L12 13 L3 8 Z'/><path d='M3 12 L12 17 L21 12'/><path d='M3 16 L12 21 L21 16'/></svg>"
+    title: TypeScript Types
+    details: Full generated Supabase database types plus hand-written custom types, shared across frontend and backend.
+  - icon: "<svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='var(--vp-c-brand-1)' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3 L19 6 V11 C19 16 16 19.5 12 21 C8 19.5 5 16 5 11 V6 Z'/><polyline points='8.5 12 11 14.5 15.5 9.5'/></svg>"
+    title: Moderation
+    details: Profanity detection for English and Bengali, with leetspeak normalization and a maintained word dataset.
+  - icon: "<svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='var(--vp-c-brand-1)' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><rect x='2' y='9' width='10' height='6' rx='3' transform='rotate(-45 7 12)'/><rect x='12' y='9' width='10' height='6' rx='3' transform='rotate(-45 17 12)'/></svg>"
+    title: URL State (nuqs)
+    details: Type-safe, zod-powered URL state parsers for sorting, filtering, and date ranges.
+  - icon: "<svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='var(--vp-c-brand-1)' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='1.4' fill='var(--vp-c-brand-1)' stroke='none'/><ellipse cx='12' cy='12' rx='10' ry='4.2'/><ellipse cx='12' cy='12' rx='10' ry='4.2' transform='rotate(60 12 12)'/><ellipse cx='12' cy='12' rx='10' ry='4.2' transform='rotate(120 12 12)'/></svg>"
+    title: React Hooks
+    details: Shared React hooks, like use-mobile, ready to drop into any app across the ecosystem.
+  - icon: "<svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='var(--vp-c-brand-1)' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='16' rx='2'/><polyline points='7 9 10 12 7 15'/><line x1='12' y1='15' x2='17' y2='15'/></svg>"
+    title: Scripts
+    details: Build utilities and environment-variable encryption helpers used across our CI.
+  - icon: "<svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='var(--vp-c-brand-1)' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='5' r='2.2'/><circle cx='6' cy='19' r='2.2'/><circle cx='18' cy='19' r='2.2'/><path d='M12 7.2 V12 M12 12 L6 16.8 M12 12 L18 16.8'/></svg>"
+    title: Tree-Shakeable
+    details: Independent entry points for every module — import only what you need, ESM-only with no runtime bloat.
 ---
 
 <script setup>
@@ -122,6 +140,41 @@ const members = [
   }
 ]
 </script>
+
+## Why this package?
+
+Every app in the "হবে নাকি Coffee?" ecosystem — the React SPA, the Astro marketing site, and every Supabase edge function — needs the same payment enums, formatters, and database types. Instead of copy-pasting them (and letting them drift), we ship them from one versioned, framework-agnostic package with nine independent entry points, so a change to a constant or a type only ever needs to happen once.
+
+## Quick Install
+
+::: code-group
+
+```bash [bun]
+bun add @hobenakicoffee/libraries
+```
+
+```bash [npm]
+npm install @hobenakicoffee/libraries
+```
+
+```bash [pnpm]
+pnpm add @hobenakicoffee/libraries
+```
+
+```bash [yarn]
+yarn add @hobenakicoffee/libraries
+```
+
+:::
+
+```ts
+// Import only what you need — every module is its own entry point.
+import { PaymentStatuses, ServiceTypes } from "@hobenakicoffee/libraries";
+import { formatAmount, getUserPageLink } from "@hobenakicoffee/libraries/utils";
+import type { Database } from "@hobenakicoffee/libraries/types";
+```
+
+See the [Getting Started](/getting-started) guide for the full list of entry points.
 
 ## Our Team
 

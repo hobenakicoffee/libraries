@@ -141,7 +141,6 @@ export default withMermaid(
     },
 
     themeConfig: {
-      logo: "logo-full.svg",
       nav: [
         { text: "Home", link: "https://developer.hobenakicoffee.com" },
         { text: "Getting Started", link: "/getting-started" },
