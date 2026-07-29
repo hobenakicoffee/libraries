@@ -3308,6 +3308,9 @@ export type Database = {
           rating_avg: number | null;
           rating_count: number;
           requires_shipping: boolean;
+          sale_ends_at: string | null;
+          sale_price: number | null;
+          sale_starts_at: string | null;
           sales_count: number;
           shipping_fee_inside_dhaka: number;
           shipping_fee_outside_dhaka: number;
@@ -3344,6 +3347,9 @@ export type Database = {
           rating_avg?: number | null;
           rating_count?: number;
           requires_shipping?: boolean;
+          sale_ends_at?: string | null;
+          sale_price?: number | null;
+          sale_starts_at?: string | null;
           sales_count?: number;
           shipping_fee_inside_dhaka?: number;
           shipping_fee_outside_dhaka?: number;
@@ -3380,6 +3386,9 @@ export type Database = {
           rating_avg?: number | null;
           rating_count?: number;
           requires_shipping?: boolean;
+          sale_ends_at?: string | null;
+          sale_price?: number | null;
+          sale_starts_at?: string | null;
           sales_count?: number;
           shipping_fee_inside_dhaka?: number;
           shipping_fee_outside_dhaka?: number;
@@ -3422,6 +3431,8 @@ export type Database = {
           cod_enabled: boolean;
           created_at: string;
           deactivation_reason: string | null;
+          hero_headline: string | null;
+          hero_subtitle: string | null;
           id: string;
           is_active: boolean;
           logo_url: string | null;
@@ -3449,6 +3460,8 @@ export type Database = {
           cod_enabled?: boolean;
           created_at?: string;
           deactivation_reason?: string | null;
+          hero_headline?: string | null;
+          hero_subtitle?: string | null;
           id?: string;
           is_active?: boolean;
           logo_url?: string | null;
@@ -3476,6 +3489,8 @@ export type Database = {
           cod_enabled?: boolean;
           created_at?: string;
           deactivation_reason?: string | null;
+          hero_headline?: string | null;
+          hero_subtitle?: string | null;
           id?: string;
           is_active?: boolean;
           logo_url?: string | null;
@@ -4772,6 +4787,11 @@ export type Database = {
         Args: { p_featured_limit?: number; p_username: string };
         Returns: Json;
       };
+      get_shop_categories: { Args: { p_username: string }; Returns: Json };
+      get_shop_flash_sale: {
+        Args: { p_limit?: number; p_username: string };
+        Returns: Json;
+      };
       get_shop_order_for_payment: {
         Args: { p_order_id: string };
         Returns: Json;
@@ -4781,14 +4801,24 @@ export type Database = {
       get_shop_products: {
         Args: {
           p_category_id?: string;
-          p_cursor_id?: string;
-          p_cursor_sort?: number;
+          p_cursor?: Json;
           p_limit?: number;
+          p_sort?: string;
           p_username: string;
         };
         Returns: Json;
       };
       get_shop_stats: { Args: never; Returns: Json };
+      get_shop_storefront: {
+        Args: {
+          p_featured_limit?: number;
+          p_flash_limit?: number;
+          p_include_policies?: boolean;
+          p_product_limit?: number;
+          p_username: string;
+        };
+        Returns: Json;
+      };
       get_supporter_coffee_gifts_stats: {
         Args: {
           p_from_date: string;
@@ -5214,6 +5244,26 @@ export type Database = {
         Args: { p_is_active: boolean; p_profile_id: string };
         Returns: Json;
       };
+      set_shop_product_sale: {
+        Args: {
+          p_clear?: boolean;
+          p_product_id: string;
+          p_sale_ends_at?: string;
+          p_sale_price?: number;
+          p_sale_starts_at?: string;
+        };
+        Returns: Json;
+      };
+      shop_product_pricing: {
+        Args: {
+          p_compare_at_price: number;
+          p_price: number;
+          p_sale_ends_at: string;
+          p_sale_price: number;
+          p_sale_starts_at: string;
+        };
+        Returns: Json;
+      };
       submit_shop_product_for_review: {
         Args: { p_product_id: string };
         Returns: Json;
@@ -5349,6 +5399,8 @@ export type Database = {
           p_clear_banner_url?: boolean;
           p_clear_logo_url?: boolean;
           p_cod_enabled?: boolean;
+          p_hero_headline?: string;
+          p_hero_subtitle?: string;
           p_is_active?: boolean;
           p_logo_url?: string;
           p_processing_max_days?: number;

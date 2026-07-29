@@ -40,8 +40,9 @@ The shop service is a multi-product e-commerce layer built entirely on PostgreSQ
 | [Shop Settings](./shop-settings) | Complete guide to `shop_settings`, eligibility, shipping, theming, and policies |
 | [All RPCs (Quick Reference)](./rpc-reference) | Single-page lookup for all RPCs and edge functions |
 | [Helpers & Eligibility](./rpc-helpers) | `get_platform_setting`, `check_shop_active_eligibility` |
-| [Products, Variants & Files](./rpc-products) | Product CRUD, multi-axis variants, file management |
+| [Products, Variants & Files](./rpc-products) | Product CRUD, multi-axis variants, file management, flash sales |
 | [Checkout & Payments](./rpc-checkout) | `initiate_shop_checkout`, `handle_shop_payment_success` |
+| [Categories](./rpc-categories) | Category CRUD plus the public `get_shop_categories` pill feed |
 | [Orders & Fulfillment](./rpc-orders) | Order queries, tracking, mark-delivered |
 | [COD & Wallet Debt](./rpc-cod) | Cash confirmation, cancellation, `cod_debt` topup |
 | [Dashboard & Cron](./rpc-dashboard) | `get_shop_overview`, auto-deactivate cron job |

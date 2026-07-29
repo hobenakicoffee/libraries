@@ -175,6 +175,15 @@ end;
 
 Fees are computed **per item** based on `product_type` and whether the seller holds an active platform subscription for that service:
 
+::: danger `unit_price` is the sale-aware effective price, not `shop_products.price`
+Each cart item's `unit_price` is resolved through `shop_product_pricing()` — the same
+helper every storefront read RPC uses — before the variant `price_adjustment` is
+added. Reading `shop_products.price` directly here would charge full price for a
+product with a live flash sale, so the displayed price and the charged price cannot
+diverge. Prices are always re-resolved server-side, so a stale client cart can
+neither lock in an expired sale price nor miss a newly started one.
+:::
+
 ```sql
 -- Per item in the cart:
 v_item_fee_rate := public.get_creator_effective_fee_rate(

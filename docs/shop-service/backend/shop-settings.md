@@ -42,7 +42,9 @@ create table public.shop_settings (
 
   -- Basic Info
   shop_name           varchar(100) not null,
-  shop_description    text,
+  shop_description    text,          -- footer blurb + SEO fallback
+  hero_headline       varchar(120),  -- storefront hero display heading
+  hero_subtitle       varchar(300),  -- storefront hero supporting paragraph
   logo_url            text,
   banner_url          text,
   is_active           boolean      not null default false,
@@ -114,6 +116,8 @@ ON CONFLICT (profile_id) DO NOTHING;
 public.upsert_shop_settings(
   p_shop_name               varchar default null,
   p_shop_description        text    default null,
+  p_hero_headline           varchar default null,   -- storefront hero heading
+  p_hero_subtitle           varchar default null,   -- storefront hero paragraph
   p_logo_url                text    default null,
   p_banner_url              text    default null,
   p_is_active               boolean default null,

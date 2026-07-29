@@ -157,7 +157,9 @@ create table public.shop_settings (
   profile_id          uuid        not null unique references public.profiles(id) on delete cascade,
 
   shop_name           varchar(100) not null,
-  shop_description    text,
+  shop_description    text,          -- footer blurb + SEO fallback
+  hero_headline       varchar(120),  -- storefront hero display heading
+  hero_subtitle       varchar(300),  -- storefront hero supporting paragraph
   logo_url            text,
   banner_url          text,
   is_active           boolean      not null default false,
@@ -301,7 +303,14 @@ create table public.shop_products (
   sku                        varchar(100),            -- optional, not unique
 
   price                      numeric(10,2) not null check (price >= 0),
-  compare_at_price           numeric(10,2),           -- null = no sale/strikethrough
+  compare_at_price           numeric(10,2),           -- permanent strikethrough; null = no markdown
+
+  -- Time-boxed flash sale. All three set together, or all three null.
+  -- Written only by set_shop_product_sale(); deliberately absent from
+  -- shop_product_drafts so sales bypass manager approval and survive one.
+  sale_price                 numeric(10,2) check (sale_price >= 0),
+  sale_starts_at             timestamptz,
+  sale_ends_at               timestamptz,
 
   -- Variant axis definitions (max 3). Empty array = no variants.
   option_definitions         jsonb    not null default '[]',
@@ -340,7 +349,13 @@ create table public.shop_products (
     check (processing_min_days is null or processing_max_days is null
            or processing_min_days <= processing_max_days),
   constraint shop_products_option_axes_max_3
-    check (jsonb_array_length(option_definitions) <= 3)
+    check (jsonb_array_length(option_definitions) <= 3),
+  constraint shop_products_sale_window_valid
+    check (sale_starts_at is null or sale_ends_at is null
+           or sale_starts_at < sale_ends_at),
+  constraint shop_products_sale_requires_window
+    check (sale_price is null
+           or (sale_starts_at is not null and sale_ends_at is not null))
 );
 ```
 
@@ -349,6 +364,15 @@ create table public.shop_products (
 - `is_active` starts `false` and is only set to `true` by `approve_shop_product` — owners cannot toggle it directly
 - When variants exist, `product.stock_count` is ignored — stock is tracked per variant
 - `sales_count` is incremented on fulfillment (digital) or delivery (physical)
+- Never read `price` on a public surface — resolve through `shop_product_pricing()`, which every read RPC and `initiate_shop_checkout` already use
+
+::: warning There is intentionally no `check (sale_price < price)`
+`approve_shop_product()` writes `price` from the draft row. A constraint tying
+`sale_price` to `price` would make **manager approval throw** whenever a creator
+raised the list price during a live sale. The rule is enforced in
+`set_shop_product_sale()` instead, and clamped defensively with `least()` inside
+`shop_product_pricing()`.
+:::
 - `is_deleted = true` hides from public pages but is visible in Studio
 - Direct DELETE is blocked by RLS; always go through `delete_shop_product`
 - Pending/rejected state and rejection feedback live in `shop_product_drafts`
@@ -747,7 +771,10 @@ Key indexes beyond the primary keys:
 | `shop_categories` | `(product_count)` | Efficient count updates |
 | `shop_products` | `(profile_id, is_active, sort_order) WHERE is_deleted = false` | Paginated product grid |
 | `shop_products` | `(profile_id, is_featured) WHERE is_featured = true ...` | Profile card featured strip |
-| `shop_products` | `(profile_id, sales_count desc) WHERE is_active ...` | Top-sellers list |
+| `shop_products` | `(profile_id, sales_count desc, id desc) WHERE is_active ...` | Top-sellers list + `popular` sort (`id desc` is the keyset tiebreaker) |
+| `shop_products` | `(profile_id, created_at desc, id desc) WHERE is_active ...` | `newest` storefront sort |
+| `shop_products` | `(profile_id, (least(price, coalesce(sale_price, price))), id) WHERE is_active ...` | `price_asc` / `price_desc` sorts — the expression is IMMUTABLE, so it is indexable and the keyset cannot drift when a sale expires mid-scroll |
+| `shop_products` | `(profile_id, sale_ends_at) WHERE sale_price IS NOT NULL AND is_active ...` | Flash-sale strip (the predicate cannot reference `now()`, so the window check happens at query time) |
 | `shop_category_drafts` | `(created_at) WHERE approval_status = 'pending'` | Manager approval queue |
 | `shop_product_drafts` | `(created_at) WHERE approval_status = 'pending'` | Manager approval queue |
 | `shop_orders` | `(seller_profile_id, created_at desc)` | Seller order list |

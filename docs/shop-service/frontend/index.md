@@ -35,6 +35,8 @@ The shop service runs across three codebases that share types via `@hobenakicoff
 
 **React SPA (`@hobenakicoffee/app`)** — Creator Studio (seller management) and authenticated buyer flows (cart, checkout, address book, order history). Data via TanStack Query. Routing via TanStack Router. URL state via `nuqs`. Forms via shadcn + RHF.
 
+See [Public Storefront](./storefront) for the full design-element-to-RPC map of the creator shop page.
+
 **Astro marketing site** — Public SSR-rendered pages at `/@username/shops`, `/@username/shops/[slug]`, `/@username/shops/policies`. Deployed as Cloudflare Workers. React islands hydrate interactive elements (variant picker, cart button).
 
 **Supabase Edge Functions** — `shop-payment-ipn` (SSLCommerz IPN), `shop-download` (token → signed URL), `shop-notify` (COD + fulfillment notifications), `generate-shop-theme` (AI theme generation).

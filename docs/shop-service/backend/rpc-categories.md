@@ -255,3 +255,31 @@ where category_id = '<your-category-id>';
 ::: tip Same pattern for products
 `approve_shop_product` and `reject_shop_product` use the same `authorize_manager` gate. The `set_config` trick works identically for both.
 :::
+
+---
+
+## `get_shop_categories` (public)
+
+```sql
+public.get_shop_categories(p_username varchar) returns jsonb
+-- { success, total_product_count, categories: [{ id, name, slug, description, sort_order, product_count }] }
+```
+
+Feeds the storefront's category filter pills. Returns only `is_visible = true`
+categories, ordered by `sort_order`. `total_product_count` backs the "All" pill.
+
+::: warning `product_count` here is computed live — do not substitute the stored column
+`shop_categories.product_count` is **not approval-aware**. Its trigger
+(`trg_shop_products_product_count`) fires only on `category_id` and `is_deleted`, and
+`approve_shop_product()` — the thing that actually publishes a product — never fires
+it at all. So the stored counter includes unpublished products, and a pill built from
+it would claim 8 items while the filtered grid returned 5.
+
+`get_shop_categories` therefore counts published products itself, with a single
+grouped subquery (not a per-category subquery). The stored `product_count` remains
+valid for its original Studio-side purpose.
+:::
+
+This RPC is also the reason the product grid does **not** return a category name:
+the frontend already holds this list and maps `category_id` through it, which keeps
+`get_shop_products` single-table.

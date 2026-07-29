@@ -117,9 +117,41 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 
 | RPC | Auth | Returns |
 |---|---|---|
-| `get_shop_by_username(p_username, p_featured_limit?)` | anon | `{ success, shop, profile, featured_products }` |
-| `get_shop_products(p_username, p_category_id?, p_limit?, p_cursor_sort?, p_cursor_id?)` | anon | `{ success, products, has_more }` |
+| `get_shop_storefront(p_username, p_product_limit?, p_featured_limit?, p_flash_limit?, p_include_policies?)` | anon | Whole page in one call — see below |
+| `get_shop_by_username(p_username, p_featured_limit?)` | anon | `{ success, shop, profile, stats, featured_products }` |
+| `get_shop_categories(p_username)` | anon | `{ success, total_product_count, categories[] }` |
+| `get_shop_flash_sale(p_username, p_limit?)` | anon | `{ success, is_active, ends_at, max_discount_percent, products[] }` |
+| `get_shop_products(p_username, p_category_id?, p_sort?, p_limit?, p_cursor?)` | anon | `{ success, products, has_more, next_cursor }` |
 | `get_product_by_slug(p_username, p_product_slug)` | anon | `{ success, product }` |
+
+`get_shop_storefront` composes the five RPCs above and returns
+`{ shop, profile, stats, featured_products, categories, total_product_count,
+flash_sale, products, has_more, next_cursor, policies }`. Use it for the Astro SSR
+render — it collapses five Worker→Postgres round-trips into one and gives the page
+a single consistent snapshot. Sorting, filtering and infinite scroll go through
+`get_shop_products`.
+
+**`p_sort`** is one of `curated` (default) | `popular` | `newest` | `price_asc` |
+`price_desc`. **`p_cursor`** is the opaque `{ sort, v, id }` object returned as
+`next_cursor` — pass it back verbatim; never construct one client-side. Price sorts
+key on `least(price, coalesce(sale_price, price))` so the key stays IMMUTABLE and
+pagination cannot skip or duplicate rows when a sale expires mid-scroll.
+
+Every product object carries a resolved pricing block from `shop_product_pricing()`:
+`{ is_on_sale, effective_price, strikethrough_price, discount_percent, sale_ends_at }`.
+Render `effective_price` / `strikethrough_price` — never the raw `price`.
+
+## Pricing & sales
+
+| RPC | Auth | Returns |
+|---|---|---|
+| `shop_product_pricing(p_price, p_compare_at_price, p_sale_price, p_sale_starts_at, p_sale_ends_at)` | internal | `{ is_on_sale, effective_price, strikethrough_price, discount_percent, sale_ends_at }` |
+| `set_shop_product_sale(p_product_id, p_sale_price?, p_sale_starts_at?, p_sale_ends_at?, p_clear?)` | authenticated (owner) | `{ success, product_id }` |
+
+`set_shop_product_sale` writes straight to the live `shop_products` row, deliberately
+bypassing the `shop_product_drafts` approval flow — sales are time-sensitive and a
+creator cannot wait on a manager. Safe to bypass because the RPC can only ever lower
+the price for a bounded window.
 
 ---
 
@@ -224,6 +256,13 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | `INVALID_QUANTITY` | Cart item quantity ≤ 0 |
 | `INVALID_AMOUNT` | `topup_seller_cod_debt` called with `p_amount ≤ 0` |
 | `INVALID_STATUS_FILTER` | `get_seller_orders` given unrecognised status string |
+| `INVALID_SORT` | `get_shop_products` `p_sort` is not one of the five modes |
+| `CURSOR_SORT_MISMATCH` | `get_shop_products` cursor was minted under a different sort — reset pagination to page 1 |
+| `INVALID_CURSOR` | `get_shop_products` cursor is missing `v` or `id` |
+| `MISSING_SALE_PRICE` | `set_shop_product_sale` called without `p_sale_price` and without `p_clear` |
+| `SALE_WINDOW_REQUIRED` | `set_shop_product_sale` given a sale price with no `p_sale_ends_at` — a sale must expire |
+| `INVALID_SALE_WINDOW` | `set_shop_product_sale` window is inverted or already closed |
+| `SALE_PRICE_NOT_BELOW_PRICE` | `set_shop_product_sale` sale price is not strictly below the list price |
 
 ### Not found
 | Code | Meaning |
@@ -232,7 +271,8 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | `PRODUCT_NOT_FOUND` | Cart item references inactive/deleted product |
 | `VARIANT_NOT_FOUND` | Cart item references unknown variant |
 | `ADDRESS_NOT_FOUND` | Checkout address not found for this buyer |
-| `PROFILE_NOT_FOUND` | `get_shop_policies` / `get_shop_by_username` username not found |
+| `PROFILE_NOT_FOUND` | `get_shop_policies` / `get_shop_by_username` / `get_shop_categories` / `get_shop_flash_sale` / `get_shop_products` / `get_shop_storefront` username not found |
+| `SHOP_NOT_FOUND` | The username exists but has no published (`is_active`) shop |
 | `ORDER_NOT_FOUND` | `handle_shop_payment_success` / `get_shop_order_for_payment` order not found |
 | `NOT_ORDER_OWNER` | `get_shop_order_for_payment` called by a profile that isn't the order's buyer |
 | `ALREADY_PAID` | `get_shop_order_for_payment` called on an order that already has a `transaction_reference_id` |

@@ -551,3 +551,68 @@ where product_id = '<your-product-id>';
 ::: tip Same pattern for categories
 `approve_shop_category` and `reject_shop_category` use the same `authorize_manager` gate. The `set_config` trick works identically for both.
 :::
+
+---
+
+## Flash sales
+
+### `set_shop_product_sale`
+
+```sql
+public.set_shop_product_sale(
+  p_product_id     uuid,
+  p_sale_price     numeric     default null,
+  p_sale_starts_at timestamptz default null,   -- null = start immediately
+  p_sale_ends_at   timestamptz default null,
+  p_clear          boolean     default false
+) returns jsonb   -- { success, product_id }
+```
+
+Owner-only. Writes `sale_price` / `sale_starts_at` / `sale_ends_at` **straight to the
+live `shop_products` row**, deliberately bypassing the `shop_product_drafts` approval
+flow. `p_clear = true` nulls all three together and ends the sale early.
+
+::: tip Why this one RPC skips moderation
+A flash sale is time-sensitive — a creator cannot wait for a manager to come online.
+The bypass is safe because the RPC can only ever *lower* the price, for a bounded
+window: `SALE_PRICE_NOT_BELOW_PRICE` makes a price increase impossible, and
+`SALE_WINDOW_REQUIRED` makes an open-ended sale impossible.
+:::
+
+::: warning Do not set sale fields through `upsert_shop_product`
+The sale columns are intentionally absent from `shop_product_drafts`. That is what
+keeps sales out of the approval queue — and, because `approve_shop_product()` applies
+an explicit column list, it also means a running sale survives a manager approving an
+unrelated edit to the same product.
+:::
+
+| Error | Meaning |
+|---|---|
+| `UNAUTHENTICATED` | No `auth.uid()` |
+| `NOT_FOUND` | Not the owner, or the product is deleted |
+| `MISSING_SALE_PRICE` | Neither `p_sale_price` nor `p_clear` supplied |
+| `SALE_WINDOW_REQUIRED` | Sale price given with no `p_sale_ends_at` |
+| `INVALID_SALE_WINDOW` | Window is inverted, or already closed |
+| `SALE_PRICE_NOT_BELOW_PRICE` | Sale price is not strictly below the list price (returns the current `price`) |
+
+### `shop_product_pricing`
+
+```sql
+public.shop_product_pricing(
+  p_price numeric, p_compare_at_price numeric,
+  p_sale_price numeric, p_sale_starts_at timestamptz, p_sale_ends_at timestamptz
+) returns jsonb
+-- { is_on_sale, effective_price, strikethrough_price, discount_percent, sale_ends_at }
+```
+
+The single source of truth for what a product costs and how it renders. Every read
+RPC **and** `initiate_shop_checkout` resolve price through it, so the badge, the
+strikethrough and the amount actually charged can never disagree.
+
+- `is_on_sale` — `now()` falls inside `[sale_starts_at, sale_ends_at)`
+- `effective_price` — on sale → `least(sale_price, price)`, else `price`
+- `strikethrough_price` — on sale → `greatest(price, compare_at_price)`, else `compare_at_price`
+- `discount_percent` — rounded percentage off `strikethrough_price`, or `null`
+
+`STABLE`, not `IMMUTABLE` (it reads `now()`), and scalar-in/scalar-out — it touches no
+table, so applying it per row across a page of products is a function call, not a query.

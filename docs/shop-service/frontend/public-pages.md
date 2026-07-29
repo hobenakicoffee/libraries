@@ -1,5 +1,15 @@
 # Public Pages (Astro SSR)
 
+::: tip The shop landing page has its own guide
+This page covers the route structure and the product-detail / policies pages. For
+the creator storefront itself — hero stats, category pills, sort dropdown, flash
+sale, product cards, policy dialogs — see **[Public Storefront](./storefront)**,
+which maps each design element to the exact RPC field that feeds it.
+
+The shop landing example below predates `get_shop_storefront` and the sortable
+`get_shop_products`. Follow the storefront guide for new work.
+:::
+
 ```mermaid
 graph TB
     subgraph "Cloudflare Workers"
@@ -25,6 +35,8 @@ graph TB
     F --> J
     
     H --> K[RPC: get_shop_products]
+    B --> P[RPC: get_shop_storefront]
+    P --> N
     I --> L[RPC: get_product_by_slug]
     D --> M[RPC: get_shop_policies]
     
@@ -37,7 +49,7 @@ Three public routes render server-side via Cloudflare Workers:
 
 | Route | RPC | Page |
 |---|---|---|
-| `/@[username]/shops` | `get_shop_by_username` | Shop landing |
+| `/@[username]/shops` | `get_shop_storefront` | Shop landing |
 | `/@[username]/shops/[slug]` | `get_product_by_slug` | Product detail |
 | `/@[username]/shops/policies` | `get_shop_policies` | Policies |
 
