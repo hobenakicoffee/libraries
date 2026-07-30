@@ -51,6 +51,7 @@ type ShopStorefront = {
     theme_config: ShopThemeConfig;
     seo_title: string | null;
     seo_description: string | null;
+    seo_custom_meta_tags: { name: string; content: string }[] | null;
     cod_enabled: boolean;
     requires_shipping: boolean;
   };
