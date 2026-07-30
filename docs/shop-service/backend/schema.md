@@ -339,6 +339,12 @@ create table public.shop_products (
   tags         text[]   not null default '{}',
   sales_count  integer  not null default 0 check (sales_count >= 0),
 
+  -- Full-text search document: title (A) > tags (B) > description (C).
+  -- Generated, not trigger-maintained — see Storefront Search.
+  search_vector tsvector generated always as (
+    public.shop_product_search_document(title, tags, description)
+  ) stored,
+
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now(),
 
@@ -364,6 +370,7 @@ create table public.shop_products (
 - `is_active` starts `false` and is only set to `true` by `approve_shop_product` — owners cannot toggle it directly
 - When variants exist, `product.stock_count` is ignored — stock is tracked per variant
 - `sales_count` is incremented on fulfillment (digital) or delivery (physical)
+- `search_vector` is a **generated** column, so it backfills on `ALTER` and is never recomputed by the `sales_count` / `rating_avg` write paths the way a `before update` trigger would. Editing `shop_product_search_document()` does **not** rewrite existing rows — see [Storefront Search](./rpc-search)
 - Never read `price` on a public surface — resolve through `shop_product_pricing()`, which every read RPC and `initiate_shop_checkout` already use
 
 ::: warning There is intentionally no `check (sale_price < price)`
@@ -775,6 +782,8 @@ Key indexes beyond the primary keys:
 | `shop_products` | `(profile_id, created_at desc, id desc) WHERE is_active ...` | `newest` storefront sort |
 | `shop_products` | `(profile_id, (least(price, coalesce(sale_price, price))), id) WHERE is_active ...` | `price_asc` / `price_desc` sorts — the expression is IMMUTABLE, so it is indexable and the keyset cannot drift when a sale expires mid-scroll |
 | `shop_products` | `(profile_id, sale_ends_at) WHERE sale_price IS NOT NULL AND is_active ...` | Flash-sale strip (the predicate cannot reference `now()`, so the window check happens at query time) |
+| `shop_products` | GIN `(search_vector) WHERE is_active AND NOT is_deleted` | `search_shop_products` full-text match |
+| `shop_products` | GIN `((title::text) gin_trgm_ops) WHERE is_active AND NOT is_deleted` | `search_shop_products` `ILIKE` fallback — trigram indexes accelerate `ILIKE '%…%'`, which btree cannot. The `::text` cast is required; `gin_trgm_ops` rejects a bare `varchar` |
 | `shop_category_drafts` | `(created_at) WHERE approval_status = 'pending'` | Manager approval queue |
 | `shop_product_drafts` | `(created_at) WHERE approval_status = 'pending'` | Manager approval queue |
 | `shop_orders` | `(seller_profile_id, created_at desc)` | Seller order list |

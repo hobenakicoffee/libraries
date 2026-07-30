@@ -67,21 +67,32 @@ Public (anon). Returns shop config, profile info, and up to `p_featured_limit` f
 public.get_shop_products(
   p_username    varchar,
   p_category_id uuid    default null,
+  p_sort        text    default 'curated',
   p_limit       integer default 12,
-  p_cursor_sort integer default null,
-  p_cursor_id   uuid    default null
+  p_cursor      jsonb   default null
 ) → jsonb
 ```
 
-Public, cursor-paginated. Use `(sort_order, id)` from the last row of the previous page as the next cursor.
+Keyset-paginated. **Revoked from `anon`** — reached through the Astro SSR/action
+layer on the service-role client, not from the browser.
+`p_sort` is one of `curated` (default) | `popular` |
+`newest` | `price_asc` | `price_desc`; anything else returns `INVALID_SORT`.
+`p_cursor` is the opaque `{ sort, v, id }` object handed back as `next_cursor` — pass
+it back verbatim and never construct one client-side. A cursor minted under a
+different sort mode returns `CURSOR_SORT_MISMATCH`, so reset pagination to page 1
+whenever sort or category changes.
 
 ```json
 {
   "success": true,
   "products": [ ... ],
-  "has_more": true
+  "has_more": true,
+  "next_cursor": { "sort": "curated", "v": 3, "id": "…uuid…" }
 }
 ```
+
+See [Storefront](../frontend/storefront) for the client-side cursor rules and
+[RPC Reference](./rpc-reference) for the full parameter table.
 
 ---
 

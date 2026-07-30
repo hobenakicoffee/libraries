@@ -682,6 +682,10 @@ export default withMermaid(
                     link: "/shop-service/backend/rpc-products",
                   },
                   {
+                    text: "RPC Search",
+                    link: "/shop-service/backend/rpc-search",
+                  },
+                  {
                     text: "RPC Categories",
                     link: "/shop-service/backend/rpc-categories",
                   },

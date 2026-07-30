@@ -109,7 +109,7 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 |---|---|---|
 | `upsert_shop_policy(p_policy_type, p_content?, p_is_enabled?)` | authenticated | `{ success, policy_id }` |
 | `delete_shop_policy(p_policy_type)` | authenticated | `{ success }` |
-| `get_shop_policies(p_username)` | anon | `{ success, policies[] }` |
+| `get_shop_policies(p_username)` | authenticated † | `{ success, policies[] }` |
 
 ---
 
@@ -117,12 +117,19 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 
 | RPC | Auth | Returns |
 |---|---|---|
-| `get_shop_storefront(p_username, p_product_limit?, p_featured_limit?, p_flash_limit?, p_include_policies?)` | anon | Whole page in one call — see below |
+| `get_shop_storefront(p_username, p_product_limit?, p_featured_limit?, p_flash_limit?, p_include_policies?)` | authenticated † | Whole page in one call — see below |
 | `get_shop_by_username(p_username, p_featured_limit?)` | anon | `{ success, shop, profile, stats, featured_products }` |
-| `get_shop_categories(p_username)` | anon | `{ success, total_product_count, categories[] }` |
-| `get_shop_flash_sale(p_username, p_limit?)` | anon | `{ success, is_active, ends_at, max_discount_percent, products[] }` |
-| `get_shop_products(p_username, p_category_id?, p_sort?, p_limit?, p_cursor?)` | anon | `{ success, products, has_more, next_cursor }` |
+| `get_shop_categories(p_username)` | authenticated † | `{ success, total_product_count, categories[] }` |
+| `get_shop_flash_sale(p_username, p_limit?)` | authenticated † | `{ success, is_active, ends_at, max_discount_percent, products[] }` |
+| `get_shop_products(p_username, p_category_id?, p_sort?, p_limit?, p_cursor?)` | authenticated † | `{ success, products, has_more, next_cursor }` |
+| `search_shop_products(p_username, p_query, p_limit?, p_offset?)` | authenticated † | `{ success, products, has_more, next_offset }` — see [Storefront Search](./rpc-search) |
 | `get_product_by_slug(p_username, p_product_slug)` | anon | `{ success, product }` |
+
+**† Not callable by `anon`.** These have `execute` revoked from `public, anon`;
+`authenticated` and `service_role` keep it. The public storefront reaches them
+through the Astro SSR/action layer on the service-role client, never directly from
+the browser with the publishable key. Only `get_shop_by_username` and
+`get_product_by_slug` remain anon-callable.
 
 `get_shop_storefront` composes the five RPCs above and returns
 `{ shop, profile, stats, featured_products, categories, total_product_count,
@@ -136,6 +143,12 @@ a single consistent snapshot. Sorting, filtering and infinite scroll go through
 `next_cursor` — pass it back verbatim; never construct one client-side. Price sorts
 key on `least(price, coalesce(sale_price, price))` so the key stays IMMUTABLE and
 pagination cannot skip or duplicate rows when a sale expires mid-scroll.
+
+Text search is a **separate** RPC, `search_shop_products` — relevance ranking and keyset
+pagination do not mix, which is the same reason `search_feed` stands apart from `get_feed`.
+It returns the identical product shape so the storefront reuses one card component for both
+the browse grid and the search grid, and it pages by `p_offset` / `next_offset` rather than a
+cursor. See [Storefront Search](./rpc-search).
 
 Every product object carries a resolved pricing block from `shop_product_pricing()`:
 `{ is_on_sale, effective_price, strikethrough_price, discount_percent, sale_ends_at }`.
@@ -271,7 +284,7 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | `PRODUCT_NOT_FOUND` | Cart item references inactive/deleted product |
 | `VARIANT_NOT_FOUND` | Cart item references unknown variant |
 | `ADDRESS_NOT_FOUND` | Checkout address not found for this buyer |
-| `PROFILE_NOT_FOUND` | `get_shop_policies` / `get_shop_by_username` / `get_shop_categories` / `get_shop_flash_sale` / `get_shop_products` / `get_shop_storefront` username not found |
+| `PROFILE_NOT_FOUND` | `get_shop_policies` / `get_shop_by_username` / `get_shop_categories` / `get_shop_flash_sale` / `get_shop_products` / `search_shop_products` / `get_shop_storefront` username not found |
 | `SHOP_NOT_FOUND` | The username exists but has no published (`is_active`) shop |
 | `ORDER_NOT_FOUND` | `handle_shop_payment_success` / `get_shop_order_for_payment` order not found |
 | `NOT_ORDER_OWNER` | `get_shop_order_for_payment` called by a profile that isn't the order's buyer |

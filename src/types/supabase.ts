@@ -3312,6 +3312,7 @@ export type Database = {
           sale_price: number | null;
           sale_starts_at: string | null;
           sales_count: number;
+          search_vector: unknown;
           shipping_fee_inside_dhaka: number;
           shipping_fee_outside_dhaka: number;
           sku: string | null;
@@ -3351,6 +3352,7 @@ export type Database = {
           sale_price?: number | null;
           sale_starts_at?: string | null;
           sales_count?: number;
+          search_vector?: unknown;
           shipping_fee_inside_dhaka?: number;
           shipping_fee_outside_dhaka?: number;
           sku?: string | null;
@@ -3390,6 +3392,7 @@ export type Database = {
           sale_price?: number | null;
           sale_starts_at?: string | null;
           sales_count?: number;
+          search_vector?: unknown;
           shipping_fee_inside_dhaka?: number;
           shipping_fee_outside_dhaka?: number;
           sku?: string | null;
@@ -5222,6 +5225,15 @@ export type Database = {
           search_rank: number;
         }[];
       };
+      search_shop_products: {
+        Args: {
+          p_limit?: number;
+          p_offset?: number;
+          p_query: string;
+          p_username: string;
+        };
+        Returns: Json;
+      };
       send_message: {
         Args: { p_content: string; p_conversation_id: string };
         Returns: {
@@ -5263,6 +5275,10 @@ export type Database = {
           p_sale_starts_at: string;
         };
         Returns: Json;
+      };
+      shop_product_search_document: {
+        Args: { p_description: string; p_tags: string[]; p_title: string };
+        Returns: unknown;
       };
       submit_shop_product_for_review: {
         Args: { p_product_id: string };

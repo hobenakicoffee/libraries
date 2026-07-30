@@ -197,7 +197,12 @@ sorts at ৳1,000, which is what the shopper sees on the card.
 
 ## Product grid & infinite scroll
 
+`get_shop_products` is revoked from `anon`, so the island cannot call it directly.
+Go through the `shopProducts.getPage` Astro action, which runs the RPC on the
+service-role client behind rate limiting:
+
 ```ts
+// server side — service-role client only
 const { data } = await supabase.rpc('get_shop_products', {
   p_username: username,
   p_category_id: categoryId,   // null = All
