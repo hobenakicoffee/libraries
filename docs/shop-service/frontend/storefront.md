@@ -56,12 +56,14 @@ type ShopStorefront = {
     requires_shipping: boolean;
   };
   profile: { username: string; display_name: string | null; avatar_url: string | null };
+  // null when the owner hasn't opted in via shop_settings.show_statistics
+  // (defaults to false) — hide the whole hero stats row in that case.
   stats: {
     total_products: number;
     total_sales: number;
     rating_avg: number | null;         // 1–5 scale, null when no reviews
     rating_count: number;
-  };
+  } | null;
   featured_products: ShopProductCard[];
   categories: ShopCategoryPill[];
   total_product_count: number;
@@ -100,6 +102,10 @@ categories, the flash sale and the policies to change one query parameter.
 | "29 products" | `stats.total_products` |
 | "3,420+ sold" | `stats.total_sales` |
 | "★ 4.8 avg rating" | `stats.rating_avg` (hide the whole stat when `rating_count === 0`) |
+
+::: warning `stats` is opt-in
+`stats` is `null` unless the seller enabled `show_statistics` in Studio settings (see [Settings](./studio-settings)). Render the entire hero stats row conditionally — don't assume the block exists. When present, `rating_avg`/`rating_count` are read from a cache on `shop_settings` (write-maintained whenever a review changes), not recomputed per request.
+:::
 
 ### Payment badges
 

@@ -5,8 +5,9 @@ graph TB
     subgraph "shop_settings table"
         A[Basic Info] --> B[shop_name, description, logo, banner]
         A --> C[SEO] --> D[seo_title, seo_description]
-        A --> E[Activation] --> F[is_active, deactivation_reason]
-        
+        A --> E[Activation] --> F[is_active, deactivation_reason, deactivated_at]
+        A --> S[show_statistics]
+
         G[Theming] --> H[theme_config JSONB]
         
         I[Shipping Defaults] --> J[inside/outside Dhaka fees]
@@ -14,7 +15,7 @@ graph TB
         I --> L[cod_enabled]
         I --> M[shipping_from_address]
         
-        N[Stats Counters] --> O[views, sales, earnings, products]
+        N[Stats Counters] --> O[views, sales, earnings, products, rating_avg, rating_count]
     end
     
     subgraph "Related Tables"
@@ -49,6 +50,10 @@ create table public.shop_settings (
   banner_url          text,
   is_active           boolean      not null default false,
   deactivation_reason varchar(40),  -- 'wallet_below_floor' | 'cod_aging' | 'manual' | null
+  deactivated_at      timestamptz,  -- when is_active last transitioned to false; null when active
+
+  -- Owner opt-in: whether get_shop_by_username includes the public stats block
+  show_statistics     boolean      not null default false,
 
   -- Theming
   theme_config        jsonb        not null default '{}',
@@ -70,6 +75,8 @@ create table public.shop_settings (
   total_sales     bigint        not null default 0,
   total_earnings  numeric(12,2) not null default 0,
   total_products  bigint        not null default 0,
+  rating_avg      numeric(3,2),         -- shop-level weighted mean over shop_products
+  rating_count    integer       not null default 0,
 
   created_at          timestamptz  not null default now(),
   updated_at          timestamptz  not null default now(),
@@ -90,6 +97,7 @@ Pre-computed counters maintained automatically for O(1) reads:
 | `total_sales` | `handle_shop_payment_success` (digital) + `mark_order_item_delivered` (physical) |
 | `total_earnings` | `trg_shop_orders_stats` trigger when `transaction_reference_id` or `cod_settled_at` is first set |
 | `total_products` | `approve_shop_product` (+1) + `delete_shop_product` (−1 if was active) |
+| `rating_avg` / `rating_count` | `trg_reviews_shop_product_stats` (reviews.sql) — recomputed as a weighted mean over the shop's `shop_products` rows on every review create/edit/delete/hide. Read by `get_shop_by_username`'s public `stats` block only when `show_statistics = true`; never computed on that read path. |
 
 ### Auto-provision trigger
 
@@ -121,6 +129,7 @@ public.upsert_shop_settings(
   p_logo_url                text    default null,
   p_banner_url              text    default null,
   p_is_active               boolean default null,
+  p_show_statistics         boolean default null,
   p_theme_config            jsonb   default null,
   p_seo_title               varchar default null,
   p_seo_description         varchar default null,
@@ -170,9 +179,13 @@ When `p_is_active = true`, the RPC runs `check_shop_active_eligibility` and retu
 }
 ```
 
-When `p_is_active = false`, `deactivation_reason` is set to `'manual'`. When `p_is_active = true` and eligibility passes, `deactivation_reason` is cleared to `null`.
+When `p_is_active = false`, `deactivation_reason` is set to `'manual'` and `deactivated_at` is stamped to `now()`. When `p_is_active = true` and eligibility passes, both `deactivation_reason` and `deactivated_at` are cleared to `null`.
 
 **Errors:** `UNAUTHENTICATED`, `SHOP_INELIGIBLE`
+
+#### Statistics visibility
+
+`p_show_statistics` (boolean, default leaves unchanged; `false` on first insert) independently controls whether `get_shop_by_username` includes the public `stats` block. It has no eligibility gate and is unrelated to `p_is_active` — a shop can be active with stats hidden, or show stats while active. See [Public Storefront — hero stats](../frontend/storefront#hero) for the frontend contract.
 
 ### `set_shop_active_by_manager`
 
@@ -185,7 +198,7 @@ public.set_shop_active_by_manager(
 
 Manager-only toggle for `shop_settings.is_active`. Requires `content.moderate` permission. **Bypasses** the seller eligibility check that `upsert_shop_settings` enforces.
 
-Sets `deactivation_reason = 'manual'` when deactivating; clears it when reactivating.
+Sets `deactivation_reason = 'manual'` and stamps `deactivated_at = now()` when deactivating; clears both when reactivating.
 
 **Errors:** `UNAUTHORIZED`, `NOT_FOUND`
 
@@ -449,7 +462,7 @@ Settings panels under `/studio/shop/settings/*`:
 
 | Sub-route | Panel | RPC |
 |---|---|---|
-| `basic` | Shop name, description, logo, banner, active toggle | `upsert_shop_settings` |
+| `basic` | Shop name, description, logo, banner, active toggle, public stats visibility toggle | `upsert_shop_settings` |
 | `seo` | Meta title, description, banner image, favicon, custom meta tags | `upsert_shop_settings` |
 | `shipping` | Shop-level shipping defaults + per-product overrides | `upsert_shop_settings`, `upsert_shop_product` |
 | `policies` | Per-type markdown overrides | `upsert_shop_policy`, `delete_shop_policy` |

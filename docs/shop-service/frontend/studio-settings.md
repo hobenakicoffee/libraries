@@ -37,7 +37,7 @@ Settings panels under `/studio/shop/settings/*`:
 
 | Sub-route | Panel | RPC |
 |---|---|---|
-| `basic` | Shop name, description, logo, banner, active toggle | `upsert_shop_settings` |
+| `basic` | Shop name, description, logo, banner, active toggle, public stats visibility toggle | `upsert_shop_settings` |
 | `seo` | Meta title, description, banner image, favicon, custom meta tags | `upsert_shop_settings` |
 | `shipping` | Shop-level shipping defaults + per-product overrides | `upsert_shop_settings`, `upsert_shop_product` |
 | `policies` | Per-type markdown overrides | `upsert_shop_policy`, `delete_shop_policy` |
@@ -128,7 +128,11 @@ const toggleMutation = useMutation({
 });
 ```
 
-When `p_is_active = false`, the RPC sets `deactivation_reason = 'manual'`. When `p_is_active = true` and eligibility passes, it clears `deactivation_reason`.
+When `p_is_active = false`, the RPC sets `deactivation_reason = 'manual'` and stamps `deactivated_at = now()`. When `p_is_active = true` and eligibility passes, it clears both `deactivation_reason` and `deactivated_at`. The same pairing is stamped by `set_shop_active_by_manager` (admin panel) and the nightly `auto_deactivate_ineligible_shops` cron job.
+
+### Statistics visibility toggle
+
+`show_statistics` (boolean, default `false`) is a separate owner opt-in controlling whether the public shop page's `stats` block (`total_products`, `total_sales`, `rating_avg`, `rating_count`) is shown at all. Pass `p_show_statistics: true/false` to `upsert_shop_settings` to toggle it — independent of `p_is_active`. When off, `get_shop_by_username` returns `stats: null` and skips exposing the (cached) rating columns; the underlying counters keep incrementing regardless, they're just not surfaced publicly. See [Public Pages](./public-pages) for the storefront-side contract.
 
 ---
 

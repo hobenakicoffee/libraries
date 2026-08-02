@@ -3433,6 +3433,7 @@ export type Database = {
           banner_url: string | null;
           cod_enabled: boolean;
           created_at: string;
+          deactivated_at: string | null;
           deactivation_reason: string | null;
           hero_headline: string | null;
           hero_subtitle: string | null;
@@ -3442,6 +3443,8 @@ export type Database = {
           processing_max_days: number | null;
           processing_min_days: number | null;
           profile_id: string;
+          rating_avg: number | null;
+          rating_count: number;
           requires_shipping: boolean;
           seo_custom_meta_tags: Json | null;
           seo_description: string | null;
@@ -3451,6 +3454,7 @@ export type Database = {
           shipping_from_address: Json | null;
           shop_description: string | null;
           shop_name: string;
+          show_statistics: boolean;
           theme_config: Json;
           total_earnings: number;
           total_products: number;
@@ -3462,6 +3466,7 @@ export type Database = {
           banner_url?: string | null;
           cod_enabled?: boolean;
           created_at?: string;
+          deactivated_at?: string | null;
           deactivation_reason?: string | null;
           hero_headline?: string | null;
           hero_subtitle?: string | null;
@@ -3471,6 +3476,8 @@ export type Database = {
           processing_max_days?: number | null;
           processing_min_days?: number | null;
           profile_id: string;
+          rating_avg?: number | null;
+          rating_count?: number;
           requires_shipping?: boolean;
           seo_custom_meta_tags?: Json | null;
           seo_description?: string | null;
@@ -3480,6 +3487,7 @@ export type Database = {
           shipping_from_address?: Json | null;
           shop_description?: string | null;
           shop_name: string;
+          show_statistics?: boolean;
           theme_config?: Json;
           total_earnings?: number;
           total_products?: number;
@@ -3491,6 +3499,7 @@ export type Database = {
           banner_url?: string | null;
           cod_enabled?: boolean;
           created_at?: string;
+          deactivated_at?: string | null;
           deactivation_reason?: string | null;
           hero_headline?: string | null;
           hero_subtitle?: string | null;
@@ -3500,6 +3509,8 @@ export type Database = {
           processing_max_days?: number | null;
           processing_min_days?: number | null;
           profile_id?: string;
+          rating_avg?: number | null;
+          rating_count?: number;
           requires_shipping?: boolean;
           seo_custom_meta_tags?: Json | null;
           seo_description?: string | null;
@@ -3509,6 +3520,7 @@ export type Database = {
           shipping_from_address?: Json | null;
           shop_description?: string | null;
           shop_name?: string;
+          show_statistics?: boolean;
           theme_config?: Json;
           total_earnings?: number;
           total_products?: number;
@@ -5430,6 +5442,7 @@ export type Database = {
           p_shipping_from_address?: Json;
           p_shop_description?: string;
           p_shop_name?: string;
+          p_show_statistics?: boolean;
           p_theme_config?: Json;
         };
         Returns: Json;
