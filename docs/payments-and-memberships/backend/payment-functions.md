@@ -269,6 +269,25 @@ A row moves `pending -> completed` only after an IPN handler validates payment w
 
 RLS is enabled with no client-facing policies — service role only, written by Edge Functions. Status is exposed to clients solely through `get_payment_session_status`.
 
+### Anonymous service types
+
+`sslcommerz-init` gates each `service_type` on a `requiresAuth` flag. Two are
+anonymous: `gift` (covered by `identity_hash`) and **`shop_order`** (guest
+checkout). For a guest, `supporter_profile_id` on both `payment_sessions` and the
+resulting session payload is simply `null` — both columns are already nullable, so
+no schema change was needed.
+
+Authorization for `shop_order` does not live in the Edge Function, which takes
+`payload` opaquely and never checks that the caller owns `payload.order_id`. It
+lives in `get_shop_order_for_payment`, which the marketing app must call first to
+obtain the authoritative amount, and which authorises account orders against
+`auth.uid()` and guest orders against the order's `guest_phone`.
+
+`sslcommerz-init` requires a non-empty `cus_email`. Guests who supplied no email
+get a throwaway `gateway_email` back from `initiate_shop_checkout` to pass through
+here; it is never stored on the order. See
+[Checkout & Payments](../../shop-service/backend/rpc-checkout).
+
 ### `payment_session_status_enum`
 
 `'pending' | 'completed' | 'failed' | 'cancelled' | 'expired'`

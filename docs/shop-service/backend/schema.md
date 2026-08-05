@@ -125,10 +125,30 @@ create table public.user_addresses (
   postal_code    varchar(20),
   is_default     boolean      not null default false,
 
+  -- Structured BD administrative divisions (bd-geo-locations.sql), backing the
+  -- cascading Division → District → Upazila picker. Nullable so addresses saved
+  -- before these existed keep working.
+  division_id    integer references public.divisions(id),
+  district_id    integer references public.districts(id),
+  upazilla_id    integer references public.upazillas(id),
+
   created_at     timestamptz  not null default now(),
   updated_at     timestamptz  not null default now()
 );
 ```
+
+::: info The free-text `district` stays authoritative for shipping
+When the structured `district_id` is supplied, `upsert_user_address` denormalises
+`districts.name` into the free-text `district` column. That keeps the
+`lower(district) = 'dhaka'` shipping check working unchanged on both the saved-address
+and inline-address paths, and means nothing downstream has to learn about the FKs.
+The chain is validated on write — a district must belong to the given division, an
+upazila to the given district (`INVALID_DIVISION` / `INVALID_DISTRICT` /
+`INVALID_UPAZILLA`).
+
+`divisions` / `districts` / `upazillas` are already `grant select … to anon,
+authenticated`, so the picker works for guests with no extra ACL work.
+:::
 
 **Key constraint:**
 
@@ -166,6 +186,7 @@ create table public.shop_settings (
   deactivation_reason varchar(40),  -- 'wallet_below_floor' | 'cod_aging' | 'manual' | null
 
   theme_config        jsonb        not null default '{}',
+  promotions_config   jsonb        not null default '{}',  -- storefront promo card toggles: bestseller/bundle_offer/gift
   seo_title           varchar(60),
   seo_description     varchar(160),
 
@@ -197,6 +218,18 @@ create table public.shop_settings (
 **`deactivation_reason`** is set automatically by the cron job and cleared when the seller reactivates. The frontend uses it to render the Studio banner with actionable copy.
 
 **Shipping defaults** (`shipping_fee_inside_dhaka`, `shipping_fee_outside_dhaka`, `processing_min_days`, `processing_max_days`, `requires_shipping`, `cod_enabled`, `shipping_from_address`) are shop-level defaults inherited by new products. `NULL` on any numeric/integer field means fall through to the platform default. Set via `upsert_shop_settings`.
+
+**`promotions_config`** merges (`||` operator) on update, same idiom as `theme_config`. Shape:
+
+```json
+{
+  "bestseller":   { "enabled": true },
+  "bundle_offer": { "enabled": true, "min_items": 2, "extra_discount_percent": 10 },
+  "gift":         { "enabled": true, "wrap_fee": 50 }
+}
+```
+
+Consumed by `get_shop_storefront` for the public promo cards and, for `bundle_offer`/`gift`, actually enforced at checkout by `initiate_shop_checkout` — see [Checkout & Payments RPCs](./rpc-checkout).
 
 **Stats counters** (`total_views`, `total_sales`, `total_earnings`, `total_products`) are pre-computed counters maintained automatically — read by `get_shop_stats()` for O(1) Studio card reads:
 
@@ -339,6 +372,14 @@ create table public.shop_products (
   tags         text[]   not null default '{}',
   sales_count  integer  not null default 0 check (sales_count >= 0),
 
+  -- Maintained by trg_favorites_shop_product_count, which fires on
+  -- public.favorites rows tagged service_type='shop', target_type='shop_product'
+  -- (see ../../favorites/backend/index). Same +1/-1 counter pattern as
+  -- sales_count. Both service_type and target_type are checked — target_type
+  -- alone would let the generic toggle_favorite() RPC inflate this counter via
+  -- an unrelated service_type.
+  favorite_count integer not null default 0 check (favorite_count >= 0),
+
   -- Full-text search document: title (A) > tags (B) > description (C).
   -- Generated, not trigger-maintained — see Storefront Search.
   search_vector tsvector generated always as (
@@ -370,6 +411,7 @@ create table public.shop_products (
 - `is_active` starts `false` and is only set to `true` by `approve_shop_product` — owners cannot toggle it directly
 - When variants exist, `product.stock_count` is ignored — stock is tracked per variant
 - `sales_count` is incremented on fulfillment (digital) or delivery (physical)
+- `favorite_count` is incremented/decremented by a trigger on `public.favorites` — see [Favorites](./rpc-reference#favorites)
 - `search_vector` is a **generated** column, so it backfills on `ALTER` and is never recomputed by the `sales_count` / `rating_avg` write paths the way a `before update` trigger would. Editing `shop_product_search_document()` does **not** rewrite existing rows — see [Storefront Search](./rpc-search)
 - Never read `price` on a public surface — resolve through `shop_product_pricing()`, which every read RPC and `initiate_shop_checkout` already use
 
@@ -583,10 +625,17 @@ One row per checkout session.
 ```sql
 create table public.shop_orders (
   id                       uuid    primary key default gen_random_uuid(),
-  order_number             varchar(20) unique not null,   -- SHOP-YYYYMMDD-XXXX
+  order_number             varchar(20) unique not null,   -- HNC-XXXX (legacy: SHOP-YYYYMMDD-XXXX)
 
   seller_profile_id        uuid    not null references public.profiles(id),
-  buyer_profile_id         uuid    not null references public.profiles(id),
+  -- NULL on guest orders
+  buyer_profile_id         uuid    references public.profiles(id),
+
+  -- Guest checkout contact details; populated only when buyer_profile_id is NULL.
+  -- guest_phone doubles as the lookup credential for get_guest_order().
+  guest_name               varchar(100),
+  guest_phone              varchar(20),
+  guest_email              varchar(255),
 
   payment_method           shop_payment_method_enum not null default 'online',
   has_digital              boolean not null default false,
@@ -608,12 +657,51 @@ create table public.shop_orders (
 
   cod_settled_at           timestamptz,  -- set when last COD item is confirmed
 
+  -- Gift checkout (Settings > Promotions > gift card). Delivery is email-only —
+  -- no recipient account/claim flow.
+  is_gift                  boolean not null default false,
+  gift_recipient_name      varchar(100),
+  gift_recipient_email     varchar(255),
+  gift_message             varchar(500),
+  gift_wrap_fee            numeric(10,2) not null default 0,
+
+  -- Extra bundle_offer savings, already netted into subtotal — informational only.
+  bundle_discount          numeric(10,2) not null default 0,
+
+  -- Coupon applied at checkout (public.coupons, service_type='shop'). Same
+  -- informational pattern as bundle_discount — already netted into
+  -- subtotal/shipping_total. See ../../coupons/backend/index.
+  coupon_id                uuid references public.coupons(id) on delete set null,
+  coupon_discount          numeric(10,2) not null default 0,
+
   created_at               timestamptz not null default now(),
   updated_at               timestamptz not null default now(),
 
   -- COD orders cannot contain digital items
   constraint shop_orders_cod_no_digital
-    check (payment_method = 'online' or has_digital = false)
+    check (payment_method = 'online' or has_digital = false),
+
+  -- Every order is either an account order or a guest order, never both and never
+  -- neither. Guests always have a phone (their lookup credential); email optional.
+  constraint shop_orders_buyer_identity
+    check (
+      (buyer_profile_id is not null
+        and guest_name is null and guest_phone is null and guest_email is null)
+      or (buyer_profile_id is null
+        and guest_name is not null and guest_phone is not null)
+    ),
+
+  -- Digital goods need an account to hang download tokens off
+  -- (shop_download_tokens.buyer_profile_id is NOT NULL).
+  constraint shop_orders_guest_no_digital
+    check (buyer_profile_id is not null or has_digital = false),
+
+  -- Gift fields are all-or-nothing with is_gift
+  constraint shop_orders_gift_consistency
+    check (
+      (is_gift = false and gift_recipient_email is null and gift_message is null and gift_wrap_fee = 0)
+      or (is_gift = true and gift_recipient_email is not null)
+    )
 );
 ```
 
@@ -621,7 +709,15 @@ create table public.shop_orders (
 `shop_orders` has no status column. Status is computed from item statuses in `get_order_by_number`. See [Design Decision #4](./#_4-order-status-is-item-level-not-order-level).
 :::
 
-**RLS:** Buyer and seller can both SELECT their own orders. INSERT/UPDATE/DELETE blocked for all authenticated users (RPC-only).
+**Order numbers** are sequential `HNC-XXXX`, drawn from `public.shop_order_number_seq` (starts at 2000, zero-padded to four digits) inside the security-definer `initiate_shop_checkout`. The sequence is granted to no client role. Orders predating this format keep their `SHOP-YYYYMMDD-XXXX` numbers — nothing parses or validates the format, so no backfill was needed.
+
+**RLS:** Buyer and seller can both SELECT their own orders. INSERT/UPDATE/DELETE blocked for all authenticated users (RPC-only). `anon` is revoked from the table outright.
+
+::: warning Guest orders match no RLS policy — by design
+Every buyer-side policy is keyed on `buyer_profile_id = auth.uid()`, which is `NULL = NULL` → not true for a guest order. That is correct: guests reach their order only through the security-definer `get_guest_order()`, never through table RLS.
+
+The corollary is that **any code comparing `buyer_profile_id` must be NULL-safe on purpose, not by accident.** `is distinct from` is the specific hazard — it is NULL-safe, so `buyer_profile_id is distinct from auth.uid()` *passes* for an anonymous caller on a guest order. See the ownership check in [`get_shop_order_for_payment`](./rpc-checkout).
+:::
 
 ---
 
@@ -644,6 +740,11 @@ create table public.shop_order_items (
   unit_price        numeric(10,2) not null, -- base price + price_adjustment
   shipping_cost     numeric(10,2) not null default 0,
   quantity          integer not null default 1 check (quantity > 0),
+  -- Seller's stated processing window, snapshotted like shipping_cost above so the
+  -- confirmation-page timeline never drifts if the seller edits the product later.
+  -- NULL on digital items and on rows created before this column existed.
+  processing_min_days integer check (processing_min_days >= 0),
+  processing_max_days integer check (processing_max_days >= 0),
   -- Per-item fee rate snapshotted at checkout based on product_type and the seller's
   -- active platform subscription. 0 if seller holds a creator_platform_subscriptions
   -- row for the relevant service (shop_digital or shop_physical); otherwise the

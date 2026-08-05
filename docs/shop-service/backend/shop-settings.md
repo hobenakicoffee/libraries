@@ -141,12 +141,15 @@ public.upsert_shop_settings(
   p_requires_shipping           boolean        default null,
   p_cod_enabled                 boolean        default null,
   p_shipping_from_address       jsonb          default null,
+  p_promotions_config           jsonb          default null,  -- storefront promo card toggles
   p_clear_banner_url            boolean        default false,
   p_clear_logo_url              boolean        default false
 ) → jsonb
 ```
 
-All fields are optional — only non-null values update. `theme_config` is **merged** (not replaced) via JSONB `||` operator. `p_seo_custom_meta_tags` **replaces** the entire array when non-null (pass `null` to leave unchanged).
+All fields are optional — only non-null values update. `theme_config` and `promotions_config` are both **merged** (not replaced) via JSONB `||` operator — a partial update like `{ "gift": { "enabled": true } }` only touches that key, leaving `bestseller`/`bundle_offer` untouched. `p_seo_custom_meta_tags` **replaces** the entire array when non-null (pass `null` to leave unchanged).
+
+See [Checkout & Payments RPCs](./rpc-checkout#bundle-offer-auto-applied) for how `bundle_offer`/`gift` are actually enforced at checkout, not just displayed.
 
 #### Clearing image fields
 

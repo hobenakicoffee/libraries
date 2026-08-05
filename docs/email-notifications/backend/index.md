@@ -107,9 +107,62 @@ alongside the two new types above.
 > table, not in the repo. Wording changes to these templates are a content-ops
 > change, not a code change.
 
+## Direct-enqueue path — emailing recipients with no account
+
+The flow above (activity-triggered) is entirely profile-bound: it requires a
+`user_profile_id` and goes through `is_email_notification_enabled()`
+preference checks derived from an `activities` row. There is no path there
+for emailing an address that isn't a platform user — e.g. a shop gift
+recipient.
+
+`email_notification_queue` supports a second, direct-enqueue path in the same
+table for exactly that case (previously a separate `external_email_queue`
+table; the two were merged into one outbox). Any service can enqueue into it
+(not just shop) — `service_type` namespaces `reference_id` (not a DB FK;
+polymorphic across whatever services use it), and `notification_type_key`/
+`template_data` reuse the same `notification_types` template registry, but
+with the placeholder values supplied directly by the enqueuing caller instead
+of being derived from an activity row. A check constraint enforces that a row
+is either activity-triggered (`activity_id` + `user_profile_id` set, the rest
+null) or direct-enqueue (`service_type` + `reference_id` + `recipient_email`
+set, `activity_id`/`user_profile_id` null) — never a mix.
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | bigint PK | Auto-incrementing ID |
+| `activity_id` / `user_profile_id` | uuid | Set on the activity-triggered path, null on direct-enqueue |
+| `service_type` | text | Set on the direct-enqueue path, e.g. `'shop_gift'` |
+| `reference_id` | uuid | The originating row's id, e.g. `shop_orders.id` |
+| `recipient_email` | varchar | Destination address (direct-enqueue path) |
+| `recipient_name` | varchar | Optional display name (direct-enqueue path) |
+| `notification_type_key` | text | FK to `notification_types.key` |
+| `template_data` | jsonb | Direct-enqueue path only — exact placeholder values for the template, no activity/profile lookup. Stays `{}` on the activity-triggered path |
+| `status` | text | `pending` / `processing` / `sent` / `failed` |
+| `attempts` | int | Retry count |
+| `last_error` | text | Failure reason if any |
+| `created_at` / `sent_at` | timestamptz | |
+
+Both paths are drained by the same `dispatch_pending_email_notifications()`
+and posted to the same `send-notification-emails` edge function, which
+branches on whether `user_profile_id` is set: the activity-triggered branch
+does the profile/activity join and attaches an unsubscribe link; the
+direct-enqueue branch renders `template_data` straight through
+`renderTemplate()`/`renderLayout()` with no join (there's nothing to join
+to) and points the footer link at the general contact page instead.
+`cleanup_old_email_notification_queue()` purges `sent` rows of either kind
+older than 6 months.
+
+Current direct-enqueue producer: shop gift checkout and guest order-status
+emails. See
+[`initiate_shop_checkout`](../../shop-service/backend/rpc-checkout#gift-checkout)
+— `service_type = 'shop_gift'`, template `shop.gift_received`. COD gift orders
+enqueue immediately at checkout; online gift orders enqueue from
+`handle_shop_payment_success` once payment is confirmed (and only then are
+digital download links known).
+
 ## Related
 
-- `notification_types` registry — defines available notification types
-- `notification_preference_overrides` — per-user opt-in/opt-out
+- `notification_types` registry — defines available notification types, including `shop.gift_received`
+- `notification_preference_overrides` — per-user opt-in/opt-out (applies to the activity-triggered path only, not direct-enqueue rows)
 - `is_email_notification_enabled()` — checks if user has notifications enabled
-- Edge function `send-notification-emails` (config referenced; actual implementation at function level)
+- Edge function `send-notification-emails` — handles both the activity-triggered and direct-enqueue paths

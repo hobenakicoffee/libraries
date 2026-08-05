@@ -205,16 +205,19 @@ create table public.kyc_sessions (
 
 Permanent audit record per verification attempt. Storage paths stored here — never raw URLs.
 
-`nid_number`/`nid_front_path`/`nid_back_path`/`selfie_path` are nullable: `submit-kyc` always populates them, but `close_account()` (see `edge-functions/backend/delete-user.md`) nulls all four out on account closure — deleting the underlying Storage objects and purging the raw PII/biometric data — while keeping the row itself (`status`, timestamps, `consent_given_at`/`consent_ip`, `reviewed_by`) as a compliance stub proving verification happened, without retaining the ID data indefinitely.
+`nid_number`/`nid_front_path`/`nid_back_path`/`selfie_path` are nullable: `submit-kyc` always populates them, but they get purged in two ways — deleting the underlying Storage objects and nulling the raw PII/biometric columns — while keeping the row itself (`status`, timestamps, `consent_given_at`/`consent_ip`, `reviewed_by`) as a compliance stub proving verification happened, without retaining the ID data indefinitely:
+
+- **Automatically**, 7 days after the submission reaches `approved` or `rejected`, via the `cleanup-reviewed-kyc-documents` pg_cron job (see "pg_cron: Storage Cleanup" below). `resubmit_requested` is excluded since the creator is expected to submit a new attempt using these files soon.
+- **On account closure**, immediately, via `close_account()` (see `edge-functions/backend/delete-user.md`).
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | `bigint generated always as identity PK` | |
 | `profile_id` | `uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE` | |
-| `nid_number` | `varchar(17)` | Bangladesh NID: 10 or 17 digits. Nulled by `close_account()` on account closure. |
-| `nid_front_path` | `text` | Storage path — never raw URL. Nulled by `close_account()` on account closure. |
-| `nid_back_path` | `text` | Storage path. Nulled by `close_account()` on account closure. |
-| `selfie_path` | `text` | Storage path. Nulled by `close_account()` on account closure. |
+| `nid_number` | `varchar(17)` | Bangladesh NID: 10 or 17 digits. Nulled 7 days after `approved`/`rejected`, or on account closure. |
+| `nid_front_path` | `text` | Storage path — never raw URL. Nulled 7 days after `approved`/`rejected`, or on account closure. |
+| `nid_back_path` | `text` | Storage path. Nulled 7 days after `approved`/`rejected`, or on account closure. |
+| `selfie_path` | `text` | Storage path. Nulled 7 days after `approved`/`rejected`, or on account closure. |
 | `status` | `kyc_status_enum NOT NULL DEFAULT 'pending'` | |
 | `reviewed_by` | `uuid REFERENCES profiles(id) ON DELETE SET NULL` | manager who acted |
 | `reviewed_at` | `timestamptz` | |
@@ -456,6 +459,28 @@ select cron.schedule(
 ```
 
 Disabled by default — ops must enable via Supabase console.
+
+## pg_cron: Storage Cleanup
+
+```sql
+-- Removes kyc-documents storage objects unreferenced by any kyc_submissions
+-- row and older than 1 hour. Runs 30 min after expire-kyc-sessions.
+select cron.schedule(
+  'cleanup-kyc-orphaned-files', '30 * * * *',
+  $$ select public.cleanup_orphaned_kyc_documents(); $$
+);
+
+-- Purges nid_number/nid_front_path/nid_back_path/selfie_path + the matching
+-- Storage objects for kyc_submissions rows that reached approved/rejected
+-- more than 7 days ago. resubmit_requested is excluded. Row is kept as a
+-- compliance stub.
+select cron.schedule(
+  'cleanup-reviewed-kyc-documents', '0 3 * * *',
+  $$ select public.cleanup_reviewed_kyc_documents(); $$
+);
+```
+
+Both `security definer`, `set search_path = ''`, and revoked from `public`/`anon`/`authenticated`.
 
 ## Verification Checklist
 

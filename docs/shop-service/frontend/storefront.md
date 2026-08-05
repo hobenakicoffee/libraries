@@ -35,8 +35,15 @@ const result = await supabase.rpc('get_shop_storefront', {
   p_featured_limit: 6,
   p_flash_limit: 12,
   p_include_policies: true,
+  p_viewer_id: viewerId,   // logged-in viewer's id, or omit/null for anon
 });
 ```
+
+Pass `p_viewer_id` whenever the SSR request has a logged-in viewer — it's forwarded
+into the embedded `get_shop_products` call so the first page of the product grid
+reports the correct `is_favorited` per product instead of always `false`. Only
+trusted from the service-role client, same rule as `get_shop_products` /
+`search_shop_products` directly.
 
 ```ts
 type ShopStorefront = {

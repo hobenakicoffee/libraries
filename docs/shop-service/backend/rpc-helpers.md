@@ -213,3 +213,85 @@ await supabase.rpc('set_shop_active_by_manager', {
   p_is_active: false,  // suspend
 });
 ```
+
+---
+
+## Internal checkout helpers
+
+These three exist to stop the same logic being written twice. All are `security
+definer` and granted to **no client role** — they are called only from other
+security-definer RPCs.
+
+### `shop_calculate_cart`
+
+```sql
+public.shop_calculate_cart(
+  p_items          jsonb,
+  p_inside_dhaka   boolean default null,
+  p_is_gift        boolean default false,
+  p_payment_method shop_payment_method_enum default 'online',
+  p_is_guest       boolean default false,
+  p_buyer_id       uuid    default null
+) → jsonb
+```
+
+The single source of truth for what a cart costs. Validates every line (stock,
+seller consistency, COD eligibility, variant match), applies flash-sale pricing,
+the bundle offer, gift wrap, per-item shipping and per-item platform fees — and
+creates nothing.
+
+Both [`estimate_shop_checkout`](./rpc-checkout) and
+[`initiate_shop_checkout`](./rpc-checkout) call it, which is the whole point: the
+total quoted on the delivery-info step and the total actually charged come from
+the same code path and cannot drift. **Do not reimplement any of this logic in
+either caller.**
+
+Returns `{success:false, error}` using the same error codes
+`initiate_shop_checkout` surfaces, or `{success:true, …totals, items:[…]}`.
+`p_inside_dhaka` may be `NULL` when the buyer has not picked an address yet; a cart
+containing physical items then returns `SHIPPING_ADDRESS_REQUIRED`.
+
+::: warning It trusts `p_buyer_id`
+The function does not read `auth.uid()` — callers pass the already-authenticated
+buyer id, or `NULL` for a guest. That is why it is granted to no client role: a
+direct caller could pass any id. There is a pgTap assertion pinning this.
+:::
+
+---
+
+### `shop_order_detail`
+
+```sql
+public.shop_order_detail(p_order_id uuid, p_is_buyer boolean) → jsonb
+```
+
+Builds the shared order-detail payload for
+[`get_order_by_number`](./rpc-orders) and [`get_guest_order`](./rpc-orders), so the
+account view and the guest view cannot drift apart. Composes
+`payment_status_label`, `confirmed_at`, `area_type` and the per-item processing
+window that the confirmation timeline renders from.
+
+::: danger It performs no authorization of its own
+Callers must already have established that the viewer may see the order.
+`get_order_by_number` does it with the buyer/seller predicate;
+`get_guest_order` does it with the normalized phone match. Granted to no client
+role, with a pgTap assertion pinning that.
+:::
+
+---
+
+### `normalize_bd_phone`
+
+```sql
+public.normalize_bd_phone(p_phone varchar) → text
+```
+
+Strips non-digits, then the optional `88` country code and leading `0`, leaving the
+bare subscriber digits — so `01712345678`, `+8801712345678`, `8801712345678` and
+`017 1234 5678` all compare equal.
+
+Used wherever a guest's phone acts as a credential (`get_guest_order`,
+`get_shop_order_for_payment`). Without it, guests get spurious `NOT_FOUND` /
+`NOT_ORDER_OWNER` on their own orders simply for typing their number in a different
+format. Returns `NULL` for `NULL` input, so callers can rely on `is distinct from`.
+Granted to `anon, authenticated` (it is a pure string function with no data access).

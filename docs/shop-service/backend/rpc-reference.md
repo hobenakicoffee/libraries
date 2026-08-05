@@ -113,16 +113,53 @@ Every write RPC returns `{ "success": true, ... }` on success or `{ "success": f
 
 ---
 
+## Coupons
+
+Shop-side wrappers over the generic [`coupons.sql`](../../coupons/backend/index) core
+(`service_type='shop'`). See [Checkout & Payments](./rpc-checkout#coupons) for how a
+coupon is validated/applied during checkout.
+
+| RPC | Auth | Returns |
+|---|---|---|
+| `upsert_shop_coupon(p_code, p_discount_type, p_discount_value, p_id?, p_description?, p_applies_to?, p_product_ids?, p_max_discount_amount?, p_min_order_amount?, p_max_redemptions?, p_max_redemptions_per_buyer?, p_first_time_buyer_only?, p_starts_at?, p_ends_at?, p_is_active?)` | authenticated (owner) | `{ success, id, code }` |
+| `delete_shop_coupon(p_id)` | authenticated (owner) | `{ success }` — `COUPON_ALREADY_USED` if `redemption_count > 0`; deactivate instead |
+
+`applies_to='line_items'` requires `p_product_ids`, all owned by the caller. On
+update, `coupon_targets` rows are replaced wholesale (delete-then-insert). `code` is
+unique per `(profile_id, service_type)`, not globally — a duplicate under the same
+shop returns `COUPON_CODE_TAKEN`.
+
+---
+
+## Favorites
+
+Shop-side wrapper over the generic [`favorites.sql`](../../favorites/backend/index) core
+(`service_type='shop'`, `target_type='shop_product'`).
+
+| RPC | Auth | Returns |
+|---|---|---|
+| `toggle_shop_favorite(p_product_id)` | authenticated | `{ success, favorited }` — `PRODUCT_NOT_FOUND` if not active/deleted |
+
+Unlike coupons, the generic `toggle_favorite`/`is_favorited`/`list_favorites` core is
+directly `authenticated`-callable and does not validate `target_id` itself — see the
+favorites doc. `toggle_shop_favorite` is the recommended entry point for shop
+products: it validates the product exists and is active before delegating, which
+keeps `shop_products.favorite_count` accurate. `favorite_count` is a denormalized
+counter maintained by a trigger on `favorites`, following the same pattern as
+`rating_count`/`sales_count`.
+
+---
+
 ## Public reads
 
 | RPC | Auth | Returns |
 |---|---|---|
-| `get_shop_storefront(p_username, p_product_limit?, p_featured_limit?, p_flash_limit?, p_include_policies?)` | authenticated † | Whole page in one call — see below |
+| `get_shop_storefront(p_username, p_product_limit?, p_featured_limit?, p_flash_limit?, p_include_policies?, p_viewer_id?)` | authenticated † | Whole page in one call — see below |
 | `get_shop_by_username(p_username, p_featured_limit?)` | anon | `{ success, shop, profile, stats, featured_products }` |
 | `get_shop_categories(p_username)` | authenticated † | `{ success, total_product_count, categories[] }` |
 | `get_shop_flash_sale(p_username, p_limit?)` | authenticated † | `{ success, is_active, ends_at, max_discount_percent, products[] }` |
-| `get_shop_products(p_username, p_category_id?, p_sort?, p_limit?, p_cursor?)` | authenticated † | `{ success, products, has_more, next_cursor }` |
-| `search_shop_products(p_username, p_query, p_limit?, p_offset?)` | authenticated † | `{ success, products, has_more, next_offset }` — see [Storefront Search](./rpc-search) |
+| `get_shop_products(p_username, p_category_id?, p_sort?, p_limit?, p_cursor?, p_viewer_id?)` | authenticated † | `{ success, products, has_more, next_cursor }` |
+| `search_shop_products(p_username, p_query, p_limit?, p_offset?, p_viewer_id?)` | authenticated † | `{ success, products, has_more, next_offset }` — see [Storefront Search](./rpc-search) |
 | `get_product_by_slug(p_username, p_product_slug)` | anon | `{ success, product }` |
 
 **† Not callable by `anon`.** These have `execute` revoked from `public, anon`;
@@ -131,12 +168,23 @@ through the Astro SSR/action layer on the service-role client, never directly fr
 the browser with the publishable key. Only `get_shop_by_username` and
 `get_product_by_slug` remain anon-callable.
 
+**`p_viewer_id`** gates the `is_favorited` field (see [Favorites](#favorites)
+below): only trusted when the caller is `service_role` — the SSR/action layer,
+which has no user JWT so `auth.uid()` is null and must pass the logged-in viewer
+explicitly. Any other caller (an `authenticated` end user invoking the RPC
+directly) gets `is_favorited` computed from their own `auth.uid()` regardless of
+what they pass, so `p_viewer_id` can never be used to probe another profile's
+favorites. `get_product_by_slug` takes no `p_viewer_id` — it's called directly
+(including by `anon`), so it always uses the caller's own `auth.uid()`.
+
 `get_shop_storefront` composes the five RPCs above and returns
 `{ shop, profile, stats, featured_products, categories, total_product_count,
 flash_sale, products, has_more, next_cursor, policies }`. Use it for the Astro SSR
 render — it collapses five Worker→Postgres round-trips into one and gives the page
 a single consistent snapshot. Sorting, filtering and infinite scroll go through
-`get_shop_products`.
+`get_shop_products`. Its own `p_viewer_id` is forwarded straight into the embedded
+`get_shop_products` call so the first page of the grid reflects the logged-in
+viewer's favorites — same `service_role`-only trust rule as above.
 
 **`p_sort`** is one of `curated` (default) | `popular` | `newest` | `price_asc` |
 `price_desc`. **`p_cursor`** is the opaque `{ sort, v, id }` object returned as
@@ -152,7 +200,9 @@ cursor. See [Storefront Search](./rpc-search).
 
 Every product object carries a resolved pricing block from `shop_product_pricing()`:
 `{ is_on_sale, effective_price, strikethrough_price, discount_percent, sale_ends_at }`.
-Render `effective_price` / `strikethrough_price` — never the raw `price`.
+Render `effective_price` / `strikethrough_price` — never the raw `price`. Every
+product also carries `favorite_count` (viewer-independent) and `is_favorited`
+(gated by `p_viewer_id`, see above).
 
 ## Pricing & sales
 
@@ -172,9 +222,14 @@ the price for a bounded window.
 
 | RPC | Auth | Returns |
 |---|---|---|
-| `initiate_shop_checkout(p_items, p_address_id?, p_buyer_notes?, p_payment_method?)` | authenticated | `{ success, order_id, order_number, totals... }` |
-| `get_shop_order_for_payment(p_order_id)` | authenticated | `{ success, subtotal, shipping_total }` |
+| `estimate_shop_checkout(p_items, p_address_id?, p_district?, p_district_id?, p_is_gift?, p_payment_method?, p_coupon_code?)` | **anon** + authenticated | `{ success, totals..., items }` |
+| `initiate_shop_checkout(p_items, p_address_id?, p_buyer_notes?, p_payment_method?, gift…, guest…, inline address…, p_coupon_code?)` | **anon** + authenticated | `{ success, id, order_number, is_guest, gateway_email, totals... }` |
+| `get_shop_order_for_payment(p_order_id, p_guest_phone?)` | **anon** + authenticated | `{ success, subtotal, shipping_total, gift_wrap_fee }` |
 | `handle_shop_payment_success(p_order_id, p_transaction_reference_id, p_amount)` | service role | `{ success, download_tokens, notification fields... }` |
+| `shop_calculate_cart(...)` | **none** (internal) | `{ success, totals..., items }` |
+
+The three `anon`-callable RPCs are what make guest checkout work; each enforces its
+own ownership rules internally. See [Checkout & Payments](./rpc-checkout).
 
 ---
 
@@ -183,6 +238,9 @@ the price for a bounded window.
 | RPC | Auth | Returns |
 |---|---|---|
 | `get_order_by_number(p_order_number)` | authenticated | `{ success, order }` |
+| `get_guest_order(p_order_number, p_phone)` | **anon** + authenticated | `{ success, order }` |
+| `shop_order_detail(p_order_id, p_is_buyer)` | **none** (internal) | `{ success, order }` |
+| `normalize_bd_phone(p_phone)` | anon + authenticated | `text` |
 | `get_buyer_orders(p_limit?, p_cursor?)` | authenticated | `{ success, orders, has_more }` |
 | `get_seller_orders(p_item_status?, p_limit?, p_cursor?)` | authenticated | `{ success, orders, has_more }` |
 | `update_order_tracking(p_order_item_id, p_tracking_number, p_carrier?, p_tracking_url?)` | authenticated | `{ success, notification fields... }` |
@@ -281,9 +339,13 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | Code | Meaning |
 |---|---|
 | `NOT_FOUND` | Resource doesn't exist or belongs to another user |
-| `PRODUCT_NOT_FOUND` | Cart item references inactive/deleted product |
+| `PRODUCT_NOT_FOUND` | Cart item references inactive/deleted product, or `toggle_shop_favorite` given a `p_product_id` that isn't active/deleted |
 | `VARIANT_NOT_FOUND` | Cart item references unknown variant |
-| `ADDRESS_NOT_FOUND` | Checkout address not found for this buyer |
+| `ADDRESS_NOT_FOUND` | Checkout address not found for this buyer, or a guest passed `p_address_id` (guests have no address book) |
+| `MISSING_GUEST_INFO` | Anonymous `initiate_shop_checkout` without `p_guest_name` + `p_guest_phone` |
+| `INVALID_GUEST_EMAIL` | Guest supplied an email that fails the shape check |
+| `GUEST_DIGITAL_NOT_ALLOWED` | Guest cart contains a digital item — download tokens require an account |
+| `INVALID_DIVISION` / `INVALID_DISTRICT` / `INVALID_UPAZILLA` | Broken BD geo chain in `upsert_user_address` or an inline checkout address |
 | `PROFILE_NOT_FOUND` | `get_shop_policies` / `get_shop_by_username` / `get_shop_categories` / `get_shop_flash_sale` / `get_shop_products` / `search_shop_products` / `get_shop_storefront` username not found |
 | `SHOP_NOT_FOUND` | The username exists but has no published (`is_active`) shop |
 | `ORDER_NOT_FOUND` | `handle_shop_payment_success` / `get_shop_order_for_payment` order not found |
@@ -319,6 +381,15 @@ All errors returned as `{ "success": false, "error": "CODE", ...optional details
 | `INSUFFICIENT_STOCK` + `product_id, available` | Requested quantity exceeds stock |
 | `SHIPPING_ADDRESS_REQUIRED` | Physical items in cart but no `p_address_id` |
 | `AMOUNT_MISMATCH` | `handle_shop_payment_success` — `p_amount` (the amount actually charged) doesn't equal the order's `subtotal + shipping_total` |
+| `COUPON_NOT_FOUND` | No active coupon matches `p_coupon_code` for this shop |
+| `COUPON_NOT_YET_ACTIVE` / `COUPON_EXPIRED` | Outside the coupon's `starts_at`/`ends_at` window |
+| `COUPON_LIMIT_REACHED` | Total or per-buyer redemption cap reached |
+| `COUPON_MIN_ORDER_NOT_MET` | Cart subtotal below the coupon's `min_order_amount` |
+| `COUPON_FIRST_TIME_ONLY` | Coupon requires a first-time buyer; caller has a prior committed order with this seller |
+| `COUPON_NO_ELIGIBLE_ITEMS` | `applies_to='line_items'` coupon but no cart line matches its `coupon_targets` |
+| `PRODUCTS_REQUIRED` | `upsert_shop_coupon` with `applies_to='line_items'` and no `p_product_ids` |
+| `COUPON_CODE_TAKEN` | Duplicate `code` under the same shop |
+| `COUPON_ALREADY_USED` | `delete_shop_coupon` on a coupon with `redemption_count > 0` — deactivate instead |
 
 ### COD rules
 | Code | Meaning |

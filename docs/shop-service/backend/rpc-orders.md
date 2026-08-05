@@ -49,15 +49,45 @@ These RPCs cover reading orders (buyer and seller views) and the physical fulfil
 public.get_order_by_number(p_order_number varchar) → jsonb
 ```
 
-Returns full order detail for either the buyer or the seller. Accessible to both parties via the `(buyer_profile_id = auth.uid() OR seller_profile_id = auth.uid())` check.
+Returns full order detail for either the buyer or the seller. Accessible to both parties via the `(buyer_profile_id = auth.uid() OR seller_profile_id = auth.uid())` check. **Account orders only** — a guest order has no `buyer_profile_id` to match, so guests use [`get_guest_order`](#get_guest_order) below.
+
+Both RPCs build their payload from the same internal `shop_order_detail` helper, so the two views cannot drift apart in what they return. That helper performs **no authorization of its own** — each caller must establish that the viewer may see the order before calling it, which is why it is granted to no client role.
 
 ### Key fields
 
 - **`payment_method`** — `online` or `cod`
+- **`payment_status_label`** — display string for the confirmation page: `"Online Payment · Successful via SSLCommerz"`, `"Online Payment · Pending"`, `"Online Payment · Failed"`, `"Cash on Delivery · Paid"`, `"Cash on Delivery · Pay when it arrives"`. Online orders derive it from the joined `transactions` row; COD orders have no transaction until cash is confirmed, so theirs comes from `cod_settled_at`.
+- **`payment_status`** — the raw `transactions.status`, `null` for COD
 - **`status`** — computed at query time from item statuses (not stored)
-- **`download_tokens`** — only populated for the buyer, only non-expired tokens with downloads remaining
+- **`confirmed_at`** — the "Confirmed" timeline stage. Order creation *is* confirmation in this model, so this mirrors `created_at`; there is no separate column.
+- **`area_type`** — `inside_dhaka` | `outside_dhaka`, mirrored from the `shipping_address` snapshot so the timeline never re-derives the shipping band by string-matching the district
+- **`items[].processing_min_days` / `processing_max_days`** — the seller's processing window snapshotted at checkout. Combined with `confirmed_at` these give the "Processing" stage its ETA; `shipped_at`/`delivered_at` give the "Delivery" stage. The whole timeline renders from one response, no extra round-trips.
+- **`is_guest_order` / `guest_name` / `guest_email`** — guest checkout state
+- **`download_tokens`** — only populated for the buyer, only non-expired tokens with downloads remaining. Always empty for guests, who cannot buy digital goods.
 - **`items[].cancellation_reason`** — visible to both parties when status is `cancelled`
 - **`items[].variant_options`** — the JSONB snapshot of `{axis: value}` at purchase time (immutable)
+- **`is_gift`/`gift_recipient_name`/`gift_recipient_email`/`gift_message`/`gift_wrap_fee`** — checkout-time gift state (see [`initiate_shop_checkout`](./rpc-checkout)); all null/zero when `is_gift = false`
+- **`bundle_discount`** — total extra amount saved by the bundle offer, already netted into `subtotal` (informational)
+
+---
+
+## `get_guest_order`
+
+```sql
+public.get_guest_order(p_order_number varchar, p_phone varchar) → jsonb
+```
+
+Granted to `anon, authenticated`. The confirmation and tracking page for a buyer with no account. Returns the same shape as `get_order_by_number`.
+
+The phone entered at checkout is the credential. Both sides are compared through `public.normalize_bd_phone`, which strips non-digits then the optional `88` country code and leading `0` — so `01712345678`, `+8801712345678`, `8801712345678` and `017 1234 5678` all match. Without that normalisation guests get spurious `NOT_FOUND` on their own orders.
+
+::: warning Scoped to `buyer_profile_id IS NULL`
+The lookup only matches guest orders. An authenticated buyer's order is never reachable by phone alone — only through `get_order_by_number` under a JWT. A wrong phone and an unknown order number both return the same generic `NOT_FOUND`, so the RPC cannot be used to probe for valid order numbers.
+:::
+
+::: danger Not covered by Upstash rate limiting
+This is reached directly over PostgREST, not through an Edge Function, so the Upstash rate limiting that fronts the edge layer does **not** apply. Order numbers are sequential (`HNC-XXXX`), which narrows the guessing space considerably. If abuse becomes a concern, the mitigation belongs here or at the gateway — adding it to the edge layer would do nothing.
+:::
 
 ### Computed status logic
 
@@ -86,6 +116,12 @@ end
     "shipping_total": 120.00,
     "platform_fee": 182.00,
     "seller_net": 1638.00,
+    "is_gift": false,
+    "gift_recipient_name": null,
+    "gift_recipient_email": null,
+    "gift_message": null,
+    "gift_wrap_fee": 0,
+    "bundle_discount": 0,
     "shipping_address": {
       "recipient_name": "Rafiq Ahmed",
       "phone": "01700000000",
@@ -148,7 +184,10 @@ Returns lightweight order cards (not full detail). Includes a computed `status` 
       "created_at": "2024-01-15T10:00:00Z",
       "item_count": 2,
       "cover_images": ["url1", "url2", "url3"],
-      "seller_username": "brewco"
+      "seller_username": "brewco",
+      "is_gift": false,
+      "gift_wrap_fee": 0,
+      "bundle_discount": 0
     }
   ],
   "has_more": true
@@ -170,6 +209,14 @@ public.get_seller_orders(
 ```
 
 The Studio order list. Returns seller order cards with buyer name and avatar joined in.
+
+Guest orders appear here alongside account orders, with `is_guest_order: true`, `buyer.display_name` falling back to the checkout-time `guest_name`, and top-level `guest_phone` / `guest_email` — the seller has no account page to fall back to for contacting them.
+
+::: danger Two NULL traps this function has already hit
+**The join to `profiles` must be a LEFT join.** `buyer_profile_id` is `NULL` on guest orders, so an inner join silently drops them from the seller's list entirely — the seller would never see, let alone fulfil, an order they had been paid for.
+
+**`v_is_cash_pending` must be `coalesce(p_item_status = 'cash_pending', false)`.** With the default `p_item_status = NULL`, the bare comparison yields `NULL`, not `false`, and that `NULL` propagates through `not v_is_cash_pending` into the three-way `OR` in the `WHERE` clause — making the whole predicate `NULL` and returning **an empty order list for every seller**. This was a live bug: the unfiltered Studio order list returned nothing, and the function had no test coverage to catch it.
+:::
 
 ### Status filter
 
@@ -198,6 +245,12 @@ Passing an unrecognised string returns `INVALID_STATUS_FILTER`.
       "order_number": "SHOP-20240115-A3F2",
       "payment_method": "cod",
       "seller_net": 1638.00,
+      "is_gift": false,
+      "gift_recipient_name": null,
+      "gift_recipient_email": null,
+      "gift_message": null,
+      "gift_wrap_fee": 0,
+      "bundle_discount": 0,
       "buyer": {
         "username": "rafiq",
         "display_name": "Rafiq Ahmed",
@@ -237,6 +290,23 @@ public.update_order_tracking(
 ```
 
 Seller marks a physical item as `shipped`. Sets `status → 'shipped'`, `shipped_at = now()`, and stores the carrier + tracking info.
+
+::: danger Every buyer-facing `activities` insert must be NULL-guarded
+`activities.user_profile_id` is `NOT NULL`. `update_order_tracking`,
+`mark_order_item_delivered` and `cancel_cod_order_item` all insert
+`buyer_profile_id` there, so on a guest order each one raises a not-null violation
+— meaning **the seller cannot ship, deliver, or cancel a guest order at all**,
+which would break the entire COD guest flow.
+
+All three delegate to a shared internal helper, `notify_shop_order_item_status()`,
+which wraps the insert in `if p_buyer_profile_id is not null`. In the `else`
+branch, when the order carries a `guest_email`, it queues a direct-enqueue
+`public.email_notification_queue` row instead (`shop.order_shipped` /
+`shop.order_delivered` / `shop.order_cancelled`), mirroring the gift-email pattern
+in `handle_shop_payment_success`. A guest who gave no email has the
+[`get_guest_order`](#get_guest_order) tracking page as their only channel — which
+is why the confirmation page must show the order number and phone prominently.
+:::
 
 ### Allowed from statuses
 
