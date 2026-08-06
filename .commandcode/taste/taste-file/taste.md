@@ -1,0 +1,14 @@
+# Taste File
+- Prefers icons over emojis in UI and documentation; if icons are not feasible, emojis should be removed rather than kept as a fallback. Confidence: 0.9
+- Does not want the agent to launch a browser or run live tests; the agent should implement changes and leave testing to the developer. Confidence: 0.9
+- Unused assets (images, logos, files) should be removed from the repository rather than left as dead code. Confidence: 0.8
+- Visual branding (colors, theme) should be consistent across all surfaces — if the main app uses certain colors, docs and other subsystems should match. Confidence: 0.8
+- Prefers a witty, humorous tone in team/people sections of documentation. Confidence: 0.7
+- Prefers strict separation of concerns across projects — npm library packages should be lean and not carry documentation sites, frontend apps, or their build infrastructure. Confidence: 0.7
+- Prefers CI/CD workflows co-located with the project they serve (e.g., publish stays with the library, deploy goes with the docs/app). Confidence: 0.6
+- Prefers framework consistency within a project — avoids running multiple UI frameworks (React + Vue) side-by-side; will convert components to the dominant framework rather than adding a second one. Confidence: 0.8
+- Prefers a single, unified documentation platform (e.g., VitePress) as the source of truth — avoids separate landing pages or documentation apps alongside the main docs site. Confidence: 0.7
+- Prefers thorough investigation via exploration/subagents before committing to a large refactoring — wants risks and gotchas surfaced upfront rather than discovered mid-implementation. Confidence: 0.7
+- Prefers minimal READMEs and documentation files — only developer-focused install and get-started content; everything else (badges, philosophy, detailed guides, etc.) should be removed. Confidence: 0.9
+- Wants the project scanned and understood before writing or updating documentation — accuracy and context-awareness matter more than speed. Confidence: 0.7
+- AGENTS.md files should be minimal and contain only frequently-needed, reusable project context — stale references, one-off details, and non-existent commands should be pruned. Confidence: 0.8

@@ -1,19 +1,20 @@
 # AGENTS.md - Libraries
 
 ## Stack
-Bun, TypeScript, Ultracite (Biome-based) libraries project
+Bun, TypeScript, Ultracite (Biome-based), `@hobenakicoffee/libraries`
 
 ## Commands
 ```bash
-bun run build    # Build (tsc + vite)
-bun run test     # Run tests
-bun run format   # Fix with Ultracite
+bun run test        # Run tests (bun test)
+bun run typecheck   # tsc --noEmit
+bun run format      # ultracite fix
+bun run format:check # ultracite check
 ```
 
 ## Rules
-- `@/*` for imports (maps to `./src/*`)
-- No `any` - use `unknown` instead
-- Use `cn()` from `@/lib/utils`
-- Run `bun run format` before committing
+- `@/*` maps to `./src/*`
+- No `any` — use `unknown`
+- Run `bun run format` before committing (enforced by lefthook pre-commit)
 - Tests: `bun test`, `bun test <file>`, `bun test --grep "<pattern>"`
-- always write tests to verify
+- Always write tests to verify
+- Package exports: `.`, `./constants`, `./moderation`, `./types`, `./utils`, `./nuqs`, `./hooks`, `./scripts`

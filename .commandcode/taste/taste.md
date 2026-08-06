@@ -1,4 +1,2 @@
-# Taste (Continuously Learned by [CommandCode][cmd])
-
-[cmd]: https://commandcode.ai/
-
+# Taste File
+See [taste-file/taste.md](taste-file/taste.md)
