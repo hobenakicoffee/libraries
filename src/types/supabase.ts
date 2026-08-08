@@ -5653,12 +5653,12 @@ export type Database = {
         Args: { p_is_active: boolean; p_profile_id: string };
         Returns: Json;
       };
-      set_shop_product_sale: {
+      set_shop_products_sale: {
         Args: {
           p_clear?: boolean;
-          p_product_id: string;
+          p_discount_percent?: number;
+          p_product_ids: string[];
           p_sale_ends_at?: string;
-          p_sale_price?: number;
           p_sale_starts_at?: string;
         };
         Returns: Json;
