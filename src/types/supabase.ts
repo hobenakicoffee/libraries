@@ -5185,7 +5185,7 @@ export type Database = {
       get_shop_policies: { Args: { p_username: string }; Returns: Json };
       get_shop_products: {
         Args: {
-          p_category_id?: string;
+          p_category_slug?: string;
           p_cursor?: Json;
           p_limit?: number;
           p_sort?: string;
