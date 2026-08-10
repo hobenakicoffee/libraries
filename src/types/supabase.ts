@@ -3018,6 +3018,54 @@ export type Database = {
           },
         ];
       };
+      shop_drafts: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["shop_approval_status_enum"];
+          created_at: string;
+          draft_type: Database["public"]["Enums"]["shop_draft_type_enum"];
+          id: string;
+          payload: Json;
+          profile_id: string;
+          rejection_reason: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["shop_approval_status_enum"];
+          created_at?: string;
+          draft_type: Database["public"]["Enums"]["shop_draft_type_enum"];
+          id?: string;
+          payload?: Json;
+          profile_id: string;
+          rejection_reason?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          approval_status?: Database["public"]["Enums"]["shop_approval_status_enum"];
+          created_at?: string;
+          draft_type?: Database["public"]["Enums"]["shop_draft_type_enum"];
+          id?: string;
+          payload?: Json;
+          profile_id?: string;
+          rejection_reason?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_drafts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_drafts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       shop_order_items: {
         Row: {
           cancellation_reason: string | null;
@@ -3682,6 +3730,7 @@ export type Database = {
           created_at: string;
           deactivated_at: string | null;
           deactivation_reason: string | null;
+          featured_banners: Json;
           hero_headline: string | null;
           hero_subtitle: string | null;
           id: string;
@@ -3716,6 +3765,7 @@ export type Database = {
           created_at?: string;
           deactivated_at?: string | null;
           deactivation_reason?: string | null;
+          featured_banners?: Json;
           hero_headline?: string | null;
           hero_subtitle?: string | null;
           id?: string;
@@ -3750,6 +3800,7 @@ export type Database = {
           created_at?: string;
           deactivated_at?: string | null;
           deactivation_reason?: string | null;
+          featured_banners?: Json;
           hero_headline?: string | null;
           hero_subtitle?: string | null;
           id?: string;
@@ -4591,6 +4642,13 @@ export type Database = {
       };
       approve_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
       approve_shop_category: { Args: { p_category_id: string }; Returns: Json };
+      approve_shop_draft: {
+        Args: {
+          p_draft_type: Database["public"]["Enums"]["shop_draft_type_enum"];
+          p_profile_id: string;
+        };
+        Returns: Json;
+      };
       approve_shop_product: { Args: { p_product_id: string }; Returns: Json };
       authorize_manager: {
         Args: {
@@ -4641,6 +4699,10 @@ export type Database = {
           p_max_discount_amount: number;
         };
         Returns: number;
+      };
+      compute_shop_activation_checklist: {
+        Args: { p_profile_id: string };
+        Returns: Json;
       };
       confirm_cod_cash_received: {
         Args: { p_order_item_id: string };
@@ -5105,6 +5167,7 @@ export type Database = {
         Args: { p_cursor?: string; p_item_status?: string; p_limit?: number };
         Returns: Json;
       };
+      get_shop_activation_checklist: { Args: never; Returns: Json };
       get_shop_by_username: {
         Args: { p_featured_limit?: number; p_username: string };
         Returns: Json;
@@ -5554,6 +5617,14 @@ export type Database = {
         Args: { p_category_id: string; p_rejection_reason: string };
         Returns: Json;
       };
+      reject_shop_draft: {
+        Args: {
+          p_draft_type: Database["public"]["Enums"]["shop_draft_type_enum"];
+          p_profile_id: string;
+          p_rejection_reason: string;
+        };
+        Returns: Json;
+      };
       reject_shop_product: {
         Args: { p_product_id: string; p_rejection_reason: string };
         Returns: Json;
@@ -5806,6 +5877,10 @@ export type Database = {
           p_product_ids?: string[];
           p_starts_at?: string;
         };
+        Returns: Json;
+      };
+      upsert_shop_featured_banners: {
+        Args: { p_featured_banners: Json };
         Returns: Json;
       };
       upsert_shop_policy: {
@@ -6066,6 +6141,7 @@ export type Database = {
         | "rejected"
         | "duplicate";
       shop_approval_status_enum: "draft" | "pending" | "approved" | "rejected";
+      shop_draft_type_enum: "activation" | "featured_banners";
       shop_order_item_status_enum:
         | "pending"
         | "paid"
@@ -6389,6 +6465,7 @@ export const Constants = {
         "duplicate",
       ],
       shop_approval_status_enum: ["draft", "pending", "approved", "rejected"],
+      shop_draft_type_enum: ["activation", "featured_banners"],
       shop_order_item_status_enum: [
         "pending",
         "paid",
