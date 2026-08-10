@@ -5194,6 +5194,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      get_shop_review_status: { Args: never; Returns: Json };
       get_shop_stats: { Args: never; Returns: Json };
       get_shop_storefront: {
         Args: {
