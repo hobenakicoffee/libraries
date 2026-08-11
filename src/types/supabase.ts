@@ -2478,6 +2478,7 @@ export type Database = {
       profiles: {
         Row: {
           accepted_creator_agreement_at: string | null;
+          age: number | null;
           allow_gifting: boolean | null;
           allow_subscriptions: boolean | null;
           avatar_url: string | null;
@@ -2497,6 +2498,8 @@ export type Database = {
           full_name: string | null;
           has_first_service: boolean | null;
           has_wallet_balance: boolean | null;
+          how_did_you_find_us: string | null;
+          how_would_we_describe_you: string | null;
           id: string;
           is_founder_discount: boolean;
           is_kyc_verified: boolean;
@@ -2524,6 +2527,7 @@ export type Database = {
         };
         Insert: {
           accepted_creator_agreement_at?: string | null;
+          age?: number | null;
           allow_gifting?: boolean | null;
           allow_subscriptions?: boolean | null;
           avatar_url?: string | null;
@@ -2543,6 +2547,8 @@ export type Database = {
           full_name?: string | null;
           has_first_service?: boolean | null;
           has_wallet_balance?: boolean | null;
+          how_did_you_find_us?: string | null;
+          how_would_we_describe_you?: string | null;
           id: string;
           is_founder_discount?: boolean;
           is_kyc_verified?: boolean;
@@ -2570,6 +2576,7 @@ export type Database = {
         };
         Update: {
           accepted_creator_agreement_at?: string | null;
+          age?: number | null;
           allow_gifting?: boolean | null;
           allow_subscriptions?: boolean | null;
           avatar_url?: string | null;
@@ -2589,6 +2596,8 @@ export type Database = {
           full_name?: string | null;
           has_first_service?: boolean | null;
           has_wallet_balance?: boolean | null;
+          how_did_you_find_us?: string | null;
+          how_would_we_describe_you?: string | null;
           id?: string;
           is_founder_discount?: boolean;
           is_kyc_verified?: boolean;
