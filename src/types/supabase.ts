@@ -5203,7 +5203,30 @@ export type Database = {
         };
         Returns: Json;
       };
+      get_shop_review_stats: { Args: never; Returns: Json };
       get_shop_review_status: { Args: never; Returns: Json };
+      get_shop_reviews: {
+        Args: {
+          p_cursor_created_at?: string;
+          p_cursor_id?: string;
+          p_limit?: number;
+          p_tab?: string;
+        };
+        Returns: {
+          content: string;
+          created_at: string;
+          is_hidden: boolean;
+          is_verified_purchase: boolean;
+          product_cover_image_url: string;
+          product_id: string;
+          product_title: string;
+          rating: number;
+          review_id: string;
+          reviewer_avatar_url: string;
+          reviewer_username: string;
+          updated_at: string;
+        }[];
+      };
       get_shop_stats: { Args: never; Returns: Json };
       get_shop_storefront: {
         Args: {
