@@ -90,6 +90,47 @@ export type Database = {
           },
         ];
       };
+      bd_geo_locations: {
+        Row: {
+          display_name: string;
+          id: number;
+          is_support_dg_cod: boolean | null;
+          name: string;
+          name_local: string;
+          parent_id: number | null;
+          rcode: string;
+          scope: string;
+        };
+        Insert: {
+          display_name: string;
+          id?: never;
+          is_support_dg_cod?: boolean | null;
+          name: string;
+          name_local: string;
+          parent_id?: number | null;
+          rcode: string;
+          scope: string;
+        };
+        Update: {
+          display_name?: string;
+          id?: never;
+          is_support_dg_cod?: boolean | null;
+          name?: string;
+          name_local?: string;
+          parent_id?: number | null;
+          rcode?: string;
+          scope?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bd_geo_locations_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "bd_geo_locations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       coffee_gifts: {
         Row: {
           coffee_count: number;
@@ -4177,8 +4218,7 @@ export type Database = {
           city: string;
           created_at: string;
           district: string;
-          district_id: number | null;
-          division_id: number | null;
+          geo_location_id: number | null;
           id: string;
           is_default: boolean;
           label: string | null;
@@ -4186,7 +4226,6 @@ export type Database = {
           postal_code: string | null;
           profile_id: string;
           recipient_name: string;
-          upazilla_id: number | null;
           updated_at: string;
         };
         Insert: {
@@ -4195,8 +4234,7 @@ export type Database = {
           city: string;
           created_at?: string;
           district: string;
-          district_id?: number | null;
-          division_id?: number | null;
+          geo_location_id?: number | null;
           id?: string;
           is_default?: boolean;
           label?: string | null;
@@ -4204,7 +4242,6 @@ export type Database = {
           postal_code?: string | null;
           profile_id: string;
           recipient_name: string;
-          upazilla_id?: number | null;
           updated_at?: string;
         };
         Update: {
@@ -4213,8 +4250,7 @@ export type Database = {
           city?: string;
           created_at?: string;
           district?: string;
-          district_id?: number | null;
-          division_id?: number | null;
+          geo_location_id?: number | null;
           id?: string;
           is_default?: boolean;
           label?: string | null;
@@ -4222,22 +4258,14 @@ export type Database = {
           postal_code?: string | null;
           profile_id?: string;
           recipient_name?: string;
-          upazilla_id?: number | null;
           updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "user_addresses_district_id_fkey";
-            columns: ["district_id"];
+            foreignKeyName: "user_addresses_geo_location_id_fkey";
+            columns: ["geo_location_id"];
             isOneToOne: false;
-            referencedRelation: "districts";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "user_addresses_division_id_fkey";
-            columns: ["division_id"];
-            isOneToOne: false;
-            referencedRelation: "divisions";
+            referencedRelation: "bd_geo_locations";
             referencedColumns: ["id"];
           },
           {
@@ -4252,13 +4280,6 @@ export type Database = {
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "user_addresses_upazilla_id_fkey";
-            columns: ["upazilla_id"];
-            isOneToOne: false;
-            referencedRelation: "upazillas";
             referencedColumns: ["id"];
           },
         ];
@@ -4780,7 +4801,7 @@ export type Database = {
           p_address_id?: string;
           p_coupon_code?: string;
           p_district?: string;
-          p_district_id?: number;
+          p_geo_location_id?: number;
           p_is_gift?: boolean;
           p_items: Json;
           p_payment_method?: Database["public"]["Enums"]["shop_payment_method_enum"];
@@ -5357,21 +5378,19 @@ export type Database = {
         Returns: {
           address_line1: string;
           address_line2: string;
+          area_name: string;
           city: string;
           created_at: string;
           district: string;
-          district_id: number;
           district_name: string;
-          division_id: number;
           division_name: string;
+          geo_location_id: number;
           id: string;
           is_default: boolean;
           label: string;
           phone: string;
           postal_code: string;
           recipient_name: string;
-          upazilla_id: number;
-          upazilla_name: string;
         }[];
       };
       get_withdrawal_requests_page: {
@@ -5451,8 +5470,7 @@ export type Database = {
           p_city?: string;
           p_coupon_code?: string;
           p_district?: string;
-          p_district_id?: number;
-          p_division_id?: number;
+          p_geo_location_id?: number;
           p_gift_message?: string;
           p_gift_recipient_email?: string;
           p_gift_recipient_name?: string;
@@ -5465,7 +5483,6 @@ export type Database = {
           p_phone?: string;
           p_postal_code?: string;
           p_recipient_name?: string;
-          p_upazilla_id?: number;
         };
         Returns: Json;
       };
@@ -6016,14 +6033,12 @@ export type Database = {
           p_address_line2?: string;
           p_city?: string;
           p_district?: string;
-          p_district_id?: number;
-          p_division_id?: number;
+          p_geo_location_id?: number;
           p_is_default?: boolean;
           p_label?: string;
           p_phone?: string;
           p_postal_code?: string;
           p_recipient_name?: string;
-          p_upazilla_id?: number;
         };
         Returns: Json;
       };
