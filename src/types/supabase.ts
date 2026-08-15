@@ -3412,15 +3412,15 @@ export type Database = {
           category_id: string | null;
           cod_enabled: boolean;
           compare_at_price: number | null;
-          cover_image_url: string | null;
+          cover_media_url: string | null;
           created_at: string;
           description: string | null;
           download_expires_hours: number;
           id: string;
-          images: string[];
           is_featured: boolean;
           low_stock_threshold: number;
           max_downloads: number;
+          media: string[];
           option_definitions: Json;
           price: number;
           processing_max_days: number | null;
@@ -3438,6 +3438,7 @@ export type Database = {
           tags: string[];
           title: string;
           updated_at: string;
+          video_url: string | null;
           weight_grams: number | null;
         };
         Insert: {
@@ -3445,15 +3446,15 @@ export type Database = {
           category_id?: string | null;
           cod_enabled?: boolean;
           compare_at_price?: number | null;
-          cover_image_url?: string | null;
+          cover_media_url?: string | null;
           created_at?: string;
           description?: string | null;
           download_expires_hours?: number;
           id?: string;
-          images?: string[];
           is_featured?: boolean;
           low_stock_threshold?: number;
           max_downloads?: number;
+          media?: string[];
           option_definitions?: Json;
           price: number;
           processing_max_days?: number | null;
@@ -3471,6 +3472,7 @@ export type Database = {
           tags?: string[];
           title: string;
           updated_at?: string;
+          video_url?: string | null;
           weight_grams?: number | null;
         };
         Update: {
@@ -3478,15 +3480,15 @@ export type Database = {
           category_id?: string | null;
           cod_enabled?: boolean;
           compare_at_price?: number | null;
-          cover_image_url?: string | null;
+          cover_media_url?: string | null;
           created_at?: string;
           description?: string | null;
           download_expires_hours?: number;
           id?: string;
-          images?: string[];
           is_featured?: boolean;
           low_stock_threshold?: number;
           max_downloads?: number;
+          media?: string[];
           option_definitions?: Json;
           price?: number;
           processing_max_days?: number | null;
@@ -3504,6 +3506,7 @@ export type Database = {
           tags?: string[];
           title?: string;
           updated_at?: string;
+          video_url?: string | null;
           weight_grams?: number | null;
         };
         Relationships: [
@@ -3584,8 +3587,8 @@ export type Database = {
       shop_product_variants: {
         Row: {
           id: string;
-          image_url: string | null;
           is_active: boolean;
+          media_url: string | null;
           options: Json;
           price_adjustment: number;
           product_id: string;
@@ -3595,8 +3598,8 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          image_url?: string | null;
           is_active?: boolean;
+          media_url?: string | null;
           options: Json;
           price_adjustment?: number;
           product_id: string;
@@ -3606,8 +3609,8 @@ export type Database = {
         };
         Update: {
           id?: string;
-          image_url?: string | null;
           is_active?: boolean;
+          media_url?: string | null;
           options?: Json;
           price_adjustment?: number;
           product_id?: string;
@@ -3630,18 +3633,18 @@ export type Database = {
           category_id: string | null;
           cod_enabled: boolean;
           compare_at_price: number | null;
-          cover_image_url: string | null;
+          cover_media_url: string | null;
           created_at: string;
           description: string | null;
           download_expires_hours: number;
           favorite_count: number;
           id: string;
-          images: string[];
           is_active: boolean;
           is_deleted: boolean;
           is_featured: boolean;
           low_stock_threshold: number;
           max_downloads: number;
+          media: string[];
           option_definitions: Json;
           price: number;
           processing_max_days: number | null;
@@ -3665,24 +3668,25 @@ export type Database = {
           tags: string[];
           title: string;
           updated_at: string;
+          video_url: string | null;
           weight_grams: number | null;
         };
         Insert: {
           category_id?: string | null;
           cod_enabled?: boolean;
           compare_at_price?: number | null;
-          cover_image_url?: string | null;
+          cover_media_url?: string | null;
           created_at?: string;
           description?: string | null;
           download_expires_hours?: number;
           favorite_count?: number;
           id?: string;
-          images?: string[];
           is_active?: boolean;
           is_deleted?: boolean;
           is_featured?: boolean;
           low_stock_threshold?: number;
           max_downloads?: number;
+          media?: string[];
           option_definitions?: Json;
           price: number;
           processing_max_days?: number | null;
@@ -3706,24 +3710,25 @@ export type Database = {
           tags?: string[];
           title: string;
           updated_at?: string;
+          video_url?: string | null;
           weight_grams?: number | null;
         };
         Update: {
           category_id?: string | null;
           cod_enabled?: boolean;
           compare_at_price?: number | null;
-          cover_image_url?: string | null;
+          cover_media_url?: string | null;
           created_at?: string;
           description?: string | null;
           download_expires_hours?: number;
           favorite_count?: number;
           id?: string;
-          images?: string[];
           is_active?: boolean;
           is_deleted?: boolean;
           is_featured?: boolean;
           low_stock_threshold?: number;
           max_downloads?: number;
+          media?: string[];
           option_definitions?: Json;
           price?: number;
           processing_max_days?: number | null;
@@ -3747,6 +3752,7 @@ export type Database = {
           tags?: string[];
           title?: string;
           updated_at?: string;
+          video_url?: string | null;
           weight_grams?: number | null;
         };
         Relationships: [
@@ -4717,7 +4723,7 @@ export type Database = {
       cleanup_old_email_notification_queue: { Args: never; Returns: undefined };
       cleanup_orphaned_kyc_documents: { Args: never; Returns: undefined };
       cleanup_orphaned_post_images: { Args: never; Returns: undefined };
-      cleanup_orphaned_shop_images: { Args: never; Returns: undefined };
+      cleanup_orphaned_shop_media: { Args: never; Returns: undefined };
       cleanup_orphaned_shop_product_files: { Args: never; Returns: undefined };
       cleanup_reviewed_kyc_documents: { Args: never; Returns: undefined };
       close_account: { Args: never; Returns: Json };
@@ -5238,7 +5244,7 @@ export type Database = {
           created_at: string;
           is_hidden: boolean;
           is_verified_purchase: boolean;
-          product_cover_image_url: string;
+          product_cover_media_url: string;
           product_id: string;
           product_title: string;
           rating: number;
@@ -5946,13 +5952,13 @@ export type Database = {
           p_category_id?: string;
           p_cod_enabled?: boolean;
           p_compare_at_price?: number;
-          p_cover_image_url?: string;
+          p_cover_media_url?: string;
           p_description?: string;
           p_download_expires_hours?: number;
-          p_images?: string[];
           p_is_featured?: boolean;
           p_low_stock_threshold?: number;
           p_max_downloads?: number;
+          p_media?: string[];
           p_option_definitions?: Json;
           p_price?: number;
           p_processing_max_days?: number;
@@ -5968,16 +5974,17 @@ export type Database = {
           p_stock_count?: number;
           p_tags?: string[];
           p_title?: string;
+          p_video_url?: string;
           p_weight_grams?: number;
         };
         Returns: Json;
       };
       upsert_shop_product_variant: {
         Args: {
-          p_clear_image_url?: boolean;
+          p_clear_media_url?: boolean;
           p_clear_stock_count?: boolean;
-          p_image_url?: string;
           p_is_active?: boolean;
+          p_media_url?: string;
           p_options?: Json;
           p_price_adjustment?: number;
           p_product_id?: string;
