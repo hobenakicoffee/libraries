@@ -2696,6 +2696,7 @@ export type Database = {
           processed_by: string | null;
           reason: string;
           requested_by_profile_id: string;
+          shop_order_item_id: string | null;
           status: Database["public"]["Enums"]["refund_status_enum"];
           transaction_id: string;
           updated_at: string;
@@ -2714,6 +2715,7 @@ export type Database = {
           processed_by?: string | null;
           reason: string;
           requested_by_profile_id: string;
+          shop_order_item_id?: string | null;
           status?: Database["public"]["Enums"]["refund_status_enum"];
           transaction_id: string;
           updated_at?: string;
@@ -2732,6 +2734,7 @@ export type Database = {
           processed_by?: string | null;
           reason?: string;
           requested_by_profile_id?: string;
+          shop_order_item_id?: string | null;
           status?: Database["public"]["Enums"]["refund_status_enum"];
           transaction_id?: string;
           updated_at?: string;
@@ -2763,6 +2766,13 @@ export type Database = {
             columns: ["requested_by_profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "refunds_shop_order_item_id_fkey";
+            columns: ["shop_order_item_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_order_items";
             referencedColumns: ["id"];
           },
           {
@@ -3137,6 +3147,7 @@ export type Database = {
           status: Database["public"]["Enums"]["shop_order_item_status_enum"];
           tracking_number: string | null;
           tracking_url: string | null;
+          unit: string;
           unit_price: number;
           updated_at: string;
           variant_id: string | null;
@@ -3163,6 +3174,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["shop_order_item_status_enum"];
           tracking_number?: string | null;
           tracking_url?: string | null;
+          unit?: string;
           unit_price: number;
           updated_at?: string;
           variant_id?: string | null;
@@ -3189,6 +3201,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["shop_order_item_status_enum"];
           tracking_number?: string | null;
           tracking_url?: string | null;
+          unit?: string;
           unit_price?: number;
           updated_at?: string;
           variant_id?: string | null;
@@ -3408,6 +3421,7 @@ export type Database = {
       };
       shop_product_drafts: {
         Row: {
+          allow_backorder: boolean;
           approval_status: Database["public"]["Enums"]["shop_approval_status_enum"];
           category_id: string | null;
           cod_enabled: boolean;
@@ -3421,6 +3435,7 @@ export type Database = {
           low_stock_threshold: number;
           max_downloads: number;
           media: string[];
+          min_order_quantity: number;
           option_definitions: Json;
           price: number;
           processing_max_days: number | null;
@@ -3429,6 +3444,7 @@ export type Database = {
           profile_id: string;
           rejection_reason: string | null;
           requires_shipping: boolean;
+          return_window_days: number | null;
           shipping_fee_inside_dhaka: number;
           shipping_fee_outside_dhaka: number;
           sku: string | null;
@@ -3437,11 +3453,14 @@ export type Database = {
           stock_count: number | null;
           tags: string[];
           title: string;
+          unit: string;
           updated_at: string;
           video_url: string | null;
+          warranty_days: number | null;
           weight_grams: number | null;
         };
         Insert: {
+          allow_backorder?: boolean;
           approval_status?: Database["public"]["Enums"]["shop_approval_status_enum"];
           category_id?: string | null;
           cod_enabled?: boolean;
@@ -3455,6 +3474,7 @@ export type Database = {
           low_stock_threshold?: number;
           max_downloads?: number;
           media?: string[];
+          min_order_quantity?: number;
           option_definitions?: Json;
           price: number;
           processing_max_days?: number | null;
@@ -3463,6 +3483,7 @@ export type Database = {
           profile_id: string;
           rejection_reason?: string | null;
           requires_shipping?: boolean;
+          return_window_days?: number | null;
           shipping_fee_inside_dhaka?: number;
           shipping_fee_outside_dhaka?: number;
           sku?: string | null;
@@ -3471,11 +3492,14 @@ export type Database = {
           stock_count?: number | null;
           tags?: string[];
           title: string;
+          unit?: string;
           updated_at?: string;
           video_url?: string | null;
+          warranty_days?: number | null;
           weight_grams?: number | null;
         };
         Update: {
+          allow_backorder?: boolean;
           approval_status?: Database["public"]["Enums"]["shop_approval_status_enum"];
           category_id?: string | null;
           cod_enabled?: boolean;
@@ -3489,6 +3513,7 @@ export type Database = {
           low_stock_threshold?: number;
           max_downloads?: number;
           media?: string[];
+          min_order_quantity?: number;
           option_definitions?: Json;
           price?: number;
           processing_max_days?: number | null;
@@ -3497,6 +3522,7 @@ export type Database = {
           profile_id?: string;
           rejection_reason?: string | null;
           requires_shipping?: boolean;
+          return_window_days?: number | null;
           shipping_fee_inside_dhaka?: number;
           shipping_fee_outside_dhaka?: number;
           sku?: string | null;
@@ -3505,8 +3531,10 @@ export type Database = {
           stock_count?: number | null;
           tags?: string[];
           title?: string;
+          unit?: string;
           updated_at?: string;
           video_url?: string | null;
+          warranty_days?: number | null;
           weight_grams?: number | null;
         };
         Relationships: [
@@ -3630,6 +3658,7 @@ export type Database = {
       };
       shop_products: {
         Row: {
+          allow_backorder: boolean;
           category_id: string | null;
           cod_enabled: boolean;
           compare_at_price: number | null;
@@ -3645,6 +3674,7 @@ export type Database = {
           low_stock_threshold: number;
           max_downloads: number;
           media: string[];
+          min_order_quantity: number;
           option_definitions: Json;
           price: number;
           processing_max_days: number | null;
@@ -3654,6 +3684,7 @@ export type Database = {
           rating_avg: number | null;
           rating_count: number;
           requires_shipping: boolean;
+          return_window_days: number | null;
           sale_ends_at: string | null;
           sale_price: number | null;
           sale_starts_at: string | null;
@@ -3667,11 +3698,14 @@ export type Database = {
           stock_count: number | null;
           tags: string[];
           title: string;
+          unit: string;
           updated_at: string;
           video_url: string | null;
+          warranty_days: number | null;
           weight_grams: number | null;
         };
         Insert: {
+          allow_backorder?: boolean;
           category_id?: string | null;
           cod_enabled?: boolean;
           compare_at_price?: number | null;
@@ -3687,6 +3721,7 @@ export type Database = {
           low_stock_threshold?: number;
           max_downloads?: number;
           media?: string[];
+          min_order_quantity?: number;
           option_definitions?: Json;
           price: number;
           processing_max_days?: number | null;
@@ -3696,6 +3731,7 @@ export type Database = {
           rating_avg?: number | null;
           rating_count?: number;
           requires_shipping?: boolean;
+          return_window_days?: number | null;
           sale_ends_at?: string | null;
           sale_price?: number | null;
           sale_starts_at?: string | null;
@@ -3709,11 +3745,14 @@ export type Database = {
           stock_count?: number | null;
           tags?: string[];
           title: string;
+          unit?: string;
           updated_at?: string;
           video_url?: string | null;
+          warranty_days?: number | null;
           weight_grams?: number | null;
         };
         Update: {
+          allow_backorder?: boolean;
           category_id?: string | null;
           cod_enabled?: boolean;
           compare_at_price?: number | null;
@@ -3729,6 +3768,7 @@ export type Database = {
           low_stock_threshold?: number;
           max_downloads?: number;
           media?: string[];
+          min_order_quantity?: number;
           option_definitions?: Json;
           price?: number;
           processing_max_days?: number | null;
@@ -3738,6 +3778,7 @@ export type Database = {
           rating_avg?: number | null;
           rating_count?: number;
           requires_shipping?: boolean;
+          return_window_days?: number | null;
           sale_ends_at?: string | null;
           sale_price?: number | null;
           sale_starts_at?: string | null;
@@ -3751,8 +3792,10 @@ export type Database = {
           stock_count?: number | null;
           tags?: string[];
           title?: string;
+          unit?: string;
           updated_at?: string;
           video_url?: string | null;
+          warranty_days?: number | null;
           weight_grams?: number | null;
         };
         Relationships: [
@@ -5697,6 +5740,10 @@ export type Database = {
         Args: { p_amount?: number; p_reason: string; p_transaction_id: string };
         Returns: Json;
       };
+      request_shop_order_refund: {
+        Args: { p_amount?: number; p_order_item_id: string; p_reason: string };
+        Returns: Json;
+      };
       request_withdrawal: {
         Args: { p_amount: number; p_payout_method_id: string };
         Returns: string;
@@ -5949,6 +5996,7 @@ export type Database = {
       };
       upsert_shop_product: {
         Args: {
+          p_allow_backorder?: boolean;
           p_category_id?: string;
           p_cod_enabled?: boolean;
           p_compare_at_price?: number;
@@ -5959,6 +6007,7 @@ export type Database = {
           p_low_stock_threshold?: number;
           p_max_downloads?: number;
           p_media?: string[];
+          p_min_order_quantity?: number;
           p_option_definitions?: Json;
           p_price?: number;
           p_processing_max_days?: number;
@@ -5966,6 +6015,7 @@ export type Database = {
           p_product_id?: string;
           p_product_type?: Database["public"]["Enums"]["shop_product_type_enum"];
           p_requires_shipping?: boolean;
+          p_return_window_days?: number;
           p_shipping_fee_inside_dhaka?: number;
           p_shipping_fee_outside_dhaka?: number;
           p_sku?: string;
@@ -5974,7 +6024,9 @@ export type Database = {
           p_stock_count?: number;
           p_tags?: string[];
           p_title?: string;
+          p_unit?: string;
           p_video_url?: string;
+          p_warranty_days?: number;
           p_weight_grams?: number;
         };
         Returns: Json;
