@@ -5974,6 +5974,7 @@ export type Database = {
       };
       upsert_shop_product_variant: {
         Args: {
+          p_clear_stock_count?: boolean;
           p_image_url?: string;
           p_is_active?: boolean;
           p_options?: Json;
