@@ -5164,7 +5164,11 @@ export type Database = {
         }[];
       };
       get_product_by_slug: {
-        Args: { p_product_slug: string; p_username: string };
+        Args: {
+          p_product_slug: string;
+          p_username: string;
+          p_viewer_id?: string;
+        };
         Returns: Json;
       };
       get_product_reviews: {
