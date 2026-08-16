@@ -5252,12 +5252,29 @@ export type Database = {
       };
       get_shop_activation_checklist: { Args: never; Returns: Json };
       get_shop_by_username: {
-        Args: { p_featured_limit?: number; p_username: string };
+        Args: {
+          p_allow_inactive_shop?: boolean;
+          p_featured_limit?: number;
+          p_username: string;
+          p_viewer_id?: string;
+        };
         Returns: Json;
       };
-      get_shop_categories: { Args: { p_username: string }; Returns: Json };
+      get_shop_categories: {
+        Args: {
+          p_allow_inactive_shop?: boolean;
+          p_username: string;
+          p_viewer_id?: string;
+        };
+        Returns: Json;
+      };
       get_shop_flash_sale: {
-        Args: { p_limit?: number; p_username: string };
+        Args: {
+          p_allow_inactive_shop?: boolean;
+          p_limit?: number;
+          p_username: string;
+          p_viewer_id?: string;
+        };
         Returns: Json;
       };
       get_shop_order_for_payment: {
@@ -5268,6 +5285,7 @@ export type Database = {
       get_shop_policies: { Args: { p_username: string }; Returns: Json };
       get_shop_products: {
         Args: {
+          p_allow_inactive_shop?: boolean;
           p_category_slug?: string;
           p_cursor?: Json;
           p_limit?: number;
@@ -5304,6 +5322,7 @@ export type Database = {
       get_shop_stats: { Args: never; Returns: Json };
       get_shop_storefront: {
         Args: {
+          p_allow_inactive_shop?: boolean;
           p_featured_limit?: number;
           p_flash_limit?: number;
           p_include_policies?: boolean;
