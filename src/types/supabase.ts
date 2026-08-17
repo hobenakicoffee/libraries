@@ -3568,6 +3568,60 @@ export type Database = {
           },
         ];
       };
+      shop_product_file_drafts: {
+        Row: {
+          created_at: string;
+          file_name: string;
+          file_size_bytes: number | null;
+          id: number;
+          mime_type: string | null;
+          product_draft_id: string;
+          sort_order: number;
+          source_file_id: string | null;
+          storage_path: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          file_name: string;
+          file_size_bytes?: number | null;
+          id?: never;
+          mime_type?: string | null;
+          product_draft_id: string;
+          sort_order?: number;
+          source_file_id?: string | null;
+          storage_path?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          file_name?: string;
+          file_size_bytes?: number | null;
+          id?: never;
+          mime_type?: string | null;
+          product_draft_id?: string;
+          sort_order?: number;
+          source_file_id?: string | null;
+          storage_path?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_product_file_drafts_product_draft_id_fkey";
+            columns: ["product_draft_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_product_drafts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_product_file_drafts_source_file_id_fkey";
+            columns: ["source_file_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_product_files";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       shop_product_files: {
         Row: {
           created_at: string;
@@ -3608,6 +3662,63 @@ export type Database = {
             columns: ["product_id"];
             isOneToOne: false;
             referencedRelation: "shop_products";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      shop_product_variant_drafts: {
+        Row: {
+          created_at: string;
+          id: number;
+          media_url: string | null;
+          options: Json;
+          price_adjustment: number;
+          product_draft_id: string;
+          sku: string | null;
+          sort_order: number;
+          source_variant_id: string | null;
+          stock_count: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: never;
+          media_url?: string | null;
+          options: Json;
+          price_adjustment?: number;
+          product_draft_id: string;
+          sku?: string | null;
+          sort_order?: number;
+          source_variant_id?: string | null;
+          stock_count?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          media_url?: string | null;
+          options?: Json;
+          price_adjustment?: number;
+          product_draft_id?: string;
+          sku?: string | null;
+          sort_order?: number;
+          source_variant_id?: string | null;
+          stock_count?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shop_product_variant_drafts_product_draft_id_fkey";
+            columns: ["product_draft_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_product_drafts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "shop_product_variant_drafts_source_variant_id_fkey";
+            columns: ["source_variant_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_product_variants";
             referencedColumns: ["id"];
           },
         ];
@@ -4669,6 +4780,17 @@ export type Database = {
         };
         Returns: Json;
       };
+      add_shop_product_file_draft: {
+        Args: {
+          p_file_name: string;
+          p_file_size_bytes?: number;
+          p_mime_type?: string;
+          p_product_id: string;
+          p_sort_order?: number;
+          p_storage_path: string;
+        };
+        Returns: Json;
+      };
       admin_approve_kyc: {
         Args: {
           p_admin_notes?: string;
@@ -4770,6 +4892,22 @@ export type Database = {
       cleanup_orphaned_shop_product_files: { Args: never; Returns: undefined };
       cleanup_reviewed_kyc_documents: { Args: never; Returns: undefined };
       close_account: { Args: never; Returns: Json };
+      collect_orphaned_kyc_documents: {
+        Args: { p_limit?: number };
+        Returns: Json;
+      };
+      collect_orphaned_post_images: {
+        Args: { p_limit?: number };
+        Returns: Json;
+      };
+      collect_orphaned_shop_storage: {
+        Args: { p_bucket: string; p_limit?: number };
+        Returns: Json;
+      };
+      collect_reviewed_kyc_documents: {
+        Args: { p_limit?: number };
+        Returns: Json;
+      };
       compute_coupon_discount: {
         Args: {
           p_base_amount: number;
@@ -4832,11 +4970,23 @@ export type Database = {
       };
       delete_shop_product: { Args: { p_product_id: string }; Returns: Json };
       delete_shop_product_file: { Args: { p_file_id: string }; Returns: Json };
+      delete_shop_product_file_draft: {
+        Args: { p_draft_file_id: number };
+        Returns: Json;
+      };
       delete_shop_product_variant: {
         Args: { p_variant_id: string };
         Returns: Json;
       };
+      delete_shop_product_variant_draft: {
+        Args: { p_draft_variant_id: number };
+        Returns: Json;
+      };
       delete_user_address: { Args: { p_address_id: string }; Returns: Json };
+      discard_shop_product_draft: {
+        Args: { p_product_id: string };
+        Returns: Json;
+      };
       dismiss_activity: { Args: { p_activity_id: string }; Returns: undefined };
       dismiss_all_activities: { Args: never; Returns: undefined };
       dispatch_pending_email_notifications: { Args: never; Returns: undefined };
@@ -4844,7 +4994,12 @@ export type Database = {
         Args: never;
         Returns: undefined;
       };
+      dispatch_storage_cleanup: { Args: { p_job: string }; Returns: undefined };
       drop_old_partitions: { Args: never; Returns: undefined };
+      ensure_shop_product_draft: {
+        Args: { p_product_id: string };
+        Returns: Json;
+      };
       estimate_shop_checkout: {
         Args: {
           p_address_id?: string;
@@ -4858,6 +5013,10 @@ export type Database = {
         Returns: Json;
       };
       expire_stale_payment_sessions: { Args: never; Returns: number };
+      finalize_reviewed_kyc_documents: {
+        Args: { p_items: Json };
+        Returns: number;
+      };
       flag_transaction_disputed: {
         Args: { p_is_disputed?: boolean; p_transaction_id: string };
         Returns: Json;
@@ -5283,6 +5442,7 @@ export type Database = {
       };
       get_shop_overview: { Args: never; Returns: Json };
       get_shop_policies: { Args: { p_username: string }; Returns: Json };
+      get_shop_product_draft: { Args: { p_product_id: string }; Returns: Json };
       get_shop_products: {
         Args: {
           p_allow_inactive_shop?: boolean;
@@ -5900,6 +6060,10 @@ export type Database = {
         Args: { p_viewer_id: string };
         Returns: string;
       };
+      shop_validate_variant_options: {
+        Args: { p_option_definitions: Json; p_options: Json };
+        Returns: string;
+      };
       submit_shop_product_for_review: {
         Args: { p_product_id: string };
         Returns: Json;
@@ -5932,6 +6096,7 @@ export type Database = {
       };
       unfollow_user: { Args: { target_user_id: string }; Returns: undefined };
       unpublish_newsletter_post: { Args: { p_post_id: string }; Returns: Json };
+      unpublish_shop_product: { Args: { p_product_id: string }; Returns: Json };
       update_creator_report_status: {
         Args: {
           p_manager_role?: Database["public"]["Enums"]["manager_role"];
@@ -5963,6 +6128,18 @@ export type Database = {
           p_order_item_id: string;
           p_tracking_number: string;
           p_tracking_url?: string;
+        };
+        Returns: Json;
+      };
+      update_shop_product_file_draft: {
+        Args: {
+          p_clear_file_size?: boolean;
+          p_clear_mime_type?: boolean;
+          p_draft_file_id: number;
+          p_file_name?: string;
+          p_file_size_bytes?: number;
+          p_mime_type?: string;
+          p_sort_order?: number;
         };
         Returns: Json;
       };
@@ -6021,6 +6198,18 @@ export type Database = {
         Args: {
           p_allow_backorder?: boolean;
           p_category_id?: string;
+          p_clear_category_id?: boolean;
+          p_clear_compare_at_price?: boolean;
+          p_clear_cover_media_url?: boolean;
+          p_clear_description?: boolean;
+          p_clear_processing_max_days?: boolean;
+          p_clear_processing_min_days?: boolean;
+          p_clear_return_window_days?: boolean;
+          p_clear_sku?: boolean;
+          p_clear_stock_count?: boolean;
+          p_clear_video_url?: boolean;
+          p_clear_warranty_days?: boolean;
+          p_clear_weight_grams?: boolean;
           p_cod_enabled?: boolean;
           p_compare_at_price?: number;
           p_cover_media_url?: string;
@@ -6067,6 +6256,22 @@ export type Database = {
           p_sort_order?: number;
           p_stock_count?: number;
           p_variant_id?: string;
+        };
+        Returns: Json;
+      };
+      upsert_shop_product_variant_draft: {
+        Args: {
+          p_clear_media_url?: boolean;
+          p_clear_sku?: boolean;
+          p_clear_stock_count?: boolean;
+          p_draft_variant_id?: number;
+          p_media_url?: string;
+          p_options?: Json;
+          p_price_adjustment?: number;
+          p_product_id?: string;
+          p_sku?: string;
+          p_sort_order?: number;
+          p_stock_count?: number;
         };
         Returns: Json;
       };
