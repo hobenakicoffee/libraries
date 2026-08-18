@@ -9,6 +9,8 @@ export type TransactionMetadata = {
 };
 
 export type ActivityType =
+  | "shop_draft_approved"
+  | "shop_draft_rejected"
   | "category_approved"
   | "category_rejected"
   | "product_approved"
@@ -69,6 +71,9 @@ export type ActivityMetadata = {
   gift_message?: string;
   product_id?: string;
   product_title?: string;
+  draft_type?: "activation" | "featured_banners";
+  shop_id?: string;
+  shop_name?: string;
   submission_id?: string;
   report_id?: string;
   old_status?: string;
