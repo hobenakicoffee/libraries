@@ -6132,6 +6132,10 @@ export type Database = {
         Args: { p_html_body: string; p_key: string; p_subject: string };
         Returns: Json;
       };
+      update_order_seller_notes: {
+        Args: { p_notes: string; p_order_id: string };
+        Returns: Json;
+      };
       update_order_tracking: {
         Args: {
           p_carrier?: string;
