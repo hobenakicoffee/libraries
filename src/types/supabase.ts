@@ -3234,6 +3234,7 @@ export type Database = {
       };
       shop_orders: {
         Row: {
+          billing_address: Json | null;
           bundle_discount: number;
           buyer_notes: string | null;
           buyer_profile_id: string | null;
@@ -3266,6 +3267,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          billing_address?: Json | null;
           bundle_discount?: number;
           buyer_notes?: string | null;
           buyer_profile_id?: string | null;
@@ -3298,6 +3300,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          billing_address?: Json | null;
           bundle_discount?: number;
           buyer_notes?: string | null;
           buyer_profile_id?: string | null;
@@ -5698,6 +5701,13 @@ export type Database = {
           p_address_id?: string;
           p_address_line1?: string;
           p_address_line2?: string;
+          p_billing_address_line1?: string;
+          p_billing_address_line2?: string;
+          p_billing_city?: string;
+          p_billing_district?: string;
+          p_billing_phone?: string;
+          p_billing_postal_code?: string;
+          p_billing_recipient_name?: string;
           p_buyer_notes?: string;
           p_city?: string;
           p_coupon_code?: string;
