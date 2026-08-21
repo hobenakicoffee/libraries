@@ -5344,6 +5344,19 @@ export type Database = {
           status: Database["public"]["Enums"]["membership_status_enum"];
         }[];
       };
+      get_my_review_counts: { Args: never; Returns: Json };
+      get_my_reviewable_products: {
+        Args: { p_cursor?: string; p_limit?: number };
+        Returns: Json;
+      };
+      get_my_reviews: {
+        Args: { p_cursor?: string; p_limit?: number };
+        Returns: Json;
+      };
+      get_my_shop_favorites: {
+        Args: { p_cursor?: string; p_limit?: number };
+        Returns: Json;
+      };
       get_newsletter_stats: {
         Args: { p_from?: string; p_profile_id: string; p_to?: string };
         Returns: {
