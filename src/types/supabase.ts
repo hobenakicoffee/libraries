@@ -2784,6 +2784,94 @@ export type Database = {
           },
         ];
       };
+      return_requests: {
+        Row: {
+          buyer_profile_id: string;
+          created_at: string;
+          id: string;
+          quantity: number;
+          reason: string;
+          refund_id: string | null;
+          responded_at: string | null;
+          seller_note: string | null;
+          seller_profile_id: string;
+          shop_order_item_id: string;
+          status: Database["public"]["Enums"]["return_request_status_enum"];
+          updated_at: string;
+        };
+        Insert: {
+          buyer_profile_id: string;
+          created_at?: string;
+          id?: string;
+          quantity: number;
+          reason: string;
+          refund_id?: string | null;
+          responded_at?: string | null;
+          seller_note?: string | null;
+          seller_profile_id: string;
+          shop_order_item_id: string;
+          status?: Database["public"]["Enums"]["return_request_status_enum"];
+          updated_at?: string;
+        };
+        Update: {
+          buyer_profile_id?: string;
+          created_at?: string;
+          id?: string;
+          quantity?: number;
+          reason?: string;
+          refund_id?: string | null;
+          responded_at?: string | null;
+          seller_note?: string | null;
+          seller_profile_id?: string;
+          shop_order_item_id?: string;
+          status?: Database["public"]["Enums"]["return_request_status_enum"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "return_requests_buyer_profile_id_fkey";
+            columns: ["buyer_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "return_requests_buyer_profile_id_fkey";
+            columns: ["buyer_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "return_requests_refund_id_fkey";
+            columns: ["refund_id"];
+            isOneToOne: false;
+            referencedRelation: "refunds";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "return_requests_seller_profile_id_fkey";
+            columns: ["seller_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "return_requests_seller_profile_id_fkey";
+            columns: ["seller_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "return_requests_shop_order_item_id_fkey";
+            columns: ["shop_order_item_id"];
+            isOneToOne: false;
+            referencedRelation: "shop_order_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       reviews: {
         Row: {
           content: string | null;
@@ -4869,6 +4957,10 @@ export type Database = {
         Args: { p_service_type: string };
         Returns: Json;
       };
+      cancel_return_request: {
+        Args: { p_return_request_id: string };
+        Returns: Json;
+      };
       check_and_emit_milestone: {
         Args: {
           p_creator_profile_id: string;
@@ -5033,6 +5125,11 @@ export type Database = {
         }[];
       };
       get_buyer_orders: {
+        Args: { p_cursor?: string; p_limit?: number };
+        Returns: Json;
+      };
+      get_buyer_purchase_counts: { Args: never; Returns: Json };
+      get_buyer_returns: {
         Args: { p_cursor?: string; p_limit?: number };
         Returns: Json;
       };
@@ -5410,6 +5507,10 @@ export type Database = {
       };
       get_seller_orders: {
         Args: { p_cursor?: string; p_item_status?: string; p_limit?: number };
+        Returns: Json;
+      };
+      get_seller_return_requests: {
+        Args: { p_cursor?: string; p_limit?: number; p_status?: string };
         Returns: Json;
       };
       get_shop_activation_checklist: { Args: never; Returns: Json };
@@ -5930,7 +6031,20 @@ export type Database = {
         Returns: Json;
       };
       request_refund: {
-        Args: { p_amount?: number; p_reason: string; p_transaction_id: string };
+        Args: {
+          p_amount?: number;
+          p_reason: string;
+          p_shop_order_item_id?: string;
+          p_transaction_id: string;
+        };
+        Returns: Json;
+      };
+      request_return: {
+        Args: {
+          p_order_item_id: string;
+          p_quantity?: number;
+          p_reason: string;
+        };
         Returns: Json;
       };
       request_shop_order_refund: {
@@ -5956,6 +6070,14 @@ export type Database = {
       resolve_activity_notification_key: {
         Args: { p_metadata: Json; p_role: string; p_service_type: string };
         Returns: string;
+      };
+      respond_to_return_request: {
+        Args: {
+          p_decision: string;
+          p_return_request_id: string;
+          p_seller_note?: string;
+        };
+        Returns: Json;
       };
       retry_withdrawal: {
         Args: {
@@ -6483,6 +6605,11 @@ export type Database = {
         | "intellectual_property"
         | "incomplete_or_unfulfilled_orders"
         | "other";
+      return_request_status_enum:
+        | "requested"
+        | "approved"
+        | "rejected"
+        | "completed";
       service_request_status:
         | "pending"
         | "reviewing"
@@ -6501,7 +6628,9 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
-        | "refunded";
+        | "refunded"
+        | "return_requested"
+        | "returned";
       shop_payment_method_enum: "online" | "cod";
       shop_policy_type_enum:
         | "return_refund"
@@ -6806,6 +6935,12 @@ export const Constants = {
         "incomplete_or_unfulfilled_orders",
         "other",
       ],
+      return_request_status_enum: [
+        "requested",
+        "approved",
+        "rejected",
+        "completed",
+      ],
       service_request_status: [
         "pending",
         "reviewing",
@@ -6826,6 +6961,8 @@ export const Constants = {
         "delivered",
         "cancelled",
         "refunded",
+        "return_requested",
+        "returned",
       ],
       shop_payment_method_enum: ["online", "cod"],
       shop_policy_type_enum: [
