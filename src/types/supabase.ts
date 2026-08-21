@@ -3219,6 +3219,7 @@ export type Database = {
           cancellation_reason: string | null;
           carrier: string | null;
           cod_settled_at: string | null;
+          cod_transaction_reference_id: string | null;
           created_at: string;
           delivered_at: string | null;
           id: string;
@@ -3230,6 +3231,7 @@ export type Database = {
           product_title: string;
           product_type: Database["public"]["Enums"]["shop_product_type_enum"];
           quantity: number;
+          returned_quantity: number;
           shipped_at: string | null;
           shipping_cost: number;
           status: Database["public"]["Enums"]["shop_order_item_status_enum"];
@@ -3246,6 +3248,7 @@ export type Database = {
           cancellation_reason?: string | null;
           carrier?: string | null;
           cod_settled_at?: string | null;
+          cod_transaction_reference_id?: string | null;
           created_at?: string;
           delivered_at?: string | null;
           id?: string;
@@ -3257,6 +3260,7 @@ export type Database = {
           product_title: string;
           product_type: Database["public"]["Enums"]["shop_product_type_enum"];
           quantity?: number;
+          returned_quantity?: number;
           shipped_at?: string | null;
           shipping_cost?: number;
           status?: Database["public"]["Enums"]["shop_order_item_status_enum"];
@@ -3273,6 +3277,7 @@ export type Database = {
           cancellation_reason?: string | null;
           carrier?: string | null;
           cod_settled_at?: string | null;
+          cod_transaction_reference_id?: string | null;
           created_at?: string;
           delivered_at?: string | null;
           id?: string;
@@ -3284,6 +3289,7 @@ export type Database = {
           product_title?: string;
           product_type?: Database["public"]["Enums"]["shop_product_type_enum"];
           quantity?: number;
+          returned_quantity?: number;
           shipped_at?: string | null;
           shipping_cost?: number;
           status?: Database["public"]["Enums"]["shop_order_item_status_enum"];
@@ -3297,6 +3303,13 @@ export type Database = {
           variant_options?: Json | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "shop_order_items_cod_transaction_reference_id_fkey";
+            columns: ["cod_transaction_reference_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["reference_id"];
+          },
           {
             foreignKeyName: "shop_order_items_order_id_fkey";
             columns: ["order_id"];
@@ -6069,6 +6082,14 @@ export type Database = {
       };
       resolve_activity_notification_key: {
         Args: { p_metadata: Json; p_role: string; p_service_type: string };
+        Returns: string;
+      };
+      resolve_shop_refund_transaction: {
+        Args: {
+          p_cod_transaction_reference_id: string;
+          p_payment_method: Database["public"]["Enums"]["shop_payment_method_enum"];
+          p_transaction_reference_id: string;
+        };
         Returns: string;
       };
       respond_to_return_request: {
