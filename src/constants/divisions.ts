@@ -1,4 +1,4 @@
-import type { Tables } from "../types";
+import type { Tables } from "../types/supabase";
 
 export const divisions: Tables<"divisions">[] = [
   {

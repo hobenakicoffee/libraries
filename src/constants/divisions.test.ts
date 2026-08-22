@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { Tables } from "../types";
+import type { Tables } from "../types/supabase";
 import { divisions } from "./divisions";
 
 describe("divisions", () => {
