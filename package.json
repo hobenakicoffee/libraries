@@ -14,6 +14,7 @@
     "./lib/utils": "./src/lib/utils.ts",
     "./moderation": "./src/moderation/index.ts",
     "./types": "./src/types/index.ts",
+    "./types/supabase": "./src/types/supabase.ts",
     "./utils": "./src/utils/index.ts",
     "./nuqs": "./src/nuqs/index.ts",
     "./scripts": "./src/scripts/index.ts",

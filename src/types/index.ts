@@ -102,5 +102,3 @@ export type SupportersMetadata = {
   follower_username?: string;
   action?: "follow" | "unfollow";
 };
-
-export * from "./supabase";
