@@ -25,7 +25,8 @@ import type { Database, Tables } from "@hobenakicoffee/libraries/types";
 | `@hobenakicoffee/libraries` | Constants re-export |
 | `@hobenakicoffee/libraries/constants` | Constants |
 | `@hobenakicoffee/libraries/utils` | Utility functions |
-| `@hobenakicoffee/libraries/types` | TypeScript types (Supabase + custom) |
+| `@hobenakicoffee/libraries/types` | TypeScript types (Supabase + custom, with RPC result overrides) |
+| `@hobenakicoffee/libraries/types/supabase` | Raw generated Supabase types (no RPC result overrides) — internal use |
 | `@hobenakicoffee/libraries/moderation` | Profanity detection |
 | `@hobenakicoffee/libraries/nuqs` | URL state parsers |
 | `@hobenakicoffee/libraries/hooks` | React hooks |

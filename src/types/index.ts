@@ -1,4 +1,12 @@
 import type { ServiceType } from "../constants";
+import type { CheckoutOverrides } from "./rpc/checkout";
+import type { OrdersOverrides } from "./rpc/orders";
+import type { PlatformOverrides } from "./rpc/platform";
+import type { ServiceOverrides } from "./rpc/service";
+import type { ShopProductsOverrides } from "./rpc/shop-products";
+import type { ShopSettingsOverrides } from "./rpc/shop-settings";
+import type { StorefrontOverrides } from "./rpc/storefront";
+import type { Database as GeneratedDatabase } from "./supabase";
 
 export type TransactionMetadata = {
   supporter_name?: string;
@@ -102,3 +110,46 @@ export type SupportersMetadata = {
   follower_username?: string;
   action?: "follow" | "unfollow";
 };
+
+export type RpcOverrides = ShopProductsOverrides &
+  ShopSettingsOverrides &
+  StorefrontOverrides &
+  CheckoutOverrides &
+  OrdersOverrides &
+  PlatformOverrides &
+  ServiceOverrides;
+
+type GeneratedFunctions = GeneratedDatabase["public"]["Functions"];
+
+type OverriddenFunctions = {
+  [K in keyof GeneratedFunctions]: K extends keyof RpcOverrides
+    ? Omit<GeneratedFunctions[K], "Args" | "Returns"> & {
+        Args: GeneratedFunctions[K]["Args"];
+        Returns: RpcOverrides[K];
+      }
+    : GeneratedFunctions[K];
+};
+
+// Compile-time guard: fails if any override key no longer matches a generated RPC.
+type OrphanedRpcOverrides = Exclude<
+  keyof RpcOverrides,
+  keyof GeneratedFunctions
+>;
+const _assertNoOrphanedRpcOverrides: [OrphanedRpcOverrides] extends [never]
+  ? true
+  : never = true;
+
+export type Database = Omit<GeneratedDatabase, "public"> & {
+  public: Omit<GeneratedDatabase["public"], "Functions"> & {
+    Functions: OverriddenFunctions;
+  };
+};
+
+export * from "./rpc/checkout";
+export * from "./rpc/orders";
+export * from "./rpc/platform";
+export * from "./rpc/primitives";
+export * from "./rpc/service";
+export * from "./rpc/shop-products";
+export * from "./rpc/shop-settings";
+export * from "./rpc/storefront";
