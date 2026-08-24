@@ -1,6 +1,7 @@
 import type { ServiceType } from "../constants";
 import type { CheckoutOverrides } from "./rpc/checkout";
 import type { OrdersOverrides } from "./rpc/orders";
+import type { PaginationOverrides } from "./rpc/pagination";
 import type { PlatformOverrides } from "./rpc/platform";
 import type { ServiceOverrides } from "./rpc/service";
 import type { ShopProductsOverrides } from "./rpc/shop-products";
@@ -116,6 +117,7 @@ export type RpcOverrides = ShopProductsOverrides &
   StorefrontOverrides &
   CheckoutOverrides &
   OrdersOverrides &
+  PaginationOverrides &
   PlatformOverrides &
   ServiceOverrides;
 
@@ -148,6 +150,7 @@ export type Database = Omit<GeneratedDatabase, "public"> & {
 
 export * from "./rpc/checkout";
 export * from "./rpc/orders";
+export * from "./rpc/pagination";
 export * from "./rpc/platform";
 export * from "./rpc/primitives";
 export * from "./rpc/service";

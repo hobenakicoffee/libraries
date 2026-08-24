@@ -5425,28 +5425,7 @@ export type Database = {
           p_status: Database["public"]["Enums"]["post_status_enum"];
           p_to?: string;
         };
-        Returns: {
-          click_count: number;
-          cover_image_url: string;
-          created_at: string;
-          draft_count: number;
-          excerpt: string;
-          id: string;
-          is_members_only: boolean;
-          is_pay_per_post: boolean;
-          like_count: number;
-          price: number;
-          published_at: string;
-          purchase_count: number;
-          reject_reason: string;
-          revenue_total: number;
-          slug: string;
-          subtitle: string;
-          tags: string[];
-          title: string;
-          updated_at: string;
-          view_count: number;
-        }[];
+        Returns: Json;
       };
       get_product_by_slug: {
         Args: {
@@ -5458,16 +5437,7 @@ export type Database = {
       };
       get_product_reviews: {
         Args: { p_cursor?: string; p_entity_id: string; p_limit?: number };
-        Returns: {
-          content: string;
-          created_at: string;
-          is_verified_purchase: boolean;
-          rating: number;
-          review_id: string;
-          reviewer_avatar_url: string;
-          reviewer_username: string;
-          updated_at: string;
-        }[];
+        Returns: Json;
       };
       get_reader_feed: {
         Args: {
@@ -5478,29 +5448,7 @@ export type Database = {
           p_search?: string;
           p_to?: string;
         };
-        Returns: {
-          access_badge: string;
-          author_avatar_url: string;
-          author_display_name: string;
-          author_username: string;
-          cover_image_url: string;
-          excerpt: string;
-          has_access: boolean;
-          is_liked: boolean;
-          is_members_only: boolean;
-          is_pay_per_post: boolean;
-          like_count: number;
-          post_id: string;
-          price: number;
-          profile_id: string;
-          published_at: string;
-          reading_time_minutes: number;
-          slug: string;
-          subtitle: string;
-          tags: string[];
-          title: string;
-          view_count: number;
-        }[];
+        Returns: Json;
       };
       get_recommended_creators: {
         Args: { p_limit?: number };
@@ -5594,20 +5542,7 @@ export type Database = {
           p_limit?: number;
           p_tab?: string;
         };
-        Returns: {
-          content: string;
-          created_at: string;
-          is_hidden: boolean;
-          is_verified_purchase: boolean;
-          product_cover_media_url: string;
-          product_id: string;
-          product_title: string;
-          rating: number;
-          review_id: string;
-          reviewer_avatar_url: string;
-          reviewer_username: string;
-          updated_at: string;
-        }[];
+        Returns: Json;
       };
       get_shop_stats: { Args: never; Returns: Json };
       get_shop_storefront: {
@@ -5719,21 +5654,7 @@ export type Database = {
           p_service_types?: string[];
           p_statuses?: string[];
         };
-        Returns: {
-          created_at: string;
-          direction: Database["public"]["Enums"]["transaction_direction_enum"];
-          id: string;
-          invoice_number: number;
-          metadata: Json;
-          net_amount: number;
-          platform_fee: number;
-          provider: Database["public"]["Enums"]["provider_enum"];
-          provider_transaction_id: string;
-          reference_type: Database["public"]["Enums"]["reference_type_enum"];
-          service_type: string;
-          status: Database["public"]["Enums"]["payment_status_enum"];
-          supporter_id: string;
-        }[];
+        Returns: Json;
       };
       get_user_addresses: {
         Args: never;
@@ -5757,21 +5678,7 @@ export type Database = {
       };
       get_withdrawal_requests_page: {
         Args: { p_cursor_requested_at?: string; p_limit?: number };
-        Returns: {
-          amount: number;
-          completed_at: string;
-          failure_reason: string;
-          fee: number;
-          id: string;
-          net_amount: number;
-          payout_method_id: string;
-          payout_snapshot: Json;
-          processed_at: string;
-          profile_id: string;
-          requested_at: string;
-          status: Database["public"]["Enums"]["withdrawal_status"];
-          wallet_id: string;
-        }[];
+        Returns: Json;
       };
       gift_newsletter_post: {
         Args: {

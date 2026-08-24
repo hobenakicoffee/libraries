@@ -3,6 +3,7 @@
   "version": "11.1.1",
   "license": "MIT",
   "type": "module",
+  "packageManager": "bun@1.2.15",
   "types": "src/index.ts",
   "repository": {
     "type": "git",
@@ -36,7 +37,8 @@
     "format:check": "ultracite check",
     "format:doctor": "ultracite doctor",
     "clean": "rm -rf dist",
-    "prepublishOnly": "bun run test",
+    "check:publish": "bun run test && bun run typecheck && bun run format:check && bun run check:env",
+    "prepublishOnly": "bun run check:publish",
     "check": "ultracite check",
     "fix": "ultracite fix",
     "check:env": "bun run src/scripts/check-env-encryption.ts",
