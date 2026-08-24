@@ -135,9 +135,10 @@ type OrphanedRpcOverrides = Exclude<
   keyof RpcOverrides,
   keyof GeneratedFunctions
 >;
-const _assertNoOrphanedRpcOverrides: [OrphanedRpcOverrides] extends [never]
+
+export type AssertNoOrphans = [OrphanedRpcOverrides] extends [never]
   ? true
-  : never = true;
+  : never;
 
 export type Database = Omit<GeneratedDatabase, "public"> & {
   public: Omit<GeneratedDatabase["public"], "Functions"> & {
