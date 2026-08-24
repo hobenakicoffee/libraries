@@ -1,4 +1,4 @@
-import type { Enums, Json } from "../supabase";
+import type { Enums, Json } from "../../supabase";
 import type { ShopActiveEligibility, ShopProductPricing } from "./primitives";
 
 type PolicyType = Enums<"shop_policy_type_enum">;

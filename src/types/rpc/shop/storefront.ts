@@ -1,4 +1,4 @@
-import type { Enums, Json } from "../supabase";
+import type { Enums, Json } from "../../supabase";
 import type { ShopProductPricing } from "./primitives";
 
 type ProductType = Enums<"shop_product_type_enum">;

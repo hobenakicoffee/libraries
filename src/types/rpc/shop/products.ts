@@ -1,4 +1,4 @@
-import type { Enums, Json } from "../supabase";
+import type { Enums, Json } from "../../supabase";
 
 type ApprovalStatus = Enums<"shop_approval_status_enum">;
 type ProductType = Enums<"shop_product_type_enum">;

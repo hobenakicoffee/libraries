@@ -1,4 +1,4 @@
-import type { Enums, Json } from "../supabase";
+import type { Enums, Json } from "../../supabase";
 import type { CouponValidateResult, ShopActiveEligibility } from "./primitives";
 
 export type CheckoutDownloadToken = {

@@ -1,4 +1,4 @@
-import type { Enums } from "../supabase";
+import type { Enums } from "../../supabase";
 
 export type ShopProductPricing = {
   is_on_sale: boolean;

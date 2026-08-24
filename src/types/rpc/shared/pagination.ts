@@ -1,4 +1,4 @@
-import type { Enums, Json } from "../supabase";
+import type { Enums, Json } from "../../supabase";
 
 export type PaginationPayload<T> = { items: T[]; has_more: boolean };
 

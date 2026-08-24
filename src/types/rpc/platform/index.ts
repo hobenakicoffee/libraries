@@ -1,4 +1,4 @@
-import type { Enums, Json } from "../supabase";
+import type { Enums, Json } from "../../supabase";
 
 export type RefundStatus = Enums<"refund_status_enum">;
 export type RefundGatewayStatus = Enums<"refund_gateway_status_enum">;
