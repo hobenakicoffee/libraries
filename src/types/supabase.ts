@@ -1694,6 +1694,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      messages_2026_10: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
       messages_default: {
         Row: {
           content: string;
@@ -6157,7 +6181,7 @@ export type Database = {
         Args: { p_feed_item_id: number };
         Returns: Json;
       };
-      toggle_follow: { Args: { target_user_id: string }; Returns: boolean };
+      toggle_follow: { Args: { target_user_id: string }; Returns: Json };
       toggle_newsletter_post_like: {
         Args: { p_post_id: string };
         Returns: Json;
