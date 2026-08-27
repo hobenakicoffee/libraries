@@ -257,30 +257,80 @@ export type Database = {
       };
       conversations: {
         Row: {
+          context_image_url: string | null;
+          context_label: string | null;
           created_at: string;
           id: string;
+          initiator_profile_id: string | null;
           last_message_at: string | null;
           last_message_preview: string | null;
           name: string | null;
+          owner_profile_id: string | null;
+          service_type: string | null;
+          target_id: string | null;
+          target_type: string | null;
           type: string;
         };
         Insert: {
+          context_image_url?: string | null;
+          context_label?: string | null;
           created_at?: string;
           id?: string;
+          initiator_profile_id?: string | null;
           last_message_at?: string | null;
           last_message_preview?: string | null;
           name?: string | null;
+          owner_profile_id?: string | null;
+          service_type?: string | null;
+          target_id?: string | null;
+          target_type?: string | null;
           type?: string;
         };
         Update: {
+          context_image_url?: string | null;
+          context_label?: string | null;
           created_at?: string;
           id?: string;
+          initiator_profile_id?: string | null;
           last_message_at?: string | null;
           last_message_preview?: string | null;
           name?: string | null;
+          owner_profile_id?: string | null;
+          service_type?: string | null;
+          target_id?: string | null;
+          target_type?: string | null;
           type?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "conversations_initiator_profile_id_fkey";
+            columns: ["initiator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversations_initiator_profile_id_fkey";
+            columns: ["initiator_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversations_owner_profile_id_fkey";
+            columns: ["owner_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversations_owner_profile_id_fkey";
+            columns: ["owner_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       coupon_redemptions: {
         Row: {
@@ -1645,6 +1695,30 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      messages_2026_07: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          sender_id?: string;
+        };
+        Relationships: [];
       };
       messages_2026_08: {
         Row: {
@@ -5127,7 +5201,9 @@ export type Database = {
         Returns: undefined;
       };
       dispatch_storage_cleanup: { Args: { p_job: string }; Returns: undefined };
+      drain_default_partition: { Args: never; Returns: number };
       drop_old_partitions: { Args: never; Returns: undefined };
+      ensure_month_partition: { Args: { p_month: string }; Returns: undefined };
       ensure_shop_product_draft: {
         Args: { p_product_id: string };
         Returns: Json;
@@ -5172,13 +5248,27 @@ export type Database = {
       };
       get_company_identity: { Args: never; Returns: Json };
       get_conversations: {
-        Args: { p_limit?: number; p_offset?: number };
+        Args: {
+          p_limit?: number;
+          p_offset?: number;
+          p_service_type?: string;
+          p_target_id?: string;
+          p_target_type?: string;
+        };
         Returns: {
+          context_image_url: string;
+          context_label: string;
           id: string;
+          initiator_profile_id: string;
+          is_owner: boolean;
           last_message_at: string;
           last_message_preview: string;
           name: string;
+          owner_profile_id: string;
           participants: Json;
+          service_type: string;
+          target_id: string;
+          target_type: string;
           type: string;
           unread_count: number;
         }[];
@@ -5397,9 +5487,24 @@ export type Database = {
         Args: { p_user_id: string };
         Returns: Json;
       };
+      get_or_create_context_conversation: {
+        Args: {
+          p_context_image_url?: string;
+          p_context_label?: string;
+          p_owner_id: string;
+          p_service_type: string;
+          p_target_id: string;
+          p_target_type: string;
+        };
+        Returns: string;
+      };
       get_or_create_direct_conversation: {
         Args: { p_recipient_id: string };
         Returns: string;
+      };
+      get_or_create_product_conversation: {
+        Args: { p_product_id: string };
+        Returns: Json;
       };
       get_order_by_number: { Args: { p_order_number: string }; Returns: Json };
       get_own_role: {
