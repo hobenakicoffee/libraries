@@ -216,18 +216,21 @@ export type Database = {
         Row: {
           conversation_id: string;
           joined_at: string;
+          last_auto_reply_message_id: number | null;
           last_read_at: string | null;
           profile_id: string;
         };
         Insert: {
           conversation_id: string;
           joined_at?: string;
+          last_auto_reply_message_id?: number | null;
           last_read_at?: string | null;
           profile_id: string;
         };
         Update: {
           conversation_id?: string;
           joined_at?: string;
+          last_auto_reply_message_id?: number | null;
           last_read_at?: string | null;
           profile_id?: string;
         };
@@ -1650,12 +1653,97 @@ export type Database = {
           },
         ];
       };
+      message_auto_reply_hours: {
+        Row: {
+          day_of_week: number;
+          end_time: string;
+          id: number;
+          profile_id: string;
+          start_time: string;
+        };
+        Insert: {
+          day_of_week: number;
+          end_time: string;
+          id?: never;
+          profile_id: string;
+          start_time: string;
+        };
+        Update: {
+          day_of_week?: number;
+          end_time?: string;
+          id?: never;
+          profile_id?: string;
+          start_time?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "message_auto_reply_hours_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "message_auto_reply_hours_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      message_auto_reply_settings: {
+        Row: {
+          enabled: boolean;
+          manual_away: boolean;
+          manual_away_until: string | null;
+          profile_id: string;
+          reply_message: string;
+          timezone: string;
+          updated_at: string;
+        };
+        Insert: {
+          enabled?: boolean;
+          manual_away?: boolean;
+          manual_away_until?: string | null;
+          profile_id: string;
+          reply_message?: string;
+          timezone?: string;
+          updated_at?: string;
+        };
+        Update: {
+          enabled?: boolean;
+          manual_away?: boolean;
+          manual_away_until?: string | null;
+          profile_id?: string;
+          reply_message?: string;
+          timezone?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "message_auto_reply_settings_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "message_auto_reply_settings_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       messages: {
         Row: {
           content: string;
           conversation_id: string;
           created_at: string;
           id: number;
+          is_auto_reply: boolean;
           sender_id: string;
         };
         Insert: {
@@ -1663,6 +1751,7 @@ export type Database = {
           conversation_id: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id: string;
         };
         Update: {
@@ -1670,6 +1759,7 @@ export type Database = {
           conversation_id?: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id?: string;
         };
         Relationships: [
@@ -1702,6 +1792,7 @@ export type Database = {
           conversation_id: string;
           created_at: string;
           id: number;
+          is_auto_reply: boolean;
           sender_id: string;
         };
         Insert: {
@@ -1709,6 +1800,7 @@ export type Database = {
           conversation_id: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id: string;
         };
         Update: {
@@ -1716,6 +1808,7 @@ export type Database = {
           conversation_id?: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id?: string;
         };
         Relationships: [];
@@ -1726,6 +1819,7 @@ export type Database = {
           conversation_id: string;
           created_at: string;
           id: number;
+          is_auto_reply: boolean;
           sender_id: string;
         };
         Insert: {
@@ -1733,6 +1827,7 @@ export type Database = {
           conversation_id: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id: string;
         };
         Update: {
@@ -1740,6 +1835,7 @@ export type Database = {
           conversation_id?: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id?: string;
         };
         Relationships: [];
@@ -1750,6 +1846,7 @@ export type Database = {
           conversation_id: string;
           created_at: string;
           id: number;
+          is_auto_reply: boolean;
           sender_id: string;
         };
         Insert: {
@@ -1757,6 +1854,7 @@ export type Database = {
           conversation_id: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id: string;
         };
         Update: {
@@ -1764,6 +1862,7 @@ export type Database = {
           conversation_id?: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id?: string;
         };
         Relationships: [];
@@ -1774,6 +1873,7 @@ export type Database = {
           conversation_id: string;
           created_at: string;
           id: number;
+          is_auto_reply: boolean;
           sender_id: string;
         };
         Insert: {
@@ -1781,6 +1881,7 @@ export type Database = {
           conversation_id: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id: string;
         };
         Update: {
@@ -1788,6 +1889,7 @@ export type Database = {
           conversation_id?: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id?: string;
         };
         Relationships: [];
@@ -1798,6 +1900,7 @@ export type Database = {
           conversation_id: string;
           created_at: string;
           id: number;
+          is_auto_reply: boolean;
           sender_id: string;
         };
         Insert: {
@@ -1805,6 +1908,7 @@ export type Database = {
           conversation_id: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id: string;
         };
         Update: {
@@ -1812,6 +1916,7 @@ export type Database = {
           conversation_id?: string;
           created_at?: string;
           id?: number;
+          is_auto_reply?: boolean;
           sender_id?: string;
         };
         Relationships: [];
@@ -5237,6 +5342,7 @@ export type Database = {
           active_supporters_change: number;
         }[];
       };
+      get_auto_reply_settings: { Args: never; Returns: Json };
       get_buyer_orders: {
         Args: { p_cursor?: string; p_limit?: number };
         Returns: Json;
@@ -5426,15 +5532,17 @@ export type Database = {
       };
       get_messages: {
         Args: {
+          p_before_created_at?: string;
+          p_before_id?: number;
           p_conversation_id: string;
           p_limit?: number;
-          p_offset?: number;
         };
         Returns: {
           content: string;
           conversation_id: string;
           created_at: string;
           id: number;
+          is_auto_reply: boolean;
           is_mine: boolean;
           sender_avatar_url: string;
           sender_display_name: string;
@@ -5907,6 +6015,7 @@ export type Database = {
       is_following: { Args: { target_user_id: string }; Returns: boolean };
       is_impersonated: { Args: never; Returns: boolean };
       is_manager: { Args: { user_email: string }; Returns: boolean };
+      is_profile_away: { Args: { p_profile_id: string }; Returns: boolean };
       link_supporter_conversation: {
         Args: { p_conversation_id: string; p_supporter_id: string };
         Returns: undefined;
@@ -6200,6 +6309,7 @@ export type Database = {
           sender_id: string;
         }[];
       };
+      set_auto_reply_hours: { Args: { p_hours: Json }; Returns: undefined };
       set_notification_preference: {
         Args: {
           p_enabled: boolean;
@@ -6348,6 +6458,16 @@ export type Database = {
           p_sort_order?: number;
         };
         Returns: Json;
+      };
+      upsert_auto_reply_settings: {
+        Args: {
+          p_enabled: boolean;
+          p_manual_away?: boolean;
+          p_manual_away_until?: string;
+          p_reply_message: string;
+          p_timezone?: string;
+        };
+        Returns: undefined;
       };
       upsert_review: {
         Args: {
