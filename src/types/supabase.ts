@@ -5599,6 +5599,7 @@ export type Database = {
         Args: {
           p_context_image_url?: string;
           p_context_label?: string;
+          p_initiator_id?: string;
           p_owner_id: string;
           p_service_type: string;
           p_target_id: string;
@@ -5609,6 +5610,10 @@ export type Database = {
       get_or_create_direct_conversation: {
         Args: { p_recipient_id: string };
         Returns: string;
+      };
+      get_or_create_order_conversation: {
+        Args: { p_order_id: string };
+        Returns: Json;
       };
       get_or_create_product_conversation: {
         Args: { p_product_id: string };

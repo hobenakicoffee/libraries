@@ -406,6 +406,23 @@ export type RespondToReturnRequestResult =
   | { success: false; error: "NO_PAYMENT_TRANSACTION" }
   | { success: false; error: RefundRequestFailure };
 
+/**
+ * Opened from either side of an order — the buyer and the seller converge on the
+ * same thread. `GUEST_ORDER` covers guest checkout, which has no profile to
+ * thread with; `NOT_FOUND` covers both a missing order and one the caller is
+ * neither party to.
+ */
+export type GetOrCreateOrderConversationResult =
+  | { success: true; conversation_id: string }
+  | {
+      success: false;
+      error:
+        | "UNAUTHENTICATED"
+        | "NOT_FOUND"
+        | "GUEST_ORDER"
+        | "CANNOT_CHAT_WITH_SELF";
+    };
+
 export type GetBuyerPurchaseCountsResult =
   | {
       success: true;
@@ -434,4 +451,5 @@ export type OrdersOverrides = {
   get_seller_return_requests: GetSellerReturnRequestsResult;
   respond_to_return_request: RespondToReturnRequestResult;
   get_buyer_purchase_counts: GetBuyerPurchaseCountsResult;
+  get_or_create_order_conversation: GetOrCreateOrderConversationResult;
 };
