@@ -96,6 +96,8 @@ export type GetGuestOrderResult =
 
 export type OrderCardItem = {
   id: string;
+  product_id: string;
+  product_slug: string;
   product_title: string;
   product_type: Enums<"shop_product_type_enum">;
   variant_label: string | null;
