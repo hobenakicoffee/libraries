@@ -1,6 +1,7 @@
 import type { NewsletterOverrides } from "./rpc/newsletter";
 import type { PaymentsOverrides } from "./rpc/payments";
 import type { PlatformOverrides } from "./rpc/platform";
+import type { MessagingOverrides } from "./rpc/platform/messaging";
 import type { PlatformServiceOverrides } from "./rpc/platform/service";
 import type { PaginationOverrides } from "./rpc/shared/pagination";
 import type { CheckoutOverrides } from "./rpc/shop/checkout";
@@ -18,6 +19,7 @@ export type RpcOverrides = ShopProductsOverrides &
   PaginationOverrides &
   PlatformOverrides &
   PlatformServiceOverrides &
+  MessagingOverrides &
   NewsletterOverrides &
   PaymentsOverrides;
 
@@ -52,6 +54,7 @@ export * from "./contracts/activity";
 export * from "./rpc/newsletter";
 export * from "./rpc/payments";
 export * from "./rpc/platform";
+export * from "./rpc/platform/messaging";
 export * from "./rpc/platform/service";
 export * from "./rpc/shared/pagination";
 export * from "./rpc/shop/checkout";
