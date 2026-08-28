@@ -26,7 +26,18 @@ export type ActivityType =
   | "post_status_updated"
   | "order_item_shipped"
   | "order_item_delivered"
-  | "order_item_cancelled";
+  | "order_item_cancelled"
+  | "shop_cod_payment_settled"
+  | "shop_order_placed"
+  | "refund_requested"
+  | "refund_approved"
+  | "refund_rejected"
+  | "withdrawal_requested"
+  | "withdrawal_approved"
+  | "withdrawal_processing"
+  | "withdrawal_paid"
+  | "withdrawal_rejected"
+  | "withdrawal_failed";
 
 export type ActivityMetadata = {
   type?: string;
@@ -87,6 +98,9 @@ export type ActivityMetadata = {
   tracking_url?: string;
   cancellation_reason?: string;
   action?: "follow" | "unfollow";
+  refund_id?: string;
+  transaction_id?: string;
+  withdrawal_id?: string;
 };
 
 export type SupportersMetadata = {
