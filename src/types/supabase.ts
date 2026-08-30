@@ -4363,6 +4363,90 @@ export type Database = {
           },
         ];
       };
+      storage_object_index: {
+        Row: {
+          bucket: string;
+          confirmed_at: string | null;
+          created_at: string;
+          id: number;
+          mime_type: string | null;
+          object_key: string;
+          profile_id: string;
+          public_url: string;
+          size_bytes: number | null;
+          status: string;
+        };
+        Insert: {
+          bucket: string;
+          confirmed_at?: string | null;
+          created_at?: string;
+          id?: never;
+          mime_type?: string | null;
+          object_key: string;
+          profile_id: string;
+          public_url: string;
+          size_bytes?: number | null;
+          status?: string;
+        };
+        Update: {
+          bucket?: string;
+          confirmed_at?: string | null;
+          created_at?: string;
+          id?: never;
+          mime_type?: string | null;
+          object_key?: string;
+          profile_id?: string;
+          public_url?: string;
+          size_bytes?: number | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "storage_object_index_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "storage_object_index_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      storage_url_rewrite_backup: {
+        Row: {
+          column_name: string;
+          id: number;
+          old_value: string;
+          pk_column: string | null;
+          pk_value: string | null;
+          rewritten_at: string;
+          table_name: string;
+        };
+        Insert: {
+          column_name: string;
+          id?: never;
+          old_value: string;
+          pk_column?: string | null;
+          pk_value?: string | null;
+          rewritten_at?: string;
+          table_name: string;
+        };
+        Update: {
+          column_name?: string;
+          id?: never;
+          old_value?: string;
+          pk_column?: string | null;
+          pk_value?: string | null;
+          rewritten_at?: string;
+          table_name?: string;
+        };
+        Relationships: [];
+      };
       supporters: {
         Row: {
           conversation_id: string | null;
@@ -5219,6 +5303,10 @@ export type Database = {
         Args: { p_limit?: number };
         Returns: Json;
       };
+      collect_stale_pending_storage_objects: {
+        Args: { p_limit?: number };
+        Returns: Json;
+      };
       compute_coupon_discount: {
         Args: {
           p_base_amount: number;
@@ -5234,6 +5322,10 @@ export type Database = {
       };
       confirm_cod_cash_received: {
         Args: { p_order_item_id: string };
+        Returns: Json;
+      };
+      confirm_storage_object: {
+        Args: { p_bucket: string; p_object_key: string; p_size_bytes: number };
         Returns: Json;
       };
       create_manager: {
@@ -5306,6 +5398,7 @@ export type Database = {
         Returns: undefined;
       };
       dispatch_storage_cleanup: { Args: { p_job: string }; Returns: undefined };
+      dispatch_storage_reconciliation: { Args: never; Returns: undefined };
       drain_default_partition: { Args: never; Returns: number };
       drop_old_partitions: { Args: never; Returns: undefined };
       ensure_month_partition: { Args: { p_month: string }; Returns: undefined };
@@ -5335,6 +5428,10 @@ export type Database = {
         Returns: Json;
       };
       follow_user: { Args: { target_user_id: string }; Returns: undefined };
+      forget_storage_objects: {
+        Args: { p_bucket: string; p_object_keys: string[] };
+        Returns: number;
+      };
       get_active_supporters_stats: {
         Args: { p_from?: string; p_to?: string };
         Returns: {
@@ -6178,6 +6275,16 @@ export type Database = {
       };
       record_shop_view: { Args: { p_username: string }; Returns: undefined };
       redeem_shop_download_token: { Args: { p_token: string }; Returns: Json };
+      register_pending_storage_object: {
+        Args: {
+          p_bucket: string;
+          p_mime_type?: string;
+          p_object_key: string;
+          p_profile_id: string;
+          p_public_url: string;
+        };
+        Returns: number;
+      };
       reject_newsletter_post: {
         Args: { p_post_id: string; p_rejection_reason: string };
         Returns: Json;
@@ -6273,6 +6380,11 @@ export type Database = {
       };
       revoke_my_session: { Args: { p_session_id: string }; Returns: undefined };
       revoke_other_sessions: { Args: never; Returns: number };
+      rewrite_all_storage_urls: { Args: { p_base: string }; Returns: Json };
+      rewrite_storage_url: {
+        Args: { p_base: string; p_text: string };
+        Returns: string;
+      };
       search_feed: {
         Args: { p_cursor_id?: number; p_limit?: number; p_query: string };
         Returns: {
@@ -6304,6 +6416,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      seed_storage_object_index: { Args: { p_base: string }; Returns: Json };
       send_message: {
         Args: { p_content: string; p_conversation_id: string };
         Returns: {
@@ -6381,6 +6494,7 @@ export type Database = {
         Args: { p_option_definitions: Json; p_options: Json };
         Returns: string;
       };
+      strip_url_query: { Args: { p_url: string }; Returns: string };
       submit_shop_product_for_review: {
         Args: { p_product_id: string };
         Returns: Json;
@@ -6674,6 +6788,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      verify_storage_cutover: { Args: { p_base: string }; Returns: Json };
     };
     Enums: {
       access_grant_type_enum: "purchase" | "gift";
