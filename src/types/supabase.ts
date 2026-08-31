@@ -4375,6 +4375,7 @@ export type Database = {
           public_url: string;
           size_bytes: number | null;
           status: string;
+          upload_id: string | null;
         };
         Insert: {
           bucket: string;
@@ -4387,6 +4388,7 @@ export type Database = {
           public_url: string;
           size_bytes?: number | null;
           status?: string;
+          upload_id?: string | null;
         };
         Update: {
           bucket?: string;
@@ -4399,6 +4401,7 @@ export type Database = {
           public_url?: string;
           size_bytes?: number | null;
           status?: string;
+          upload_id?: string | null;
         };
         Relationships: [
           {
@@ -5281,6 +5284,8 @@ export type Database = {
         Returns: Json;
       };
       cleanup_old_email_notification_queue: { Args: never; Returns: undefined };
+      cleanup_orphaned_avatars: { Args: never; Returns: undefined };
+      cleanup_orphaned_banners: { Args: never; Returns: undefined };
       cleanup_orphaned_kyc_documents: { Args: never; Returns: undefined };
       cleanup_orphaned_post_images: { Args: never; Returns: undefined };
       cleanup_orphaned_shop_media: { Args: never; Returns: undefined };
@@ -5293,6 +5298,10 @@ export type Database = {
       };
       collect_orphaned_post_images: {
         Args: { p_limit?: number };
+        Returns: Json;
+      };
+      collect_orphaned_profile_media: {
+        Args: { p_bucket: string; p_limit?: number };
         Returns: Json;
       };
       collect_orphaned_shop_storage: {
@@ -6282,6 +6291,7 @@ export type Database = {
           p_object_key: string;
           p_profile_id: string;
           p_public_url: string;
+          p_upload_id?: string;
         };
         Returns: number;
       };
