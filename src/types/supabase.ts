@@ -4420,36 +4420,6 @@ export type Database = {
           },
         ];
       };
-      storage_url_rewrite_backup: {
-        Row: {
-          column_name: string;
-          id: number;
-          old_value: string;
-          pk_column: string | null;
-          pk_value: string | null;
-          rewritten_at: string;
-          table_name: string;
-        };
-        Insert: {
-          column_name: string;
-          id?: never;
-          old_value: string;
-          pk_column?: string | null;
-          pk_value?: string | null;
-          rewritten_at?: string;
-          table_name: string;
-        };
-        Update: {
-          column_name?: string;
-          id?: never;
-          old_value?: string;
-          pk_column?: string | null;
-          pk_value?: string | null;
-          rewritten_at?: string;
-          table_name?: string;
-        };
-        Relationships: [];
-      };
       supporters: {
         Row: {
           conversation_id: string | null;
@@ -6390,11 +6360,6 @@ export type Database = {
       };
       revoke_my_session: { Args: { p_session_id: string }; Returns: undefined };
       revoke_other_sessions: { Args: never; Returns: number };
-      rewrite_all_storage_urls: { Args: { p_base: string }; Returns: Json };
-      rewrite_storage_url: {
-        Args: { p_base: string; p_text: string };
-        Returns: string;
-      };
       search_feed: {
         Args: { p_cursor_id?: number; p_limit?: number; p_query: string };
         Returns: {
@@ -6426,7 +6391,6 @@ export type Database = {
         };
         Returns: Json;
       };
-      seed_storage_object_index: { Args: { p_base: string }; Returns: Json };
       send_message: {
         Args: { p_content: string; p_conversation_id: string };
         Returns: {
@@ -6798,7 +6762,6 @@ export type Database = {
         };
         Returns: Json;
       };
-      verify_storage_cutover: { Args: { p_base: string }; Returns: Json };
     };
     Enums: {
       access_grant_type_enum: "purchase" | "gift";
