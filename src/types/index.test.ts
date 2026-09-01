@@ -34,7 +34,9 @@ test("public types retain domain RPC overrides", () => {
       ? "purchase_newsletter_post" extends keyof RpcOverrides
         ? "process_service_payment" extends keyof RpcOverrides
           ? "custom_access_token_hook" extends keyof RpcOverrides
-            ? true
+            ? "get_my_storage_quota" extends keyof RpcOverrides
+              ? true
+              : false
             : false
           : false
         : false
@@ -45,7 +47,13 @@ test("public types retain domain RPC overrides", () => {
       ? true
       : false
   > = true;
+  const databaseKeepsStorageQuotaOverride: Assert<
+    Database["public"]["Functions"]["get_my_storage_quota"]["Returns"] extends RpcOverrides["get_my_storage_quota"]
+      ? true
+      : false
+  > = true;
 
   expect(hasExpectedDomainOverrides).toBe(true);
   expect(databaseKeepsShopCheckoutOverride).toBe(true);
+  expect(databaseKeepsStorageQuotaOverride).toBe(true);
 });

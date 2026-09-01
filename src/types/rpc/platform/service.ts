@@ -6,7 +6,41 @@ export type ActivateCreatorPlatformSubscriptionResult = {
   service_type: string;
   period_start: string;
   period_end: string;
+  storage_quota_bytes: number | null;
 };
+
+export type StorageBucket =
+  | "post-images"
+  | "shop-media"
+  | "shop-product-files"
+  | "avatars"
+  | "banners";
+
+export type GetMyStorageQuotaResult =
+  | { success: false; error: "UNAUTHENTICATED" }
+  | {
+      success: true;
+      quota_bytes: number;
+      confirmed_bytes: number;
+      reserved_bytes: number;
+      remaining_bytes: number;
+      is_over_quota: boolean;
+      breakdown: {
+        bucket: StorageBucket;
+        confirmed_bytes: number;
+        reserved_bytes: number;
+      }[];
+      subscription: {
+        id: number;
+        plan_id: number;
+        plan_name: string;
+        price_per_month: number;
+        quota_bytes: number;
+        period_start: string;
+        period_end: string;
+        cancel_at_period_end: boolean;
+      } | null;
+    };
 
 export type CancelCreatorPlatformSubscriptionResult =
   | { success: false; error: "UNAUTHENTICATED" | "NO_ACTIVE_SUBSCRIPTION" }
@@ -61,6 +95,7 @@ export type PlatformServiceOverrides = {
   activate_creator_platform_subscription: ActivateCreatorPlatformSubscriptionResult;
   cancel_creator_platform_subscription: CancelCreatorPlatformSubscriptionResult;
   admin_grant_creator_subscription: AdminGrantCreatorSubscriptionResult;
+  get_my_storage_quota: GetMyStorageQuotaResult;
   update_creator_report_status: UpdateCreatorReportStatusResult;
   collect_orphaned_kyc_documents: CollectOrphanedKycDocumentsResult;
   collect_reviewed_kyc_documents: CollectReviewedKycDocumentsResult;

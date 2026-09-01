@@ -503,6 +503,7 @@ export type Database = {
       creator_platform_subscriptions: {
         Row: {
           amount_used_this_period: number;
+          cancel_at_period_end: boolean;
           created_at: string;
           id: number;
           period_end: string;
@@ -512,12 +513,14 @@ export type Database = {
           profile_id: string;
           service_type: string;
           status: string;
+          storage_quota_bytes_at_purchase: number | null;
           transaction_reference_id: string | null;
           transactions_used_this_period: number;
           updated_at: string;
         };
         Insert: {
           amount_used_this_period?: number;
+          cancel_at_period_end?: boolean;
           created_at?: string;
           id?: never;
           period_end: string;
@@ -527,12 +530,14 @@ export type Database = {
           profile_id: string;
           service_type: string;
           status?: string;
+          storage_quota_bytes_at_purchase?: number | null;
           transaction_reference_id?: string | null;
           transactions_used_this_period?: number;
           updated_at?: string;
         };
         Update: {
           amount_used_this_period?: number;
+          cancel_at_period_end?: boolean;
           created_at?: string;
           id?: never;
           period_end?: string;
@@ -542,6 +547,7 @@ export type Database = {
           profile_id?: string;
           service_type?: string;
           status?: string;
+          storage_quota_bytes_at_purchase?: number | null;
           transaction_reference_id?: string | null;
           transactions_used_this_period?: number;
           updated_at?: string;
@@ -2504,6 +2510,7 @@ export type Database = {
           price_per_month: number;
           service_type: string;
           sort_order: number;
+          storage_quota_bytes: number | null;
           updated_at: string;
         };
         Insert: {
@@ -2517,6 +2524,7 @@ export type Database = {
           price_per_month: number;
           service_type: string;
           sort_order?: number;
+          storage_quota_bytes?: number | null;
           updated_at?: string;
         };
         Update: {
@@ -2530,6 +2538,7 @@ export type Database = {
           price_per_month?: number;
           service_type?: string;
           sort_order?: number;
+          storage_quota_bytes?: number | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -5655,6 +5664,7 @@ export type Database = {
         Args: { p_cursor?: string; p_limit?: number };
         Returns: Json;
       };
+      get_my_storage_quota: { Args: never; Returns: Json };
       get_newsletter_stats: {
         Args: { p_from?: string; p_profile_id: string; p_to?: string };
         Returns: {
@@ -5756,6 +5766,10 @@ export type Database = {
       get_product_reviews: {
         Args: { p_cursor?: string; p_entity_id: string; p_limit?: number };
         Returns: Json;
+      };
+      get_profile_storage_quota_bytes: {
+        Args: { p_profile_id: string };
+        Returns: number;
       };
       get_reader_feed: {
         Args: {
@@ -6261,9 +6275,10 @@ export type Database = {
           p_object_key: string;
           p_profile_id: string;
           p_public_url: string;
+          p_size_bytes?: number;
           p_upload_id?: string;
         };
-        Returns: number;
+        Returns: Json;
       };
       reject_newsletter_post: {
         Args: { p_post_id: string; p_rejection_reason: string };
