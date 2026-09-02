@@ -1,6 +1,6 @@
 {
   "name": "@hobenakicoffee/libraries",
-  "version": "12.8.0",
+  "version": "12.9.0",
   "license": "MIT",
   "type": "module",
   "packageManager": "bun@1.4.0",
