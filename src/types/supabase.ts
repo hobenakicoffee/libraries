@@ -1792,33 +1792,6 @@ export type Database = {
           },
         ];
       };
-      messages_2026_07: {
-        Row: {
-          content: string;
-          conversation_id: string;
-          created_at: string;
-          id: number;
-          is_auto_reply: boolean;
-          sender_id: string;
-        };
-        Insert: {
-          content: string;
-          conversation_id: string;
-          created_at?: string;
-          id?: number;
-          is_auto_reply?: boolean;
-          sender_id: string;
-        };
-        Update: {
-          content?: string;
-          conversation_id?: string;
-          created_at?: string;
-          id?: number;
-          is_auto_reply?: boolean;
-          sender_id?: string;
-        };
-        Relationships: [];
-      };
       messages_2026_08: {
         Row: {
           content: string;
@@ -1874,6 +1847,33 @@ export type Database = {
         Relationships: [];
       };
       messages_2026_10: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          is_auto_reply: boolean;
+          sender_id: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: number;
+          is_auto_reply?: boolean;
+          sender_id: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: number;
+          is_auto_reply?: boolean;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
+      messages_2026_11: {
         Row: {
           content: string;
           conversation_id: string;
